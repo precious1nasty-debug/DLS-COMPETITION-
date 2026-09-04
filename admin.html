@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>DLS Competition — Admin</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
+</head>
+
+<body>
+
+  <header>
+
+    <h1>
+      🏆 DLS Competition
+    </h1>
+
+    <p>
+      🔐 Admin Dashboard
+    </p>
+
+  </header>
+
+
+  <!-- =========================
+       ADMIN LOGIN
+  ========================== -->
+
+  <main>
+
+    <section
+      id="adminLogin"
+      class="admin-login"
+    >
+
+      <h2>
+        🔐 Admin Login
+      </h2>
+
+      <p>
+        Authorized administrators only.
+      </p>
+
+      <form
+        id="adminLoginForm"
+      >
+
+        <input
+          type="email"
+          id="adminEmail"
+          placeholder="Admin Email"
+          autocomplete="email"
+          required
+        >
+
+        <input
+          type="password"
+          id="adminPassword"
+          placeholder="Admin Password"
+          autocomplete="current-password"
+          required
+        >
+
+        <button
+          type="submit"
+        >
+          🔑 Login
+        </button>
+
+      </form>
+
+      <p
+        id="adminLoginMessage"
+      ></p>
+
+    </section>
+
+
+    <!-- =========================
+         ADMIN DASHBOARD
+    ========================== -->
+
+    <section
+      id="adminDashboard"
+      style="display:none;"
+    >
+
+      <div class="admin-header">
+
+        <h2>
+          ⚙️ Competition Control
+        </h2>
+
+        <p>
+          Manage your DLS competition
+          from here.
+        </p>
+
+      </div>
+
+
+      <!-- PENDING REGISTRATIONS -->
+
+      <section
+        class="admin-section"
+      >
+
+        <h2>
+          📥 Pending Registrations
+        </h2>
+
+        <div
+          id="pendingRegistrations"
+        >
+
+          <p>
+            No pending registrations.
+          </p>
+
+        </div>
+
+      </section>
+
+
+      <!-- SEASON SETTINGS -->
+
+      <section
+        class="admin-section"
+      >
+
+        <h2>
+          🏆 Season Settings
+        </h2>
+
+        <div
+          id="adminSeasonDetails"
+        >
+
+          <p>
+            🟡 Season not started.
+          </p>
+
+        </div>
+
+
+        <label>
+          Season Start Date
+        </label>
+
+        <input
+          type="date"
+          id="seasonStart"
+        >
+
+
+        <label>
+          Season End Date
+        </label>
+
+        <input
+          type="date"
+          id="seasonEnd"
+        >
+
+
+        <label>
+          League Format
+        </label>
+
+        <select
+          id="legFormat"
+        >
+
+          <option value="1">
+            1 Leg
+          </option>
+
+          <option value="2">
+            2 Legs
+          </option>
+
+        </select>
+
+
+        <div
+          class="admin-buttons"
+        >
+
+          <button
+            id="generateFixturesButton"
+          >
+            📅 Generate Fixtures
+          </button>
+
+          <button
+            id="startSeasonButton"
+          >
+            🏆 Start Season
+          </button>
+
+          <button
+            id="reopenRegistrationButton"
+          >
+            🔓 Reopen Registration
+          </button>
+
+        </div>
+
+      </section>
+
+
+      <!-- APPROVED TEAMS -->
+
+      <section
+        class="admin-section"
+      >
+
+        <h2>
+          👥 Approved Teams
+        </h2>
+
+        <div
+          id="adminTeamList"
+        >
+
+          <p>
+            No approved teams.
+          </p>
+
+        </div>
+
+        <button
+          id="manageTeamsButton"
+        >
+          ⚙️ Manage Teams
+        </button>
+
+      </section>
+
+
+      <!-- LEAGUE TABLE -->
+
+      <section
+        class="admin-section"
+      >
+
+        <h2>
+          📊 League Table
+        </h2>
+
+        <div
+          class="table-container"
+        >
+
+          <table>
+
+            <thead>
+
+              <tr>
+
+                <th>
+                  #
+                </th>
+
+                <th>
+                  Team
+                </th>
+
+                <th>
+                  P
+                </th>
+
+                <th>
+                  W
+                </th>
+
+                <th>
+                  D
+                </th>
+
+                <th>
+                  L
+                </th>
+
+                <th>
+                  GF
+                </th>
+
+                <th>
+                  GA
+                </th>
+
+                <th>
+                  GD
+                </th>
+
+                <th>
+                  PTS
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody
+              id="adminLeagueTable"
+            >
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+
+      <!-- FIXTURES -->
+
+      <section
+        class="admin-section"
+      >
+
+        <h2>
+          ⚽ Fixtures & Results
+        </h2>
+
+        <div
+          id="adminFixtureList"
+        >
+
+          <p>
+            No fixtures generated.
+          </p>
+
+        </div>
+
+      </section>
+
+
+      <!-- DANGER ZONE -->
+
+      <section
+        class="admin-section danger-zone"
+      >
+
+        <h2>
+          ⚠️ Competition Controls
+        </h2>
+
+        <button
+          id="clearCompetitionButton"
+        >
+          🗑️ Clear Competition
+        </button>
+
+        <button
+          id="logoutButton"
+        >
+          🚪 Logout
+        </button>
+
+      </section>
+
+    </section>
+
+  </main>
+
+
+  <!-- FIREBASE -->
+
+  <script
+    type="module"
+    src="firebase.js"
+  ></script>
+
+
+  <!-- ADMIN JAVASCRIPT -->
+
+  <script
+    type="module"
+    src="admin.js"
+  ></script>
+
+</body>
+
+</html>
