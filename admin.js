@@ -316,6 +316,7 @@ window.submitResult = async function(index) {
 };
 
 function generateRoundRobin(teams, legs) {
+
   const list = [...teams];
 
   if (list.length < 2) {
@@ -327,21 +328,32 @@ function generateRoundRobin(teams, legs) {
   }
 
   const fixtures = [];
+
   const rounds = list.length - 1;
+
   const half = list.length / 2;
 
   for (let round = 0; round < rounds; round++) {
+
+    const matchDay = round + 1;
+
     for (let i = 0; i < half; i++) {
+
       const home = list[i];
-      const away = list[list.length - 1 - i];
+
+      const away =
+        list[list.length - 1 - i];
 
       if (home && away) {
+
         fixtures.push({
+          day: matchDay,
           home: home.name,
           away: away.name,
           homeScore: null,
           awayScore: null
         });
+
       }
     }
 
@@ -349,12 +361,22 @@ function generateRoundRobin(teams, legs) {
   }
 
   if (Number(legs) === 2) {
-    const secondLeg = fixtures.map(match => ({
-      home: match.away,
-      away: match.home,
-      homeScore: null,
-      awayScore: null
-    }));
+
+    const firstLegFixtures = [...fixtures];
+
+    const secondLeg = firstLegFixtures.map(
+      (match, index) => {
+
+        return {
+          day: rounds + match.day,
+          home: match.away,
+          away: match.home,
+          homeScore: null,
+          awayScore: null
+        };
+
+      }
+    );
 
     fixtures.push(...secondLeg);
   }
