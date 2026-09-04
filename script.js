@@ -1455,19 +1455,14 @@ alert("NEW ADMIN LOGIN CODE IS RUNNING");
     displayFixtures();
 
   } catch (error) {
+  console.error("ADMIN LOGIN ERROR:", error);
 
-    console.error(
-      "Admin login failed:",
-      error
-    );
-
-
-    alert(
-      "❌ Login failed.\n\n" +
-      "Check your email and password."
-    );
-
-  }
+  alert(
+    "FIREBASE ERROR:\n\n" +
+    "Code: " + error.code + "\n\n" +
+    "Message: " + error.message
+  );
+}
 
 }
 
