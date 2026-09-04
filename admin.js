@@ -1,804 +1,1216 @@
 import {
-  collection,
   doc,
   getDoc,
-  onSnapshot,
-  setDoc,
-  deleteDoc
+  setDoc
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-import {
-  signInWithEmailAndPassword,
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
-const ADMIN_EMAIL = "obakimoprecious07@gmail.com";
+let teams = [];
+let fixtures = [];
 
-let competitionData = {
-  seasonStarted: false,
-  registrationOpen: true,
-  seasonStart: "",
-  seasonEnd: "",
-  legFormat: 1,
-  teams: [],
-  fixtures: []
+
+let season = {
+  started: false,
+  startDate: "",
+  endDate: "",
+  legs: 1
 };
 
-let currentUser = null;
 
-function $(id) {
-  return document.getElementById(id);
+const form =
+  document.getElementById("registrationForm");
+
+const teamList =
+  document.getElementById("teamList");
+
+const fixtureList =
+  document.getElementById("fixtureList");
+
+const leagueTable =
+  document.getElementById("leagueTable");
+
+const registrationMessage =
+  document.getElementById("registrationMessage");
+
+const seasonDetails =
+  document.getElementById("seasonDetails");
+
+
+/* =========================
+   HELPERS
+========================= */
+
+function normalizeTeamName(name) {
+
+  return String(name || "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+
 }
 
-function showMessage(message, success = false) {
-  const box = $("adminLoginMessage");
 
-  if (!box) return;
+function teamKey(name) {
 
-  box.textContent = message;
-  box.style.color = success ? "green" : "red";
+  return normalizeTeamName(name)
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .substring(0, 80);
+
 }
 
-function isAdmin(user) {
-  return user &&
-    user.email &&
-    user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+
+function escapeHTML(value) {
+
+  const div =
+    document.createElement("div");
+
+  div.textContent =
+    String(value ?? "");
+
+  return div.innerHTML;
+
 }
+
+
+function getTeamName(team) {
+
+  return team.teamName ||
+    team.name ||
+    "";
+
+}
+
+
+function getPlayerName(team) {
+
+  return team.playerName ||
+    team.player ||
+    "";
+
+}
+
+
+function formatDate(date) {
+
+  if (!date) {
+    return "Not set";
+  }
+
+  return new Date(
+    date + "T00:00:00"
+  ).toLocaleDateString(
+    "en-GB",
+    {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    }
+  );
+
+}
+
+
+/* =========================
+   LOAD COMPETITION
+========================= */
 
 async function loadCompetition() {
-  try {
-    const ref = doc(window.db, "competition", "main");
-    const snap = await getDoc(ref);
 
-    if (snap.exists()) {
-      competitionData = {
-        ...competitionData,
-        ...snap.data()
-      };
-    }
-
-    renderAll();
-  } catch (error) {
-    console.error("Competition load error:", error);
-  }
-}
-
-async function saveCompetition() {
-  try {
-    const ref = doc(window.db, "competition", "main");
-
-    await setDoc(ref, competitionData);
-
-    renderAll();
-  } catch (error) {
-    alert("❌ Could not save competition: " + error.message);
-  }
-}
-
-function showDashboard() {
-  $("adminLogin").style.display = "none";
-  $("adminDashboard").style.display = "block";
-}
-
-function showLogin() {
-  $("adminLogin").style.display = "block";
-  $("adminDashboard").style.display = "none";
-}
-
-function renderAll() {
-  renderSeason();
-  renderTeams();
-  renderTable();
-  renderFixtures();
-}
-
-function renderSeason() {
-  const box = $("adminSeasonDetails");
-
-  if (!box) return;
-
-  if (competitionData.seasonStarted) {
-    box.innerHTML = `
-      <p>🟢 Season is active.</p>
-      <p>Start: ${competitionData.seasonStart || "Not set"}</p>
-      <p>End: ${competitionData.seasonEnd || "Not set"}</p>
-      <p>Format: ${competitionData.legFormat == 2 ? "2 Legs" : "1 Leg"}</p>
-    `;
-  } else {
-    box.innerHTML = `
-      <p>🟡 Season not started.</p>
-    `;
-  }
-
-  if ($("seasonStart")) {
-    $("seasonStart").value = competitionData.seasonStart || "";
-  }
-
-  if ($("seasonEnd")) {
-    $("seasonEnd").value = competitionData.seasonEnd || "";
-  }
-
-  if ($("legFormat")) {
-    $("legFormat").value = competitionData.legFormat || 1;
-  }
-}
-
-function renderTeams() {
-  const box = $("adminTeamList");
-
-  if (!box) return;
-
-  if (!competitionData.teams || competitionData.teams.length === 0) {
-    box.innerHTML = "<p>No approved teams.</p>";
+  if (!window.db) {
     return;
   }
-
-  box.innerHTML = competitionData.teams.map((team, index) => `
-    <div class="admin-team-card">
-      <strong>${index + 1}. ${team.name}</strong>
-      <p>Player: ${team.playerName || "Unknown"}</p>
-    </div>
-  `).join("");
-}
-
-function calculateTable() {
-  const table = {};
-
-  (competitionData.teams || []).forEach(team => {
-    table[team.name] = {
-      name: team.name,
-      P: 0,
-      W: 0,
-      D: 0,
-      L: 0,
-      GF: 0,
-      GA: 0,
-      GD: 0,
-      PTS: 0
-    };
-  });
-
-  (competitionData.fixtures || []).forEach(match => {
-    if (match.homeScore == null || match.awayScore == null) {
-      return;
-    }
-
-    const home = table[match.home];
-    const away = table[match.away];
-
-    if (!home || !away) return;
-
-    const hg = Number(match.homeScore);
-    const ag = Number(match.awayScore);
-
-    home.P++;
-    away.P++;
-
-    home.GF += hg;
-    home.GA += ag;
-
-    away.GF += ag;
-    away.GA += hg;
-
-    if (hg > ag) {
-      home.W++;
-      home.PTS += 3;
-      away.L++;
-    } else if (hg < ag) {
-      away.W++;
-      away.PTS += 3;
-      home.L++;
-    } else {
-      home.D++;
-      away.D++;
-      home.PTS++;
-      away.PTS++;
-    }
-  });
-
-  Object.values(table).forEach(team => {
-    team.GD = team.GF - team.GA;
-  });
-
-  return Object.values(table).sort((a, b) =>
-    b.PTS - a.PTS ||
-    b.GD - a.GD ||
-    b.GF - a.GF
-  );
-}
-
-function renderTable() {
-  const box = $("adminLeagueTable");
-
-  if (!box) return;
-
-  const table = calculateTable();
-
-  if (table.length === 0) {
-    box.innerHTML = `
-      <tr>
-        <td colspan="10">No teams yet.</td>
-      </tr>
-    `;
-    return;
-  }
-
-  box.innerHTML = table.map((team, index) => `
-    <tr>
-      <td>${index + 1}</td>
-      <td>${team.name}</td>
-      <td>${team.P}</td>
-      <td>${team.W}</td>
-      <td>${team.D}</td>
-      <td>${team.L}</td>
-      <td>${team.GF}</td>
-      <td>${team.GA}</td>
-      <td>${team.GD}</td>
-      <td>${team.PTS}</td>
-    </tr>
-  `).join("");
-}
-
-function renderFixtures() {
-  const box = $("adminFixtureList");
-
-  if (!box) return;
-
-  if (!competitionData.fixtures || competitionData.fixtures.length === 0) {
-    box.innerHTML = "<p>No fixtures generated.</p>";
-    return;
-  }
-
-  box.innerHTML = competitionData.fixtures.map((match, index) => `
-    <div class="fixture-card">
-      <strong>Match ${index + 1}</strong>
-      <p>${match.home} vs ${match.away}</p>
-
-      ${
-        match.homeScore == null
-          ? `
-            <input
-              type="number"
-              min="0"
-              id="homeScore-${index}"
-              placeholder="${match.home} score"
-            >
-
-            <input
-              type="number"
-              min="0"
-              id="awayScore-${index}"
-              placeholder="${match.away} score"
-            >
-
-            <button onclick="submitResult(${index})">
-              ⚽ Submit Result
-            </button>
-          `
-          : `
-            <p>
-              ✅ Result:
-              ${match.home} ${match.homeScore}
-              - ${match.awayScore} ${match.away}
-            </p>
-          `
-      }
-    </div>
-  `).join("");
-}
-
-window.submitResult = async function(index) {
-  const homeInput = $(`homeScore-${index}`);
-  const awayInput = $(`awayScore-${index}`);
-
-  if (!homeInput || !awayInput) return;
-
-  const homeScore = Number(homeInput.value);
-  const awayScore = Number(awayInput.value);
-
-  if (
-    homeInput.value === "" ||
-    awayInput.value === "" ||
-    homeScore < 0 ||
-    awayScore < 0
-  ) {
-    alert("Enter valid scores.");
-    return;
-  }
-
-  competitionData.fixtures[index].homeScore = homeScore;
-  competitionData.fixtures[index].awayScore = awayScore;
-
-  await saveCompetition();
-
-  alert("✅ Result saved.");
-};
-
-function generateRoundRobin(teams, legs, startDate, endDate) {
-
-  const list = [...teams];
-
-  if (list.length < 2) {
-    return [];
-  }
-
-  if (!startDate || !endDate) {
-    alert("❌ Please select a start date and end date.");
-    return [];
-  }
-
-  const start = new Date(startDate + "T00:00:00");
-  const end = new Date(endDate + "T00:00:00");
-
-  if (end < start) {
-    alert("❌ End date cannot be before start date.");
-    return [];
-  }
-
-  if (list.length % 2 !== 0) {
-    list.push(null);
-  }
-
-  const rounds = list.length - 1;
-  const half = list.length / 2;
-
-  const availableDays =
-    Math.floor(
-      (end - start) / (1000 * 60 * 60 * 24)
-    ) + 1;
-
-  const requiredRounds =
-    Number(legs) === 2
-      ? rounds * 2
-      : rounds;
-
-  if (availableDays < requiredRounds) {
-    alert(
-      `❌ The selected date range is too short.\n\n` +
-      `${list.length - 1} teams require ${requiredRounds} Match Days.\n` +
-      `You selected only ${availableDays} days.`
-    );
-
-    return [];
-  }
-
-  const fixtures = [];
-
-  for (let round = 0; round < rounds; round++) {
-
-    const matchDate = new Date(start);
-
-    matchDate.setDate(
-      start.getDate() + round
-    );
-
-    const dateString =
-      matchDate.toISOString().split("T")[0];
-
-    for (let i = 0; i < half; i++) {
-
-      const home = list[i];
-
-      const away =
-        list[list.length - 1 - i];
-
-      if (home && away) {
-
-        fixtures.push({
-          day: round + 1,
-          date: dateString,
-          home: home.name,
-          away: away.name,
-          homeScore: null,
-          awayScore: null
-        });
-
-      }
-    }
-
-    list.splice(1, 0, list.pop());
-  }
-
-  if (Number(legs) === 2) {
-
-    const firstLegFixtures = [...fixtures];
-
-    for (let round = 0; round < rounds; round++) {
-
-      const matchDate = new Date(start);
-
-      matchDate.setDate(
-        start.getDate() + rounds + round
-      );
-
-      const dateString =
-        matchDate.toISOString().split("T")[0];
-
-      const roundFixtures =
-        firstLegFixtures.filter(
-          match => match.day === round + 1
-        );
-
-      roundFixtures.forEach(match => {
-
-        fixtures.push({
-          day: rounds + round + 1,
-          date: dateString,
-          home: match.away,
-          away: match.home,
-          homeScore: null,
-          awayScore: null
-        });
-
-      });
-    }
-  }
-
-  return fixtures;
-}
-
-$("generateFixturesButton").addEventListener("click", async () => {
-  if (!competitionData.teams || competitionData.teams.length < 2) {
-    alert("❌ You need at least 2 approved teams.");
-    return;
-  }
-
-  if (competitionData.fixtures.length > 0) {
-    const confirmGenerate = confirm(
-      "Fixtures already exist. Generate new fixtures and replace the current ones?"
-    );
-
-    if (!confirmGenerate) return;
-  }
-
-  const legs = Number($("legFormat").value);
-
-  competitionData.legFormat = legs;
-
-  competitionData.fixtures = generateRoundRobin(
-  competitionData.teams,
-  legs,
-  $("seasonStart").value,
-  $("seasonEnd").value
-);
-
-  await saveCompetition();
-
-  alert(
-    `✅ ${competitionData.fixtures.length} fixtures generated successfully.`
-  );
-});
-
-$("startSeasonButton").addEventListener("click", async () => {
-  if (!competitionData.teams || competitionData.teams.length < 2) {
-    alert("❌ You need at least 2 approved teams.");
-    return;
-  }
-
-  if (!competitionData.fixtures || competitionData.fixtures.length === 0) {
-    alert("❌ Generate fixtures first.");
-    return;
-  }
-
-  competitionData.seasonStart = $("seasonStart").value;
-  competitionData.seasonEnd = $("seasonEnd").value;
-  competitionData.legFormat = Number($("legFormat").value);
-
-  competitionData.seasonStarted = true;
-  competitionData.registrationOpen = false;
-
-  await saveCompetition();
-
-  alert("🏆 Season started successfully.");
-});
-
-$("reopenRegistrationButton").addEventListener("click", async () => {
-  competitionData.registrationOpen = true;
-
-  await saveCompetition();
-
-  alert("🔓 Registration reopened.");
-});
-
-$("adminLoginForm").addEventListener("submit", async (event) => {
-  event.preventDefault();
-
-  const email = $("adminEmail").value.trim();
-  const password = $("adminPassword").value;
-
-  if (!email || !password) {
-    showMessage("Please enter your email and password.");
-    return;
-  }
-
-  showMessage("🔄 Logging in...", true);
 
   try {
-    const result = await signInWithEmailAndPassword(
-      window.auth,
-      email,
-      password
-    );
 
-    if (!isAdmin(result.user)) {
-      await signOut(window.auth);
-      showMessage("❌ You are not authorized to access this dashboard.");
-      return;
-    }
-
-    currentUser = result.user;
-
-    showDashboard();
-    await loadCompetition();
-    startPendingListener();
-
-  } catch (error) {
-    console.error(error);
-
-    showMessage(
-      "❌ Login failed: " +
-      (error.code || "") +
-      " " +
-      (error.message || "")
-    );
-  }
-});
-
-function startPendingListener() {
-  const registrationsRef = collection(
-    window.db,
-    "registrations"
-  );
-
-  onSnapshot(
-    registrationsRef,
-    (snapshot) => {
-      const pending = [];
-
-      snapshot.forEach((item) => {
-        const data = item.data();
-
-        if (data.status === "pending") {
-          pending.push({
-            id: item.id,
-            ...data
-          });
-        }
-      });
-
-      renderPendingRegistrations(pending);
-    },
-    (error) => {
-      console.error("Pending registration listener error:", error);
-
-      const box = $("pendingRegistrations");
-
-      if (box) {
-        box.innerHTML =
-          "<p>❌ Unable to load pending registrations.</p>";
-      }
-    }
-  );
-}
-
-function renderPendingRegistrations(registrations) {
-  const box = $("pendingRegistrations");
-
-  if (!box) return;
-
-  if (registrations.length === 0) {
-    box.innerHTML = "<p>No pending registrations.</p>";
-    return;
-  }
-
-  box.innerHTML = registrations.map((registration) => `
-    <div class="admin-team-card">
-
-      <h3>${registration.teamName}</h3>
-
-      <p>
-        Player:
-        ${registration.playerName}
-      </p>
-
-      <div class="admin-buttons">
-
-        <button
-          onclick="approveRegistration(
-            '${registration.id}'
-          )"
-        >
-          ✅ Approve
-        </button>
-
-        <button
-          onclick="rejectRegistration(
-            '${registration.id}'
-          )"
-        >
-          ❌ Reject
-        </button>
-
-      </div>
-
-    </div>
-  `).join("");
-}
-
-window.approveRegistration = async function(id) {
-  try {
-    const registrationRef = doc(
-      window.db,
-      "registrations",
-      id
-    );
-
-    const registrationSnap = await getDoc(
-      registrationRef
-    );
-
-    if (!registrationSnap.exists()) {
-      alert("❌ Registration no longer exists.");
-      return;
-    }
-
-    const registration = registrationSnap.data();
-
-    const alreadyExists = competitionData.teams.some(
-      team =>
-        team.name.toLowerCase() ===
-        registration.teamName.toLowerCase()
-    );
-
-    if (alreadyExists) {
-      alert("❌ This team is already approved.");
-      return;
-    }
-
-    competitionData.teams.push({
-      name: registration.teamName,
-      playerName: registration.playerName
-    });
-
-    await saveCompetition();
-
-    await deleteDoc(registrationRef);
-
-    alert("✅ Team approved successfully.");
-
-  } catch (error) {
-    console.error(error);
-
-    alert(
-      "❌ Approval failed: " +
-      error.message
-    );
-  }
-};
-
-window.rejectRegistration = async function(id) {
-  const confirmReject = confirm(
-    "Reject this registration?"
-  );
-
-  if (!confirmReject) return;
-
-  try {
-    await deleteDoc(
+    const competitionRef =
       doc(
         window.db,
-        "registrations",
-        id
+        "competition",
+        "main"
+      );
+
+
+    const snapshot =
+      await getDoc(
+        competitionRef
+      );
+
+
+    if (!snapshot.exists()) {
+
+      teams = [];
+
+      fixtures = [];
+
+      season = {
+        started: false,
+        startDate: "",
+        endDate: "",
+        legs: 1
+      };
+
+    } else {
+
+      const data =
+        snapshot.data();
+
+
+      teams =
+        Array.isArray(data.teams)
+          ? data.teams
+          : [];
+
+
+      fixtures =
+        Array.isArray(data.fixtures)
+          ? data.fixtures
+          : [];
+
+
+      if (data.season) {
+
+        season = {
+
+          started:
+            data.season.started ||
+            false,
+
+          startDate:
+            data.season.startDate ||
+            "",
+
+          endDate:
+            data.season.endDate ||
+            "",
+
+          legs:
+            data.season.legs ||
+            1
+
+        };
+
+      } else {
+
+        season = {
+
+          started:
+            data.seasonStarted ||
+            false,
+
+          startDate:
+            data.seasonStart ||
+            "",
+
+          endDate:
+            data.seasonEnd ||
+            "",
+
+          legs:
+            data.legFormat ||
+            1
+
+        };
+
+      }
+
+    }
+
+
+    displayTeams();
+
+    displayTable();
+
+    displayFixtures();
+
+    displaySeason();
+
+    updateRegistrationStatus();
+
+
+  } catch (error) {
+
+    console.error(
+      "Competition load failed:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================
+   CHECK APPROVED TEAM
+========================= */
+
+function checkApprovedTeam(teamName) {
+
+  const cleanName =
+    normalizeTeamName(
+      teamName
+    );
+
+
+  return teams.some(
+    function(team) {
+
+      return normalizeTeamName(
+        getTeamName(team)
+      ) === cleanName;
+
+    }
+  );
+
+}
+
+
+/* =========================
+   REGISTRATION
+========================= */
+
+if (form) {
+
+  form.addEventListener(
+    "submit",
+    async function(event) {
+
+      event.preventDefault();
+
+
+      if (!window.db) {
+
+        registrationMessage.textContent =
+          "❌ Database is unavailable.";
+
+        return;
+      }
+
+
+      if (season.started) {
+
+        registrationMessage.textContent =
+          "🔒 Registration is closed.";
+
+        return;
+      }
+
+
+      const teamName =
+        document
+          .getElementById("teamName")
+          ?.value
+          .trim() || "";
+
+
+      const playerName =
+        document
+          .getElementById("playerName")
+          ?.value
+          .trim() || "";
+
+
+      if (!teamName || !playerName) {
+
+        registrationMessage.textContent =
+          "⚠️ Please fill in all fields.";
+
+        return;
+      }
+
+
+      if (
+        teamName.length < 2 ||
+        teamName.length > 40
+      ) {
+
+        registrationMessage.textContent =
+          "⚠️ Team name must be 2-40 characters.";
+
+        return;
+      }
+
+
+      if (
+        playerName.length < 2 ||
+        playerName.length > 60
+      ) {
+
+        registrationMessage.textContent =
+          "⚠️ Player name must be 2-60 characters.";
+
+        return;
+      }
+
+
+      registrationMessage.textContent =
+        "⏳ Submitting registration...";
+
+
+      try {
+
+        if (
+          checkApprovedTeam(
+            teamName
+          )
+        ) {
+
+          registrationMessage.textContent =
+            "⚠️ This team name is already registered or waiting for approval.";
+
+          return;
+        }
+
+
+        const registrationId =
+          teamKey(teamName);
+
+
+        if (!registrationId) {
+
+          registrationMessage.textContent =
+            "⚠️ Please enter a valid team name.";
+
+          return;
+        }
+
+
+        const registrationRef =
+          doc(
+            window.db,
+            "registrations",
+            registrationId
+          );
+
+
+        await setDoc(
+          registrationRef,
+          {
+            teamName:
+              teamName,
+
+            playerName:
+              playerName,
+
+            createdAt:
+              Date.now(),
+
+            status:
+              "pending"
+          }
+        );
+
+
+        registrationMessage.textContent =
+          "✅ Registration submitted! Waiting for admin approval.";
+
+
+        form.reset();
+
+
+      } catch (error) {
+
+        console.error(
+          "Registration failed:",
+          error
+        );
+
+
+        if (
+          error.code ===
+            "permission-denied" ||
+          error.code ===
+            "already-exists"
+        ) {
+
+          registrationMessage.textContent =
+            "⚠️ This team name is already registered or waiting for approval.";
+
+        } else {
+
+          registrationMessage.textContent =
+            "❌ Registration failed: " +
+            (
+              error.message ||
+              "Please try again."
+            );
+
+        }
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================
+   DISPLAY TEAMS
+========================= */
+
+function displayTeams() {
+
+  if (!teamList) {
+    return;
+  }
+
+
+  teamList.innerHTML = "";
+
+
+  if (teams.length === 0) {
+
+    teamList.innerHTML =
+      "<p>No approved teams yet.</p>";
+
+    return;
+  }
+
+
+  teams.forEach(
+    function(team) {
+
+      const card =
+        document.createElement(
+          "div"
+        );
+
+
+      card.className =
+        "team-card";
+
+
+      const title =
+        document.createElement(
+          "h3"
+        );
+
+
+      title.textContent =
+        "⚽ " +
+        getTeamName(team);
+
+
+      const player =
+        document.createElement(
+          "p"
+        );
+
+
+      player.textContent =
+        getPlayerName(team);
+
+
+      card.appendChild(title);
+
+      card.appendChild(player);
+
+      teamList.appendChild(card);
+
+    }
+  );
+
+}
+
+
+/* =========================
+   LEAGUE TABLE
+========================= */
+
+function calculateTable() {
+
+  const table = {};
+
+
+  teams.forEach(
+    function(team) {
+
+      const name =
+        getTeamName(team);
+
+
+      table[name] = {
+
+        name:
+          name,
+
+        played:
+          0,
+
+        wins:
+          0,
+
+        draws:
+          0,
+
+        losses:
+          0,
+
+        goalsFor:
+          0,
+
+        goalsAgainst:
+          0,
+
+        points:
+          0
+
+      };
+
+    }
+  );
+
+
+  fixtures.forEach(
+    function(match) {
+
+      if (
+        match.homeScore === null ||
+        match.homeScore === undefined ||
+        match.awayScore === null ||
+        match.awayScore === undefined
+      ) {
+
+        return;
+      }
+
+
+      const home =
+        table[match.home];
+
+
+      const away =
+        table[match.away];
+
+
+      if (!home || !away) {
+        return;
+      }
+
+
+      const homeScore =
+        Number(
+          match.homeScore
+        );
+
+
+      const awayScore =
+        Number(
+          match.awayScore
+        );
+
+
+      home.played++;
+
+      away.played++;
+
+
+      home.goalsFor +=
+        homeScore;
+
+      home.goalsAgainst +=
+        awayScore;
+
+
+      away.goalsFor +=
+        awayScore;
+
+      away.goalsAgainst +=
+        homeScore;
+
+
+      if (
+        homeScore >
+        awayScore
+      ) {
+
+        home.wins++;
+
+        home.points += 3;
+
+        away.losses++;
+
+
+      } else if (
+        homeScore <
+        awayScore
+      ) {
+
+        away.wins++;
+
+        away.points += 3;
+
+        home.losses++;
+
+
+      } else {
+
+        home.draws++;
+
+        away.draws++;
+
+        home.points++;
+
+        away.points++;
+
+      }
+
+    }
+  );
+
+
+  return Object.values(
+    table
+  ).sort(
+    function(a, b) {
+
+      const aGD =
+        a.goalsFor -
+        a.goalsAgainst;
+
+
+      const bGD =
+        b.goalsFor -
+        b.goalsAgainst;
+
+
+      if (
+        b.points !==
+        a.points
+      ) {
+
+        return (
+          b.points -
+          a.points
+        );
+
+      }
+
+
+      if (
+        bGD !==
+        aGD
+      ) {
+
+        return (
+          bGD -
+          aGD
+        );
+
+      }
+
+
+      return (
+        b.goalsFor -
+        a.goalsFor
+      );
+
+    }
+  );
+
+}
+
+
+function displayTable() {
+
+  if (!leagueTable) {
+    return;
+  }
+
+
+  leagueTable.innerHTML = "";
+
+
+  if (teams.length === 0) {
+
+    leagueTable.innerHTML = `
+      <tr>
+        <td colspan="10">
+          No approved teams yet.
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+
+  const table =
+    calculateTable();
+
+
+  table.forEach(
+    function(team, index) {
+
+      const gd =
+        team.goalsFor -
+        team.goalsAgainst;
+
+
+      leagueTable.innerHTML += `
+
+        <tr>
+
+          <td>
+            ${index + 1}
+          </td>
+
+          <td>
+            ${escapeHTML(
+              team.name
+            )}
+          </td>
+
+          <td>
+            ${team.played}
+          </td>
+
+          <td>
+            ${team.wins}
+          </td>
+
+          <td>
+            ${team.draws}
+          </td>
+
+          <td>
+            ${team.losses}
+          </td>
+
+          <td>
+            ${team.goalsFor}
+          </td>
+
+          <td>
+            ${team.goalsAgainst}
+          </td>
+
+          <td>
+            ${gd}
+          </td>
+
+          <td>
+            ${team.points}
+          </td>
+
+        </tr>
+
+      `;
+
+    }
+  );
+
+}
+
+/* =========================
+   DISPLAY FIXTURES
+========================= */
+
+function displayFixtures() {
+
+  if (!fixtureList) {
+    return;
+  }
+
+
+  fixtureList.innerHTML = "";
+
+
+  if (fixtures.length === 0) {
+
+    fixtureList.innerHTML =
+      "<p>No fixtures available yet.</p>";
+
+    return;
+  }
+
+
+  const groupedFixtures = {};
+
+
+  fixtures.forEach(
+    function(match) {
+
+      const day =
+        match.day || 1;
+
+
+      if (!groupedFixtures[day]) {
+
+        groupedFixtures[day] = [];
+
+      }
+
+
+      groupedFixtures[day].push(
+        match
+      );
+
+    }
+  );
+
+
+  const days =
+    Object.keys(
+      groupedFixtures
+    )
+    .map(Number)
+    .sort(
+      function(a, b) {
+        return a - b;
+      }
+    );
+
+
+  days.forEach(
+    function(day) {
+
+      const matches =
+        groupedFixtures[day];
+
+
+      const firstMatch =
+        matches[0];
+
+
+      const date =
+        firstMatch.date ||
+        "";
+
+
+      const daySection =
+        document.createElement(
+          "div"
+        );
+
+
+      daySection.className =
+        "fixture-day";
+
+
+      const heading =
+        document.createElement(
+          "h3"
+        );
+
+
+      heading.textContent =
+        "📅 Match Day " +
+        day;
+
+
+      daySection.appendChild(
+        heading
+      );
+
+
+      const dateText =
+        document.createElement(
+          "p"
+        );
+
+
+      dateText.className =
+        "fixture-date";
+
+
+      dateText.textContent =
+        date
+          ? formatDate(date)
+          : "Date not set";
+
+
+      daySection.appendChild(
+        dateText
+      );
+
+
+      matches.forEach(
+        function(match) {
+
+          const matchCard =
+            document.createElement(
+              "div"
+            );
+
+
+          matchCard.className =
+            "fixture-card";
+
+
+          const home =
+            escapeHTML(
+              match.home
+            );
+
+
+          const away =
+            escapeHTML(
+              match.away
+            );
+
+
+          const homeScore =
+            match.homeScore !== null &&
+            match.homeScore !== undefined
+              ? match.homeScore
+              : "-";
+
+
+          const awayScore =
+            match.awayScore !== null &&
+            match.awayScore !== undefined
+              ? match.awayScore
+              : "-";
+
+
+          matchCard.innerHTML = `
+
+            <div class="fixture-teams">
+
+              <strong>
+                ${home}
+              </strong>
+
+              <span>
+                ${homeScore}
+                -
+                ${awayScore}
+              </span>
+
+              <strong>
+                ${away}
+              </strong>
+
+            </div>
+
+          `;
+
+
+          daySection.appendChild(
+            matchCard
+          );
+
+        }
+      );
+
+
+      fixtureList.appendChild(
+        daySection
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================
+   SEASON INFORMATION
+========================= */
+
+function displaySeason() {
+
+  if (!seasonDetails) {
+    return;
+  }
+
+
+  if (
+    !season.startDate &&
+    !season.endDate
+  ) {
+
+    seasonDetails.innerHTML = `
+      <p>
+        🟡 Season dates have not been set yet.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  let statusText =
+    season.started
+      ? "🟢 Season is currently active."
+      : "🟡 Season has not started yet.";
+
+
+  seasonDetails.innerHTML = `
+
+    <p>
+      ${statusText}
+    </p>
+
+    <p>
+      📅 <strong>Start:</strong>
+      ${formatDate(
+        season.startDate
+      )}
+    </p>
+
+    <p>
+      📅 <strong>End:</strong>
+      ${formatDate(
+        season.endDate
+      )}
+    </p>
+
+    <p>
+      ⚽ <strong>Format:</strong>
+      ${
+        Number(season.legs) === 2
+          ? "2 Legs"
+          : "1 Leg"
+      }
+    </p>
+
+  `;
+
+}
+
+
+/* =========================
+   REGISTRATION STATUS
+========================= */
+
+function updateRegistrationStatus() {
+
+  if (!form) {
+    return;
+  }
+
+
+  const inputs =
+    form.querySelectorAll(
+      "input, button"
+    );
+
+
+  if (season.started) {
+
+    inputs.forEach(
+      function(element) {
+
+        element.disabled =
+          true;
+
+      }
+    );
+
+
+    if (registrationMessage) {
+
+      registrationMessage.textContent =
+        "🔒 Registration is closed because the season has started.";
+
+    }
+
+
+  } else {
+
+    inputs.forEach(
+      function(element) {
+
+        element.disabled =
+          false;
+
+      }
+    );
+
+
+    if (
+      registrationMessage &&
+      registrationMessage.textContent.includes(
+        "Registration is closed"
       )
+    ) {
+
+      registrationMessage.textContent =
+        "";
+
+    }
+
+  }
+
+}
+
+
+/* =========================
+   REGISTER BUTTON
+========================= */
+
+function showRegister() {
+
+  const registerSection =
+    document.getElementById(
+      "register"
     );
 
-    alert("❌ Registration rejected.");
 
-  } catch (error) {
-    console.error(error);
-
-    alert(
-      "❌ Rejection failed: " +
-      error.message
-    );
-  }
-};
-
-$("logoutButton").addEventListener("click", async () => {
-  try {
-    await signOut(window.auth);
-    currentUser = null;
-    showLogin();
-    $("adminPassword").value = "";
-  } catch (error) {
-    alert("❌ Logout failed: " + error.message);
-  }
-});
-
-onAuthStateChanged(window.auth, async (user) => {
-  if (!user) {
-    currentUser = null;
-    showLogin();
+  if (!registerSection) {
     return;
   }
 
-  if (!isAdmin(user)) {
-    await signOut(window.auth);
-    showLogin();
+
+  registerSection.scrollIntoView(
+    {
+      behavior: "smooth"
+    }
+  );
+
+
+  const teamInput =
+    document.getElementById(
+      "teamName"
+    );
+
+
+  if (teamInput) {
+
+    setTimeout(
+      function() {
+
+        teamInput.focus();
+
+      },
+      500
+    );
+
+  }
+
+}
+
+
+/* =========================
+   FIREBASE READY CHECK
+========================= */
+
+function waitForFirebase() {
+
+  if (
+    window.firebaseReady &&
+    window.db
+  ) {
+
+    loadCompetition();
+
     return;
   }
 
-  currentUser = user;
 
-  showDashboard();
-
-  await loadCompetition();
-
-  startPendingListener();
-});
-
-window.addEventListener("load", () => {
-  if (!window.firebaseReady) {
-    showMessage(
-      "❌ Firebase is still loading. Please wait a moment and try again."
-    );
-  }
-});
-
-$("manageTeamsButton").addEventListener("click", () => {
-  if (!competitionData.teams.length) {
-    alert("No approved teams to manage.");
-    return;
-  }
-
-  const teamNames = competitionData.teams
-    .map((team, index) => `${index + 1}. ${team.name}`)
-    .join("\n");
-
-  alert(
-    "Approved Teams:\n\n" +
-    teamNames +
-    "\n\nTeam management will be expanded here."
-  );
-});
-
-$("clearCompetitionButton").addEventListener("click", async () => {
-  const confirmed = confirm(
-    "⚠️ This will clear the competition data. Continue?"
+  setTimeout(
+    waitForFirebase,
+    100
   );
 
-  if (!confirmed) return;
+}
 
-  const secondConfirm = confirm(
-    "Are you absolutely sure? This cannot be undone."
-  );
 
-  if (!secondConfirm) return;
+/* =========================
+   START WEBSITE
+========================= */
 
-  try {
-    competitionData = {
-      seasonStarted: false,
-      registrationOpen: true,
-      seasonStart: "",
-      seasonEnd: "",
-      legFormat: 1,
-      teams: [],
-      fixtures: []
-    };
-
-    await saveCompetition();
-
-    alert("🗑️ Competition cleared successfully.");
-
-  } catch (error) {
-    console.error(error);
-
-    alert(
-      "❌ Could not clear competition: " +
-      error.message
-    );
-  }
-});
-
-showLogin();
+waitForFirebase();
