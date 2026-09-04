@@ -10,7 +10,7 @@
     content="width=device-width, initial-scale=1.0"
   >
 
-  <title>DLS Competition — Admin</title>
+  <title>DLS Competition Admin</title>
 
   <link
     rel="stylesheet"
@@ -34,10 +34,6 @@
   </header>
 
 
-  <!-- =========================
-       ADMIN LOGIN
-  ========================== -->
-
   <main>
 
     <section
@@ -53,6 +49,7 @@
         Authorized administrators only.
       </p>
 
+
       <form
         id="adminLoginForm"
       >
@@ -65,6 +62,7 @@
           required
         >
 
+
         <input
           type="password"
           id="adminPassword"
@@ -72,6 +70,7 @@
           autocomplete="current-password"
           required
         >
+
 
         <button
           type="submit"
@@ -81,6 +80,7 @@
 
       </form>
 
+
       <p
         id="adminLoginMessage"
       ></p>
@@ -88,30 +88,15 @@
     </section>
 
 
-    <!-- =========================
-         ADMIN DASHBOARD
-    ========================== -->
-
     <section
       id="adminDashboard"
       style="display:none;"
     >
 
-      <div class="admin-header">
+      <h2>
+        ⚙️ Competition Control
+      </h2>
 
-        <h2>
-          ⚙️ Competition Control
-        </h2>
-
-        <p>
-          Manage your DLS competition
-          from here.
-        </p>
-
-      </div>
-
-
-      <!-- PENDING REGISTRATIONS -->
 
       <section
         class="admin-section"
@@ -120,6 +105,7 @@
         <h2>
           📥 Pending Registrations
         </h2>
+
 
         <div
           id="pendingRegistrations"
@@ -134,8 +120,6 @@
       </section>
 
 
-      <!-- SEASON SETTINGS -->
-
       <section
         class="admin-section"
       >
@@ -143,6 +127,7 @@
         <h2>
           🏆 Season Settings
         </h2>
+
 
         <div
           id="adminSeasonDetails"
@@ -159,6 +144,7 @@
           Season Start Date
         </label>
 
+
         <input
           type="date"
           id="seasonStart"
@@ -169,6 +155,7 @@
           Season End Date
         </label>
 
+
         <input
           type="date"
           id="seasonEnd"
@@ -178,6 +165,7 @@
         <label>
           League Format
         </label>
+
 
         <select
           id="legFormat"
@@ -204,11 +192,13 @@
             📅 Generate Fixtures
           </button>
 
+
           <button
             id="startSeasonButton"
           >
             🏆 Start Season
           </button>
+
 
           <button
             id="reopenRegistrationButton"
@@ -221,8 +211,6 @@
       </section>
 
 
-      <!-- APPROVED TEAMS -->
-
       <section
         class="admin-section"
       >
@@ -230,6 +218,7 @@
         <h2>
           👥 Approved Teams
         </h2>
+
 
         <div
           id="adminTeamList"
@@ -241,6 +230,7 @@
 
         </div>
 
+
         <button
           id="manageTeamsButton"
         >
@@ -250,8 +240,6 @@
       </section>
 
 
-      <!-- LEAGUE TABLE -->
-
       <section
         class="admin-section"
       >
@@ -259,6 +247,7 @@
         <h2>
           📊 League Table
         </h2>
+
 
         <div
           class="table-container"
@@ -270,55 +259,25 @@
 
               <tr>
 
-                <th>
-                  #
-                </th>
-
-                <th>
-                  Team
-                </th>
-
-                <th>
-                  P
-                </th>
-
-                <th>
-                  W
-                </th>
-
-                <th>
-                  D
-                </th>
-
-                <th>
-                  L
-                </th>
-
-                <th>
-                  GF
-                </th>
-
-                <th>
-                  GA
-                </th>
-
-                <th>
-                  GD
-                </th>
-
-                <th>
-                  PTS
-                </th>
+                <th>#</th>
+                <th>Team</th>
+                <th>P</th>
+                <th>W</th>
+                <th>D</th>
+                <th>L</th>
+                <th>GF</th>
+                <th>GA</th>
+                <th>GD</th>
+                <th>PTS</th>
 
               </tr>
 
             </thead>
 
+
             <tbody
               id="adminLeagueTable"
-            >
-
-            </tbody>
+            ></tbody>
 
           </table>
 
@@ -327,8 +286,6 @@
       </section>
 
 
-      <!-- FIXTURES -->
-
       <section
         class="admin-section"
       >
@@ -336,6 +293,7 @@
         <h2>
           ⚽ Fixtures & Results
         </h2>
+
 
         <div
           id="adminFixtureList"
@@ -350,8 +308,6 @@
       </section>
 
 
-      <!-- DANGER ZONE -->
-
       <section
         class="admin-section danger-zone"
       >
@@ -360,11 +316,13 @@
           ⚠️ Competition Controls
         </h2>
 
+
         <button
           id="clearCompetitionButton"
         >
           🗑️ Clear Competition
         </button>
+
 
         <button
           id="logoutButton"
@@ -379,15 +337,11 @@
   </main>
 
 
-  <!-- FIREBASE -->
-
   <script
     type="module"
     src="firebase.js"
   ></script>
 
-
-  <!-- ADMIN JAVASCRIPT -->
 
   <script
     type="module"
