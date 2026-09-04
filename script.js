@@ -5,6 +5,12 @@ import {
   setDoc
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
+import {
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
 
 let teams = [];
 let fixtures = [];
@@ -17,9 +23,12 @@ let season = {
 };
 
 let adminLoggedIn = false;
+let currentAdmin = null;
 
-const ADMIN_PASSWORD = "1234";
 
+/* =========================
+   PAGE ELEMENTS
+========================= */
 
 const form =
   document.getElementById("registrationForm");
@@ -68,7 +77,10 @@ async function saveCompetition() {
 
     console.error("Save failed:", error);
 
+    alert("❌ Unable to save competition data.");
+
   }
+
 }
 
 
@@ -103,6 +115,7 @@ async function loadCompetition() {
             endDate: null,
             legs: 1
           };
+
       }
 
     });
@@ -118,6 +131,7 @@ async function loadCompetition() {
     console.error("Load failed:", error);
 
   }
+
 }
 
 
@@ -137,6 +151,7 @@ form.addEventListener(
         "🔒 Registration is closed.";
 
       return;
+
     }
 
     const teamName =
@@ -158,6 +173,7 @@ form.addEventListener(
         "⚠️ Please fill in all fields.";
 
       return;
+
     }
 
 
@@ -185,6 +201,7 @@ form.addEventListener(
         "⚠️ This team name is already registered.";
 
       return;
+
     }
 
 
@@ -240,6 +257,7 @@ function displayTeams() {
       "<p>No teams registered yet.</p>";
 
     return;
+
   }
 
 
@@ -287,6 +305,7 @@ function displayTable() {
     `;
 
     return;
+
   }
 
 
@@ -386,6 +405,7 @@ function generateFixtures() {
     alert("🔒 Admin login required.");
 
     return;
+
   }
 
 
@@ -396,6 +416,7 @@ function generateFixtures() {
     );
 
     return;
+
   }
 
 
@@ -406,6 +427,7 @@ function generateFixtures() {
     );
 
     return;
+
   }
 
 
@@ -555,6 +577,7 @@ function displayFixtures() {
       "<p>No fixtures available yet.</p>";
 
     return;
+
   }
 
 
@@ -681,6 +704,7 @@ async function enterResult(index) {
     );
 
     return;
+
   }
 
 
@@ -698,6 +722,7 @@ async function enterResult(index) {
     );
 
     return;
+
   }
 
 
@@ -729,6 +754,7 @@ async function enterResult(index) {
     );
 
     return;
+
   }
 
 
@@ -761,6 +787,7 @@ async function enterResult(index) {
     );
 
     return;
+
   }
 
 
@@ -839,7 +866,6 @@ async function enterResult(index) {
 
 }
 
-
 /* =========================
    SEASON DISPLAY
 ========================= */
@@ -861,6 +887,7 @@ function displaySeason() {
     `;
 
     return;
+
   }
 
 
@@ -908,6 +935,7 @@ async function startSeason() {
     );
 
     return;
+
   }
 
 
@@ -918,6 +946,7 @@ async function startSeason() {
     );
 
     return;
+
   }
 
 
@@ -928,6 +957,7 @@ async function startSeason() {
     );
 
     return;
+
   }
 
 
@@ -958,6 +988,7 @@ async function startSeason() {
     );
 
     return;
+
   }
 
 
@@ -971,6 +1002,7 @@ async function startSeason() {
     );
 
     return;
+
   }
 
 
@@ -986,6 +1018,7 @@ async function startSeason() {
   if (fixtures.length === 0) {
 
     return;
+
   }
 
 
@@ -1033,6 +1066,7 @@ async function reopenRegistration() {
     );
 
     return;
+
   }
 
 
@@ -1104,6 +1138,7 @@ async function manageTeams() {
     );
 
     return;
+
   }
 
 
@@ -1114,6 +1149,7 @@ async function manageTeams() {
     );
 
     return;
+
   }
 
 
@@ -1124,6 +1160,7 @@ async function manageTeams() {
     );
 
     return;
+
   }
 
 
@@ -1170,6 +1207,7 @@ async function manageTeams() {
     );
 
     return;
+
   }
 
 
@@ -1202,6 +1240,7 @@ async function manageTeams() {
     ) {
 
       return;
+
     }
 
 
@@ -1285,6 +1324,7 @@ async function clearCompetition() {
     );
 
     return;
+
   }
 
 
@@ -1340,15 +1380,38 @@ async function clearCompetition() {
 
 
 /* =========================
-   ADMIN LOGIN
+   FIREBASE ADMIN LOGIN
 ========================= */
 
-function adminLogin() {
+async function adminLogin() {
+
+  if (!window.auth) {
+
+    alert(
+      "❌ Firebase Authentication is not ready."
+    );
+
+    return;
+
+  }
+
 
   if (adminLoggedIn) {
 
     displayAdminDashboard();
 
+    return;
+
+  }
+
+
+  const email =
+    prompt(
+      "📧 Enter Admin Email:"
+    );
+
+
+  if (!email) {
     return;
   }
 
@@ -1359,30 +1422,148 @@ function adminLogin() {
     );
 
 
-  if (
-    password !==
-    ADMIN_PASSWORD
-  ) {
-
-    alert(
-      "❌ Wrong password!"
-    );
-
+  if (!password) {
     return;
   }
 
 
-  adminLoggedIn = true;
+  try {
+
+    const result =
+      await signInWithEmailAndPassword(
+        window.auth,
+        email.trim(),
+        password
+      );
 
 
-  alert(
-    "✅ Admin access granted!"
+    currentAdmin =
+      result.user;
+
+    adminLoggedIn = true;
+
+
+    alert(
+      "✅ Admin login successful!"
+    );
+
+
+    displayAdminDashboard();
+
+    displayFixtures();
+
+  } catch (error) {
+
+    console.error(
+      "Admin login failed:",
+      error
+    );
+
+
+    alert(
+      "❌ Login failed.\n\n" +
+      "Check your email and password."
+    );
+
+  }
+
+}
+
+
+/* =========================
+   ADMIN LOGOUT
+========================= */
+
+async function adminLogout() {
+
+  if (!window.auth) {
+    return;
+  }
+
+
+  try {
+
+    await signOut(
+      window.auth
+    );
+
+
+    adminLoggedIn = false;
+
+    currentAdmin = null;
+
+
+    alert(
+      "👋 Admin logged out."
+    );
+
+
+    displayFixtures();
+
+    const adminContent =
+      document.getElementById(
+        "adminContent"
+      );
+
+
+    adminContent.innerHTML =
+      "<p>🔐 Admin login required.</p>";
+
+  } catch (error) {
+
+    console.error(
+      "Logout failed:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================
+   AUTH STATE
+========================= */
+
+function setupAuthListener() {
+
+  if (!window.auth) {
+
+    console.error(
+      "Firebase Authentication unavailable."
+    );
+
+    return;
+
+  }
+
+
+  onAuthStateChanged(
+    window.auth,
+    function(user) {
+
+      if (user) {
+
+        adminLoggedIn = true;
+
+        currentAdmin = user;
+
+        displayAdminDashboard();
+
+        displayFixtures();
+
+      } else {
+
+        adminLoggedIn = false;
+
+        currentAdmin = null;
+
+        displayFixtures();
+
+      }
+
+    }
   );
-
-
-  displayAdminDashboard();
-
-  displayFixtures();
 
 }
 
@@ -1392,6 +1573,11 @@ function adminLogin() {
 ========================= */
 
 function displayAdminDashboard() {
+
+  if (!adminLoggedIn) {
+    return;
+  }
+
 
   const adminContent =
     document.getElementById(
@@ -1406,6 +1592,15 @@ function displayAdminDashboard() {
       <h3>
         👋 Welcome, Admin
       </h3>
+
+      <p>
+        Admin:
+        <strong>
+          ${escapeHTML(
+            currentAdmin?.email || ""
+          )}
+        </strong>
+      </p>
 
       <p>
         Registered Teams:
@@ -1488,6 +1683,13 @@ function displayAdminDashboard() {
           🗑️ Clear Competition
         </button>
 
+
+        <button
+          onclick="adminLogout()"
+        >
+          🚪 Logout
+        </button>
+
       </div>
 
     </div>
@@ -1557,7 +1759,8 @@ function escapeHTML(value) {
   const div =
     document.createElement("div");
 
-  div.textContent = value;
+  div.textContent =
+    String(value ?? "");
 
   return div.innerHTML;
 
@@ -1592,6 +1795,9 @@ window.showRegister =
 window.adminLogin =
   adminLogin;
 
+window.adminLogout =
+  adminLogout;
+
 window.generateFixtures =
   generateFixtures;
 
@@ -1610,6 +1816,15 @@ window.clearCompetition =
 window.enterResult =
   enterResult;
 
+
+/* =========================
+   WAIT FOR FIREBASE
+========================= */
+
+setTimeout(
+  setupAuthListener,
+  1000
+);
 
 setTimeout(
   loadCompetition,
