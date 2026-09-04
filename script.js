@@ -1,10 +1,7 @@
 import {
-  collection,
   doc,
   getDoc,
-  setDoc,
-  addDoc,
-  runTransaction
+  setDoc
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 let teams = [];
@@ -12,29 +9,24 @@ let fixtures = [];
 
 let season = {
   started: false,
-  startDate: null,
-  endDate: null,
+  startDate: "",
+  endDate: "",
   legs: 1
 };
 
-const form =
-  document.getElementById("registrationForm");
-
-const teamList =
-  document.getElementById("teamList");
-
-const fixtureList =
-  document.getElementById("fixtureList");
-
-const leagueTable =
-  document.getElementById("leagueTable");
-
+const form = document.getElementById("registrationForm");
+const teamList = document.getElementById("teamList");
+const fixtureList = document.getElementById("fixtureList");
+const leagueTable = document.getElementById("leagueTable");
 const registrationMessage =
   document.getElementById("registrationMessage");
-
 const seasonDetails =
   document.getElementById("seasonDetails");
 
+
+/* =========================
+   HELPERS
+========================= */
 
 function normalizeTeamName(name) {
   return String(name || "")
@@ -53,22 +45,28 @@ function teamKey(name) {
 
 
 function escapeHTML(value) {
-  const div =
-    document.createElement("div");
+  const div = document.createElement("div");
 
-  div.textContent =
-    String(value ?? "");
+  div.textContent = String(value ?? "");
 
   return div.innerHTML;
+}
+
+
+function getTeamName(team) {
+  return team.teamName || team.name || "";
+}
+
+
+function getPlayerName(team) {
+  return team.playerName || team.player || "";
 }
 
 
 function formatDate(date) {
   if (!date) return "Not set";
 
-  return new Date(
-    date + "T00:00:00"
-  ).toLocaleDateString(
+  return new Date(date + "T00:00:00").toLocaleDateString(
     "en-GB",
     {
       day: "numeric",
@@ -79,56 +77,71 @@ function formatDate(date) {
 }
 
 
+/* =========================
+   LOAD COMPETITION
+========================= */
+
 async function loadCompetition() {
 
   if (!window.db) return;
 
   try {
 
-    const ref =
-      doc(
-        window.db,
-        "competition",
-        "main"
-      );
+    const competitionRef =
+      doc(window.db, "competition", "main");
 
     const snapshot =
-      await getDoc(ref);
+      await getDoc(competitionRef);
 
-    if (snapshot.exists()) {
-
-      const data =
-        snapshot.data();
-
-      teams =
-        Array.isArray(data.teams)
-          ? data.teams
-          : [];
-
-      fixtures =
-        Array.isArray(data.fixtures)
-          ? data.fixtures
-          : [];
-
-      season =
-        data.season || {
-          started: false,
-          startDate: null,
-          endDate: null,
-          legs: 1
-        };
-
-    } else {
+    if (!snapshot.exists()) {
 
       teams = [];
       fixtures = [];
 
       season = {
         started: false,
-        startDate: null,
-        endDate: null,
+        startDate: "",
+        endDate: "",
         legs: 1
       };
+
+    } else {
+
+      const data = snapshot.data();
+
+      teams = Array.isArray(data.teams)
+        ? data.teams
+        : [];
+
+      fixtures = Array.isArray(data.fixtures)
+        ? data.fixtures
+        : [];
+
+      /*
+        Supports both:
+        old nested season format
+        and new admin format
+      */
+
+      if (data.season) {
+
+        season = {
+          started: data.season.started || false,
+          startDate: data.season.startDate || "",
+          endDate: data.season.endDate || "",
+          legs: data.season.legs || 1
+        };
+
+      } else {
+
+        season = {
+          started: data.seasonStarted || false,
+          startDate: data.seasonStart || "",
+          endDate: data.seasonEnd || "",
+          legs: data.legFormat || 1
+        };
+
+      }
     }
 
     displayTeams();
@@ -147,60 +160,29 @@ async function loadCompetition() {
   }
 }
 
-async function checkTeamName() {
 
-  if (!window.db) {
-    throw new Error(
-      "Database unavailable"
-    );
-  }
+/* =========================
+   CHECK APPROVED TEAM
+========================= */
+
+function checkApprovedTeam(teamName) {
 
   const cleanName =
-    normalizeTeamName(
-      document.getElementById(
-        "teamName"
-      )?.value
-    );
+    normalizeTeamName(teamName);
 
-  if (!cleanName) return false;
+  return teams.some(function(team) {
 
+    return normalizeTeamName(
+      getTeamName(team)
+    ) === cleanName;
 
-  const approved =
-    teams.some(
-      function(team) {
-
-        return (
-          normalizeTeamName(
-            team.teamName
-          ) === cleanName
-        );
-
-      }
-    );
-
-
-  if (approved) {
-    return true;
-  }
-
-
-  const registrationRef =
-    doc(
-      window.db,
-      "registrations",
-      teamKey(cleanName)
-    );
-
-
-  const snapshot =
-    await getDoc(
-      registrationRef
-    );
-
-
-  return snapshot.exists();
+  });
 }
 
+
+/* =========================
+   REGISTRATION
+========================= */
 
 if (form) {
 
@@ -209,7 +191,6 @@ if (form) {
     async function(event) {
 
       event.preventDefault();
-
 
       if (!window.db) {
 
@@ -230,15 +211,17 @@ if (form) {
 
 
       const teamName =
-        document.getElementById(
-          "teamName"
-        )?.value.trim() || "";
+        document
+          .getElementById("teamName")
+          ?.value
+          .trim() || "";
 
 
       const playerName =
-        document.getElementById(
-          "playerName"
-        )?.value.trim() || "";
+        document
+          .getElementById("playerName")
+          ?.value
+          .trim() || "";
 
 
       if (!teamName || !playerName) {
@@ -275,16 +258,19 @@ if (form) {
 
 
       registrationMessage.textContent =
-        "⏳ Checking team name...";
+        "⏳ Submitting registration...";
 
 
       try {
 
-        const exists =
-          await checkTeamName();
+        /*
+          First check approved teams locally.
+          We DO NOT read the registrations collection
+          from the public website because the Firebase
+          security rules correctly block public reads.
+        */
 
-
-        if (exists) {
+        if (checkApprovedTeam(teamName)) {
 
           registrationMessage.textContent =
             "⚠️ This team name is already registered or waiting for approval.";
@@ -297,6 +283,15 @@ if (form) {
           teamKey(teamName);
 
 
+        if (!registrationId) {
+
+          registrationMessage.textContent =
+            "⚠️ Please enter a valid team name.";
+
+          return;
+        }
+
+
         const registrationRef =
           doc(
             window.db,
@@ -305,20 +300,18 @@ if (form) {
           );
 
 
+        /*
+          The Firestore security rule prevents overwriting
+          an existing registration document.
+        */
+
         await setDoc(
           registrationRef,
           {
-            teamName:
-              teamName,
-
-            playerName:
-              playerName,
-
-            createdAt:
-              Date.now(),
-
-            status:
-              "pending"
+            teamName: teamName,
+            playerName: playerName,
+            createdAt: Date.now(),
+            status: "pending"
           }
         );
 
@@ -337,9 +330,14 @@ if (form) {
         );
 
 
+        /*
+          If the registration document already exists,
+          the secure rule blocks the new registration.
+        */
+
         if (
-          error.code ===
-          "permission-denied"
+          error.code === "permission-denied" ||
+          error.code === "already-exists"
         ) {
 
           registrationMessage.textContent =
@@ -348,15 +346,22 @@ if (form) {
         } else {
 
           registrationMessage.textContent =
-            "❌ Registration failed. Please try again.";
+            "❌ Registration failed: " +
+            (error.message || "Please try again.");
 
         }
+
       }
 
     }
   );
+
 }
 
+
+/* =========================
+   DISPLAY TEAMS
+========================= */
 
 function displayTeams() {
 
@@ -374,38 +379,162 @@ function displayTeams() {
   }
 
 
-  teams.forEach(
-    function(team) {
+  teams.forEach(function(team) {
 
-      const card =
-        document.createElement("div");
+    const card =
+      document.createElement("div");
 
-      card.className =
-        "team-card";
-
-
-      const title =
-        document.createElement("h3");
-
-      title.textContent =
-        "⚽ " +
-        team.teamName;
+    card.className =
+      "team-card";
 
 
-      const player =
-        document.createElement("p");
+    const title =
+      document.createElement("h3");
 
-      player.textContent =
-        team.playerName;
+    title.textContent =
+      "⚽ " +
+      getTeamName(team);
 
 
-      card.appendChild(title);
-      card.appendChild(player);
+    const player =
+      document.createElement("p");
 
-      teamList.appendChild(card);
+    player.textContent =
+      getPlayerName(team);
+
+
+    card.appendChild(title);
+    card.appendChild(player);
+
+    teamList.appendChild(card);
+
+  });
+
+}
+
+
+/* =========================
+   LEAGUE TABLE
+========================= */
+
+function calculateTable() {
+
+  const table = {};
+
+  teams.forEach(function(team) {
+
+    const name =
+      getTeamName(team);
+
+    table[name] = {
+      name: name,
+      played: 0,
+      wins: 0,
+      draws: 0,
+      losses: 0,
+      goalsFor: 0,
+      goalsAgainst: 0,
+      points: 0
+    };
+
+  });
+
+
+  fixtures.forEach(function(match) {
+
+    if (
+      match.homeScore === null ||
+      match.homeScore === undefined ||
+      match.awayScore === null ||
+      match.awayScore === undefined
+    ) {
+      return;
+    }
+
+
+    const home =
+      table[match.home];
+
+    const away =
+      table[match.away];
+
+
+    if (!home || !away) return;
+
+
+    const homeScore =
+      Number(match.homeScore);
+
+    const awayScore =
+      Number(match.awayScore);
+
+
+    home.played++;
+    away.played++;
+
+
+    home.goalsFor += homeScore;
+    home.goalsAgainst += awayScore;
+
+
+    away.goalsFor += awayScore;
+    away.goalsAgainst += homeScore;
+
+
+    if (homeScore > awayScore) {
+
+      home.wins++;
+      home.points += 3;
+
+      away.losses++;
+
+    } else if (homeScore < awayScore) {
+
+      away.wins++;
+      away.points += 3;
+
+      home.losses++;
+
+    } else {
+
+      home.draws++;
+      away.draws++;
+
+      home.points++;
+      away.points++;
+
+    }
+
+  });
+
+
+  return Object.values(table).sort(
+    function(a, b) {
+
+      const aGD =
+        a.goalsFor -
+        a.goalsAgainst;
+
+      const bGD =
+        b.goalsFor -
+        b.goalsAgainst;
+
+
+      if (b.points !== a.points) {
+        return b.points - a.points;
+      }
+
+
+      if (bGD !== aGD) {
+        return bGD - aGD;
+      }
+
+
+      return b.goalsFor - a.goalsFor;
 
     }
   );
+
 }
 
 
@@ -430,57 +559,16 @@ function displayTable() {
   }
 
 
-  const sorted =
-    [...teams].sort(
-      function(a, b) {
-
-        const aGD =
-          (a.goalsFor || 0) -
-          (a.goalsAgainst || 0);
-
-        const bGD =
-          (b.goalsFor || 0) -
-          (b.goalsAgainst || 0);
+  const table =
+    calculateTable();
 
 
-        if (
-          (b.points || 0) !==
-          (a.points || 0)
-        ) {
-
-          return (
-            (b.points || 0) -
-            (a.points || 0)
-          );
-
-        }
-
-
-        if (bGD !== aGD) {
-          return bGD - aGD;
-        }
-
-
-        return (
-          (b.goalsFor || 0) -
-          (a.goalsFor || 0)
-        );
-
-      }
-    );
-
-
-  sorted.forEach(
+  table.forEach(
     function(team, index) {
 
-      const gf =
-        team.goalsFor || 0;
-
-      const ga =
-        team.goalsAgainst || 0;
-
       const gd =
-        gf - ga;
+        team.goalsFor -
+        team.goalsAgainst;
 
 
       leagueTable.innerHTML += `
@@ -488,25 +576,36 @@ function displayTable() {
           <td>${index + 1}</td>
 
           <td>
-            ${escapeHTML(
-              team.teamName
-            )}
+            ${escapeHTML(team.name)}
           </td>
 
-          <td>${team.played || 0}</td>
-          <td>${team.wins || 0}</td>
-          <td>${team.draws || 0}</td>
-          <td>${team.losses || 0}</td>
-          <td>${gf}</td>
-          <td>${ga}</td>
+          <td>${team.played}</td>
+
+          <td>${team.wins}</td>
+
+          <td>${team.draws}</td>
+
+          <td>${team.losses}</td>
+
+          <td>${team.goalsFor}</td>
+
+          <td>${team.goalsAgainst}</td>
+
           <td>${gd}</td>
-          <td>${team.points || 0}</td>
+
+          <td>${team.points}</td>
         </tr>
       `;
 
     }
   );
+
 }
+
+
+/* =========================
+   FIXTURES
+========================= */
 
 function displayFixtures() {
 
@@ -524,36 +623,8 @@ function displayFixtures() {
   }
 
 
-  let currentDay = 0;
-
-
   fixtures.forEach(
-    function(fixture) {
-
-      if (
-        fixture.day !==
-        currentDay
-      ) {
-
-        currentDay =
-          fixture.day;
-
-
-        const heading =
-          document.createElement("h3");
-
-        heading.className =
-          "match-day";
-
-        heading.textContent =
-          "📅 Match Day " +
-          fixture.day;
-
-        fixtureList.appendChild(
-          heading
-        );
-      }
-
+    function(fixture, index) {
 
       const match =
         document.createElement("div");
@@ -562,12 +633,17 @@ function displayFixtures() {
         "fixture";
 
 
+      const heading =
+        document.createElement("h3");
+
+      heading.textContent =
+        fixture.day
+          ? "📅 Match Day " + fixture.day
+          : "⚽ Match " + (index + 1);
+
+
       const teamsText =
-        document.createElement("span");
-
-      teamsText.className =
-        "teams";
-
+        document.createElement("p");
 
       teamsText.textContent =
         fixture.home +
@@ -575,12 +651,16 @@ function displayFixtures() {
         fixture.away;
 
 
-      match.appendChild(
-        teamsText
-      );
+      match.appendChild(heading);
+      match.appendChild(teamsText);
 
 
-      if (fixture.completed) {
+      if (
+        fixture.homeScore !== null &&
+        fixture.homeScore !== undefined &&
+        fixture.awayScore !== null &&
+        fixture.awayScore !== undefined
+      ) {
 
         const score =
           document.createElement("strong");
@@ -591,11 +671,6 @@ function displayFixtures() {
           fixture.awayScore;
 
 
-        match.appendChild(
-          score
-        );
-
-
         const done =
           document.createElement("span");
 
@@ -603,9 +678,8 @@ function displayFixtures() {
           " ✅ Completed";
 
 
-        match.appendChild(
-          done
-        );
+        match.appendChild(score);
+        match.appendChild(done);
 
       } else {
 
@@ -616,20 +690,22 @@ function displayFixtures() {
           " ⏳ Awaiting Result";
 
 
-        match.appendChild(
-          waiting
-        );
+        match.appendChild(waiting);
+
       }
 
 
-      fixtureList.appendChild(
-        match
-      );
+      fixtureList.appendChild(match);
 
     }
   );
+
 }
 
+
+/* =========================
+   SEASON
+========================= */
 
 function displaySeason() {
 
@@ -655,26 +731,27 @@ function displaySeason() {
 
     <p>
       📅 Start:
-      ${formatDate(
-        season.startDate
-      )}
+      ${formatDate(season.startDate)}
     </p>
 
     <p>
       📅 End:
-      ${formatDate(
-        season.endDate
-      )}
+      ${formatDate(season.endDate)}
     </p>
 
     <p>
       ⚽ Format:
       ${season.legs}
-      Leg${season.legs === 1 ? "" : "s"}
+      Leg${Number(season.legs) === 1 ? "" : "s"}
     </p>
   `;
+
 }
 
+
+/* =========================
+   REGISTRATION STATUS
+========================= */
 
 function updateRegistrationStatus() {
 
@@ -687,14 +764,12 @@ function updateRegistrationStatus() {
     );
 
 
-  inputs.forEach(
-    function(element) {
+  inputs.forEach(function(element) {
 
-      element.disabled =
-        season.started;
+    element.disabled =
+      season.started;
 
-    }
-  );
+  });
 
 
   if (season.started) {
@@ -708,24 +783,32 @@ function updateRegistrationStatus() {
       "";
 
   }
+
 }
 
+
+/* =========================
+   REGISTER BUTTON
+========================= */
 
 window.showRegister =
   function() {
 
     const register =
-      document.getElementById(
-        "register"
-      );
+      document.getElementById("register");
 
     if (!register) return;
 
     register.scrollIntoView({
       behavior: "smooth"
     });
+
   };
 
+
+/* =========================
+   START WEBSITE
+========================= */
 
 async function startWebsite() {
 
