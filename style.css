@@ -1,0 +1,368 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #061a10;
+  color: white;
+  line-height: 1.5;
+}
+
+header {
+  text-align: center;
+  padding: 40px 15px;
+  background: linear-gradient(135deg, #00c853, #087f23);
+}
+
+header h1 {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+header p {
+  font-size: 16px;
+}
+
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  padding: 14px;
+
+  background: #04100a;
+  border-bottom: 1px solid #176b3b;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+
+  padding: 10px 15px;
+
+  border-radius: 20px;
+
+  background: #124d2c;
+}
+
+nav a:hover {
+  background: #00c853;
+}
+
+main {
+  max-width: 1100px;
+  margin: auto;
+  padding: 20px;
+}
+
+section {
+  margin-bottom: 25px;
+
+  padding: 25px;
+
+  border-radius: 18px;
+
+  background: #0b2819;
+
+  border: 1px solid #176b3b;
+}
+
+section h2 {
+  color: #00ff73;
+  margin-bottom: 20px;
+}
+
+.hero {
+  text-align: center;
+
+  padding: 70px 20px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #087f23,
+      #00c853
+    );
+}
+
+.hero h2 {
+  color: white;
+  font-size: 38px;
+}
+
+.hero p {
+  margin: 15px 0 25px;
+  font-size: 19px;
+}
+
+button {
+  border: none;
+
+  cursor: pointer;
+
+  padding: 13px 22px;
+
+  border-radius: 25px;
+
+  color: white;
+
+  font-weight: bold;
+
+  background: #00c853;
+}
+
+button:hover {
+  background: #00ff73;
+  color: #062015;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.cards {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(180px, 1fr)
+    );
+
+  gap: 15px;
+}
+
+.team-card {
+  padding: 20px;
+
+  text-align: center;
+
+  border-radius: 15px;
+
+  background: #123d28;
+
+  border: 1px solid #00c853;
+}
+
+.team-card h3 {
+  color: #00ff73;
+}
+
+.fixture {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  gap: 15px;
+
+  margin-bottom: 12px;
+
+  padding: 15px;
+
+  border-radius: 12px;
+
+  background: #123d28;
+
+  border-left:
+    5px solid #00e676;
+}
+
+.fixture .teams {
+  font-weight: bold;
+}
+
+.match-day {
+  margin-top: 20px;
+  margin-bottom: 12px;
+
+  padding: 12px;
+
+  border-radius: 10px;
+
+  background: #087f23;
+
+  color: white;
+}
+
+.completed {
+  color: #69f0ae;
+  font-weight: bold;
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  min-width: 700px;
+
+  border-collapse: collapse;
+}
+
+th {
+  background: #00a844;
+  padding: 12px;
+}
+
+td {
+  padding: 12px;
+
+  text-align: center;
+
+  border-bottom:
+    1px solid #1c4d32;
+}
+
+tbody tr:hover {
+  background: #123d28;
+}
+
+form {
+  display: grid;
+  gap: 15px;
+}
+
+input,
+select {
+  width: 100%;
+
+  padding: 14px;
+
+  border:
+    1px solid #216b43;
+
+  border-radius: 10px;
+
+  background: #071a10;
+
+  color: white;
+}
+
+input:focus,
+select:focus {
+  border-color: #00e676;
+  outline: none;
+}
+
+#registrationMessage {
+  margin-top: 15px;
+  color: #69f0ae;
+}
+
+#admin {
+  text-align: center;
+}
+
+.admin-box {
+  margin-top: 20px;
+
+  padding: 20px;
+
+  border-radius: 15px;
+
+  background: #123d28;
+
+  border: 1px solid #00c853;
+}
+
+.admin-box > * {
+  margin-bottom: 12px;
+}
+
+.admin-buttons {
+  display: grid;
+
+  gap: 10px;
+
+  margin-top: 15px;
+}
+
+.season-status {
+  padding: 15px;
+
+  margin-bottom: 15px;
+
+  border-radius: 12px;
+
+  background: #071a10;
+}
+
+.success {
+  color: #69f0ae;
+}
+
+.warning {
+  color: #ffd740;
+}
+
+.error {
+  color: #ff5252;
+}
+
+footer {
+  text-align: center;
+
+  padding: 25px;
+
+  background: #040d08;
+
+  color: #9db5a7;
+}
+
+@media (max-width: 600px) {
+
+  header h1 {
+    font-size: 25px;
+  }
+
+  nav {
+    gap: 5px;
+  }
+
+  nav a {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+
+  main {
+    padding: 10px;
+  }
+
+  section {
+    padding: 18px;
+  }
+
+  .hero {
+    padding: 50px 15px;
+  }
+
+  .hero h2 {
+    font-size: 28px;
+  }
+
+  .fixture {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  table {
+    font-size: 12px;
+  }
+}
