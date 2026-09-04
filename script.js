@@ -1387,15 +1387,9 @@ async function adminLogin() {
 alert("NEW ADMIN LOGIN CODE IS RUNNING");
 
   if (!window.auth) {
-
-    alert(
-  "❌ Login failed.\n\n" +
-  error.code + "\n\n" +
-  error.message
-);
-    return;
-
-  }
+  alert("❌ Firebase Authentication is not ready.");
+  return;
+}
 
 
   if (adminLoggedIn) {
