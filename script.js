@@ -14,12 +14,21 @@ let season = {
   legs: 1
 };
 
-const form = document.getElementById("registrationForm");
-const teamList = document.getElementById("teamList");
-const fixtureList = document.getElementById("fixtureList");
-const leagueTable = document.getElementById("leagueTable");
+const form =
+  document.getElementById("registrationForm");
+
+const teamList =
+  document.getElementById("teamList");
+
+const fixtureList =
+  document.getElementById("fixtureList");
+
+const leagueTable =
+  document.getElementById("leagueTable");
+
 const registrationMessage =
   document.getElementById("registrationMessage");
+
 const seasonDetails =
   document.getElementById("seasonDetails");
 
@@ -29,44 +38,70 @@ const seasonDetails =
 ========================= */
 
 function normalizeTeamName(name) {
+
   return String(name || "")
     .toLowerCase()
     .replace(/\s+/g, " ")
     .trim();
+
 }
 
-
 function teamKey(name) {
+
   return normalizeTeamName(name)
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .substring(0, 80);
-}
 
+}
 
 function escapeHTML(value) {
-  const div = document.createElement("div");
 
-  div.textContent = String(value ?? "");
+  const div =
+    document.createElement("div");
+
+  div.textContent =
+    String(value ?? "");
 
   return div.innerHTML;
-}
 
+}
 
 function getTeamName(team) {
-  return team.teamName || team.name || "";
-}
 
+  return team.teamName ||
+    team.name ||
+    "";
+
+}
 
 function getPlayerName(team) {
-  return team.playerName || team.player || "";
+
+  return team.playerName ||
+    team.player ||
+    "";
+
 }
 
-
 function formatDate(date) {
-  if (!date) return "Not set";
 
-  return new Date(date + "T00:00:00").toLocaleDateString(
+  if (!date) {
+    return "Date not set";
+  }
+
+  const parts =
+    date.split("-");
+
+  if (parts.length !== 3) {
+    return date;
+  }
+
+  const formatted =
+    new Date(
+      `${date}T00:00:00`
+    );
+
+  return formatted.toLocaleDateString(
     "en-GB",
     {
       day: "numeric",
@@ -74,6 +109,7 @@ function formatDate(date) {
       year: "numeric"
     }
   );
+
 }
 
 
@@ -83,15 +119,23 @@ function formatDate(date) {
 
 async function loadCompetition() {
 
-  if (!window.db) return;
+  if (!window.db) {
+    return;
+  }
 
   try {
 
     const competitionRef =
-      doc(window.db, "competition", "main");
+      doc(
+        window.db,
+        "competition",
+        "main"
+      );
 
     const snapshot =
-      await getDoc(competitionRef);
+      await getDoc(
+        competitionRef
+      );
 
     if (!snapshot.exists()) {
 
@@ -107,41 +151,57 @@ async function loadCompetition() {
 
     } else {
 
-      const data = snapshot.data();
+      const data =
+        snapshot.data();
 
-      teams = Array.isArray(data.teams)
-        ? data.teams
-        : [];
+      teams =
+        Array.isArray(data.teams)
+          ? data.teams
+          : [];
 
-      fixtures = Array.isArray(data.fixtures)
-        ? data.fixtures
-        : [];
-
-      /*
-        Supports both:
-        old nested season format
-        and new admin format
-      */
+      fixtures =
+        Array.isArray(data.fixtures)
+          ? data.fixtures
+          : [];
 
       if (data.season) {
 
         season = {
-          started: data.season.started || false,
-          startDate: data.season.startDate || "",
-          endDate: data.season.endDate || "",
-          legs: data.season.legs || 1
+
+          started:
+            data.season.started || false,
+
+          startDate:
+            data.season.startDate || "",
+
+          endDate:
+            data.season.endDate || "",
+
+          legs:
+            data.season.legs || 1
+
         };
 
       } else {
 
         season = {
-          started: data.seasonStarted || false,
-          startDate: data.seasonStart || "",
-          endDate: data.seasonEnd || "",
-          legs: data.legFormat || 1
+
+          started:
+            data.seasonStarted || false,
+
+          startDate:
+            data.seasonStart || "",
+
+          endDate:
+            data.seasonEnd || "",
+
+          legs:
+            data.legFormat || 1
+
         };
 
       }
+
     }
 
     displayTeams();
@@ -158,6 +218,7 @@ async function loadCompetition() {
     );
 
   }
+
 }
 
 
@@ -170,13 +231,16 @@ function checkApprovedTeam(teamName) {
   const cleanName =
     normalizeTeamName(teamName);
 
-  return teams.some(function(team) {
+  return teams.some(
+    function(team) {
 
-    return normalizeTeamName(
-      getTeamName(team)
-    ) === cleanName;
+      return normalizeTeamName(
+        getTeamName(team)
+      ) === cleanName;
 
-  });
+    }
+  );
+
 }
 
 
@@ -198,8 +262,8 @@ if (form) {
           "❌ Database is unavailable.";
 
         return;
-      }
 
+      }
 
       if (season.started) {
 
@@ -207,8 +271,8 @@ if (form) {
           "🔒 Registration is closed.";
 
         return;
-      }
 
+      }
 
       const teamName =
         document
@@ -216,13 +280,11 @@ if (form) {
           ?.value
           .trim() || "";
 
-
       const playerName =
         document
           .getElementById("playerName")
           ?.value
           .trim() || "";
-
 
       if (!teamName || !playerName) {
 
@@ -230,8 +292,8 @@ if (form) {
           "⚠️ Please fill in all fields.";
 
         return;
-      }
 
+      }
 
       if (
         teamName.length < 2 ||
@@ -242,8 +304,8 @@ if (form) {
           "⚠️ Team name must be 2-40 characters.";
 
         return;
-      }
 
+      }
 
       if (
         playerName.length < 2 ||
@@ -254,34 +316,29 @@ if (form) {
           "⚠️ Player name must be 2-60 characters.";
 
         return;
-      }
 
+      }
 
       registrationMessage.textContent =
         "⏳ Submitting registration...";
 
-
       try {
 
-        /*
-          First check approved teams locally.
-          We DO NOT read the registrations collection
-          from the public website because the Firebase
-          security rules correctly block public reads.
-        */
-
-        if (checkApprovedTeam(teamName)) {
+        if (
+          checkApprovedTeam(
+            teamName
+          )
+        ) {
 
           registrationMessage.textContent =
             "⚠️ This team name is already registered or waiting for approval.";
 
           return;
-        }
 
+        }
 
         const registrationId =
           teamKey(teamName);
-
 
         if (!registrationId) {
 
@@ -289,8 +346,8 @@ if (form) {
             "⚠️ Please enter a valid team name.";
 
           return;
-        }
 
+        }
 
         const registrationRef =
           doc(
@@ -299,28 +356,27 @@ if (form) {
             registrationId
           );
 
-
-        /*
-          The Firestore security rule prevents overwriting
-          an existing registration document.
-        */
-
         await setDoc(
           registrationRef,
           {
-            teamName: teamName,
-            playerName: playerName,
-            createdAt: Date.now(),
-            status: "pending"
+            teamName:
+              teamName,
+
+            playerName:
+              playerName,
+
+            createdAt:
+              Date.now(),
+
+            status:
+              "pending"
           }
         );
-
 
         registrationMessage.textContent =
           "✅ Registration submitted! Waiting for admin approval.";
 
         form.reset();
-
 
       } catch (error) {
 
@@ -329,15 +385,11 @@ if (form) {
           error
         );
 
-
-        /*
-          If the registration document already exists,
-          the secure rule blocks the new registration.
-        */
-
         if (
-          error.code === "permission-denied" ||
-          error.code === "already-exists"
+          error.code ===
+            "permission-denied" ||
+          error.code ===
+            "already-exists"
         ) {
 
           registrationMessage.textContent =
@@ -347,7 +399,10 @@ if (form) {
 
           registrationMessage.textContent =
             "❌ Registration failed: " +
-            (error.message || "Please try again.");
+            (
+              error.message ||
+              "Please try again."
+            );
 
         }
 
@@ -365,10 +420,11 @@ if (form) {
 
 function displayTeams() {
 
-  if (!teamList) return;
+  if (!teamList) {
+    return;
+  }
 
   teamList.innerHTML = "";
-
 
   if (teams.length === 0) {
 
@@ -376,374 +432,105 @@ function displayTeams() {
       "<p>No approved teams yet.</p>";
 
     return;
+
   }
 
+  teams.forEach(
+    function(team) {
 
-  teams.forEach(function(team) {
-
-    const card =
-      document.createElement("div");
-
-    card.className =
-      "team-card";
-
-
-    const title =
-      document.createElement("h3");
-
-    title.textContent =
-      "⚽ " +
-      getTeamName(team);
-
-
-    const player =
-      document.createElement("p");
-
-    player.textContent =
-      getPlayerName(team);
-
-
-    card.appendChild(title);
-    card.appendChild(player);
-
-    teamList.appendChild(card);
-
-  });
-
-}
-
-
-/* =========================
-   LEAGUE TABLE
-========================= */
-
-function calculateTable() {
-
-  const table = {};
-
-  teams.forEach(function(team) {
-
-    const name =
-      getTeamName(team);
-
-    table[name] = {
-      name: name,
-      played: 0,
-      wins: 0,
-      draws: 0,
-      losses: 0,
-      goalsFor: 0,
-      goalsAgainst: 0,
-      points: 0
-    };
-
-  });
-
-
-  fixtures.forEach(function(match) {
-
-    if (
-      match.homeScore === null ||
-      match.homeScore === undefined ||
-      match.awayScore === null ||
-      match.awayScore === undefined
-    ) {
-      return;
-    }
-
-
-    const home =
-      table[match.home];
-
-    const away =
-      table[match.away];
-
-
-    if (!home || !away) return;
-
-
-    const homeScore =
-      Number(match.homeScore);
-
-    const awayScore =
-      Number(match.awayScore);
-
-
-    home.played++;
-    away.played++;
-
-
-    home.goalsFor += homeScore;
-    home.goalsAgainst += awayScore;
-
-
-    away.goalsFor += awayScore;
-    away.goalsAgainst += homeScore;
-
-
-    if (homeScore > awayScore) {
-
-      home.wins++;
-      home.points += 3;
-
-      away.losses++;
-
-    } else if (homeScore < awayScore) {
-
-      away.wins++;
-      away.points += 3;
-
-      home.losses++;
-
-    } else {
-
-      home.draws++;
-      away.draws++;
-
-      home.points++;
-      away.points++;
-
-    }
-
-  });
-
-
-  return Object.values(table).sort(
-    function(a, b) {
-
-      const aGD =
-        a.goalsFor -
-        a.goalsAgainst;
-
-      const bGD =
-        b.goalsFor -
-        b.goalsAgainst;
-
-
-      if (b.points !== a.points) {
-        return b.points - a.points;
-      }
-
-
-      if (bGD !== aGD) {
-        return bGD - aGD;
-      }
-
-
-      return b.goalsFor - a.goalsFor;
-
-    }
-  );
-
-}
-
-
-function displayTable() {
-
-  if (!leagueTable) return;
-
-  leagueTable.innerHTML = "";
-
-
-  if (teams.length === 0) {
-
-    leagueTable.innerHTML = `
-      <tr>
-        <td colspan="10">
-          No approved teams yet.
-        </td>
-      </tr>
-    `;
-
-    return;
-  }
-
-
-  const table =
-    calculateTable();
-
-
-  table.forEach(
-    function(team, index) {
-
-      const gd =
-        team.goalsFor -
-        team.goalsAgainst;
-
-
-      leagueTable.innerHTML += `
-        <tr>
-          <td>${index + 1}</td>
-
-          <td>
-            ${escapeHTML(team.name)}
-          </td>
-
-          <td>${team.played}</td>
-
-          <td>${team.wins}</td>
-
-          <td>${team.draws}</td>
-
-          <td>${team.losses}</td>
-
-          <td>${team.goalsFor}</td>
-
-          <td>${team.goalsAgainst}</td>
-
-          <td>${gd}</td>
-
-          <td>${team.points}</td>
-        </tr>
-      `;
-
-    }
-  );
-
-}
-
-
-/* =========================
-   FIXTURES
-========================= */
-
-function displayFixtures() {
-
-  if (!fixtureList) return;
-
-  fixtureList.innerHTML = "";
-
-
-  if (fixtures.length === 0) {
-
-    fixtureList.innerHTML =
-      "<p>No fixtures available yet.</p>";
-
-    return;
-  }
-
-
-  fixtures.forEach(
-    function(fixture, index) {
-
-      const match =
+      const card =
         document.createElement("div");
 
-      match.className =
-        "fixture";
+      card.className =
+        "team-card";
 
-
-      const heading =
+      const title =
         document.createElement("h3");
 
-      heading.textContent =
-        fixture.day
-          ? "📅 Match Day " + fixture.day
-          : "⚽ Match " + (index + 1);
+      title.textContent =
+        "⚽ " +
+        getTeamName(team);
 
-
-      const teamsText =
+      const player =
         document.createElement("p");
 
-      teamsText.textContent =
-        fixture.home +
-        " 🆚 " +
-        fixture.away;
+      player.textContent =
+        getPlayerName(team);
 
+      card.appendChild(
+        title
+      );
 
-      match.appendChild(heading);
-      match.appendChild(teamsText);
+      card.appendChild(
+        player
+      );
 
-
-      if (
-        fixture.homeScore !== null &&
-        fixture.homeScore !== undefined &&
-        fixture.awayScore !== null &&
-        fixture.awayScore !== undefined
-      ) {
-
-        const score =
-          document.createElement("strong");
-
-        score.textContent =
-          fixture.homeScore +
-          " - " +
-          fixture.awayScore;
-
-
-        const done =
-          document.createElement("span");
-
-        done.textContent =
-          " ✅ Completed";
-
-
-        match.appendChild(score);
-        match.appendChild(done);
-
-      } else {
-
-        const waiting =
-          document.createElement("span");
-
-        waiting.textContent =
-          " ⏳ Awaiting Result";
-
-
-        match.appendChild(waiting);
-
-      }
-
-
-      fixtureList.appendChild(match);
+      teamList.appendChild(
+        card
+      );
 
     }
   );
 
 }
 
-
 /* =========================
-   SEASON
+   SEASON DISPLAY
 ========================= */
 
 function displaySeason() {
 
-  if (!seasonDetails) return;
-
-
-  if (!season.started) {
-
-    seasonDetails.innerHTML = `
-      <p>
-        🟡 Season has not started.
-      </p>
-    `;
-
+  if (!seasonDetails) {
     return;
   }
 
+  if (!season.startDate || !season.endDate) {
+
+    seasonDetails.innerHTML =
+      "<p>📅 Season dates have not been set yet.</p>";
+
+    return;
+
+  }
+
+  const status =
+    season.started
+      ? "🟢 Season is currently active."
+      : "🟡 Season has not started yet.";
+
+  const legText =
+    Number(season.legs) === 2
+      ? "2 Legs"
+      : "1 Leg";
 
   seasonDetails.innerHTML = `
-    <p>
-      🟢 <strong>Season Active</strong>
-    </p>
+    <div class="season-card">
 
-    <p>
-      📅 Start:
-      ${formatDate(season.startDate)}
-    </p>
+      <p>
+        <strong>Status:</strong>
+        ${status}
+      </p>
 
-    <p>
-      📅 End:
-      ${formatDate(season.endDate)}
-    </p>
+      <p>
+        <strong>Start:</strong>
+        ${escapeHTML(
+          formatDate(season.startDate)
+        )}
+      </p>
 
-    <p>
-      ⚽ Format:
-      ${season.legs}
-      Leg${Number(season.legs) === 1 ? "" : "s"}
-    </p>
+      <p>
+        <strong>End:</strong>
+        ${escapeHTML(
+          formatDate(season.endDate)
+        )}
+      </p>
+
+      <p>
+        <strong>Format:</strong>
+        ${legText}
+      </p>
+
+    </div>
   `;
 
 }
@@ -755,32 +542,37 @@ function displaySeason() {
 
 function updateRegistrationStatus() {
 
-  if (!form) return;
-
+  if (!form) {
+    return;
+  }
 
   const inputs =
     form.querySelectorAll(
       "input, button"
     );
 
-
-  inputs.forEach(function(element) {
-
-    element.disabled =
-      season.started;
-
-  });
-
-
   if (season.started) {
 
-    registrationMessage.textContent =
-      "🔒 Registration is CLOSED.";
+    inputs.forEach(
+      function(element) {
+        element.disabled = true;
+      }
+    );
+
+    if (registrationMessage) {
+
+      registrationMessage.textContent =
+        "🔒 Registration is closed because the season has started.";
+
+    }
 
   } else {
 
-    registrationMessage.textContent =
-      "";
+    inputs.forEach(
+      function(element) {
+        element.disabled = false;
+      }
+    );
 
   }
 
@@ -788,18 +580,22 @@ function updateRegistrationStatus() {
 
 
 /* =========================
-   REGISTER BUTTON
+   SHOW REGISTRATION
 ========================= */
 
 window.showRegister =
   function() {
 
-    const register =
-      document.getElementById("register");
+    const registerSection =
+      document.getElementById(
+        "register"
+      );
 
-    if (!register) return;
+    if (!registerSection) {
+      return;
+    }
 
-    register.scrollIntoView({
+    registerSection.scrollIntoView({
       behavior: "smooth"
     });
 
@@ -807,25 +603,571 @@ window.showRegister =
 
 
 /* =========================
-   START WEBSITE
+   FIXTURE HELPERS
 ========================= */
 
-async function startWebsite() {
+function getFixtureHome(fixture) {
 
-  if (!window.db) {
+  return fixture.home ||
+    fixture.homeTeam ||
+    fixture.team1 ||
+    "";
 
-    setTimeout(
-      startWebsite,
-      500
-    );
+}
 
-    return;
+function getFixtureAway(fixture) {
+
+  return fixture.away ||
+    fixture.awayTeam ||
+    fixture.team2 ||
+    "";
+
+}
+
+function getFixtureDate(fixture) {
+
+  return fixture.date ||
+    fixture.matchDate ||
+    "";
+
+}
+
+function getFixtureResult(fixture) {
+
+  if (
+    fixture.result &&
+    typeof fixture.result === "object"
+  ) {
+
+    return fixture.result;
+
   }
 
-
-  await loadCompetition();
+  return null;
 
 }
 
 
-startWebsite();
+/* =========================
+   DISPLAY FIXTURES
+========================= */
+
+function displayFixtures() {
+
+  if (!fixtureList) {
+    return;
+  }
+
+  fixtureList.innerHTML = "";
+
+  if (fixtures.length === 0) {
+
+    fixtureList.innerHTML =
+      "<p>📅 No fixtures available yet.</p>";
+
+    return;
+
+  }
+
+  const groupedFixtures = {};
+
+  fixtures.forEach(
+    function(fixture) {
+
+      const date =
+        getFixtureDate(fixture) ||
+        "No Date";
+
+      if (
+        !groupedFixtures[date]
+      ) {
+
+        groupedFixtures[date] = [];
+
+      }
+
+      groupedFixtures[date].push(
+        fixture
+      );
+
+    }
+  );
+
+  Object.keys(
+    groupedFixtures
+  ).forEach(
+    function(date) {
+
+      const day =
+        document.createElement("div");
+
+      day.className =
+        "fixture-day";
+
+      const heading =
+        document.createElement("h3");
+
+      heading.textContent =
+        "📅 " +
+        formatDate(date);
+
+      day.appendChild(
+        heading
+      );
+
+      const matches =
+        groupedFixtures[date];
+
+      matches.forEach(
+        function(fixture) {
+
+          const home =
+            getFixtureHome(fixture);
+
+          const away =
+            getFixtureAway(fixture);
+
+          const result =
+            getFixtureResult(
+              fixture
+            );
+
+          const match =
+            document.createElement("div");
+
+          match.className =
+            "fixture-card";
+
+          let resultText =
+            "⏳ Not played";
+
+          if (result) {
+
+            resultText =
+              `${result.homeGoals} - ${result.awayGoals}`;
+
+          }
+
+          match.innerHTML = `
+            <div class="fixture-teams">
+
+              <strong>
+                ${escapeHTML(home)}
+              </strong>
+
+              <span>vs</span>
+
+              <strong>
+                ${escapeHTML(away)}
+              </strong>
+
+            </div>
+
+            <div class="fixture-result">
+              ${escapeHTML(resultText)}
+            </div>
+          `;
+
+          day.appendChild(
+            match
+          );
+
+        }
+      );
+
+      fixtureList.appendChild(
+        day
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================
+   CREATE EMPTY TABLE
+========================= */
+
+function createTableData() {
+
+  const table = {};
+
+  teams.forEach(
+    function(team) {
+
+      const name =
+        getTeamName(team);
+
+      if (!name) {
+        return;
+      }
+
+      table[name] = {
+
+        team:
+          name,
+
+        played:
+          0,
+
+        wins:
+          0,
+
+        draws:
+          0,
+
+        losses:
+          0,
+
+        gf:
+          0,
+
+        ga:
+          0,
+
+        gd:
+          0,
+
+        points:
+          0
+
+      };
+
+    }
+  );
+
+  return table;
+
+}
+
+
+/* =========================
+   APPLY MATCH RESULT
+========================= */
+
+function applyResult(
+  table,
+  fixture
+) {
+
+  const home =
+    getFixtureHome(fixture);
+
+  const away =
+    getFixtureAway(fixture);
+
+  const result =
+    getFixtureResult(fixture);
+
+  if (
+    !home ||
+    !away ||
+    !result
+  ) {
+
+    return;
+
+  }
+
+  const homeGoals =
+    Number(
+      result.homeGoals
+    );
+
+  const awayGoals =
+    Number(
+      result.awayGoals
+    );
+
+  if (
+    !Number.isFinite(homeGoals) ||
+    !Number.isFinite(awayGoals) ||
+    homeGoals < 0 ||
+    awayGoals < 0
+  ) {
+
+    return;
+
+  }
+
+  if (
+    !table[home] ||
+    !table[away]
+  ) {
+
+    return;
+
+  }
+
+  table[home].played++;
+  table[away].played++;
+
+  table[home].gf += homeGoals;
+  table[home].ga += awayGoals;
+
+  table[away].gf += awayGoals;
+  table[away].ga += homeGoals;
+
+  if (
+    homeGoals > awayGoals
+  ) {
+
+    table[home].wins++;
+    table[away].losses++;
+
+    table[home].points += 3;
+
+  } else if (
+    homeGoals < awayGoals
+  ) {
+
+    table[away].wins++;
+    table[home].losses++;
+
+    table[away].points += 3;
+
+  } else {
+
+    table[home].draws++;
+    table[away].draws++;
+
+    table[home].points++;
+    table[away].points++;
+
+  }
+
+}
+
+
+/* =========================
+   SORT TABLE
+========================= */
+
+function sortTable(table) {
+
+  return Object.values(table)
+    .map(
+      function(team) {
+
+        team.gd =
+          team.gf - team.ga;
+
+        return team;
+
+      }
+    )
+    .sort(
+      function(a, b) {
+
+        if (
+          b.points !==
+          a.points
+        ) {
+
+          return (
+            b.points -
+            a.points
+          );
+
+        }
+
+        if (
+          b.gd !==
+          a.gd
+        ) {
+
+          return (
+            b.gd -
+            a.gd
+          );
+
+        }
+
+        if (
+          b.gf !==
+          a.gf
+        ) {
+
+          return (
+            b.gf -
+            a.gf
+          );
+
+        }
+
+        return a.team.localeCompare(
+          b.team
+        );
+
+      }
+    );
+
+}
+
+
+/* =========================
+   DISPLAY LEAGUE TABLE
+========================= */
+
+function displayTable() {
+
+  if (!leagueTable) {
+    return;
+  }
+
+  const table =
+    createTableData();
+
+  fixtures.forEach(
+    function(fixture) {
+
+      applyResult(
+        table,
+        fixture
+      );
+
+    }
+  );
+
+  const standings =
+    sortTable(table);
+
+  leagueTable.innerHTML = "";
+
+  if (
+    standings.length === 0
+  ) {
+
+    leagueTable.innerHTML = `
+      <tr>
+        <td colspan="10">
+          No teams available yet.
+        </td>
+      </tr>
+    `;
+
+    return;
+
+  }
+
+  standings.forEach(
+    function(team, index) {
+
+      const row =
+        document.createElement("tr");
+
+      row.innerHTML = `
+
+        <td>
+          ${index + 1}
+        </td>
+
+        <td>
+          ⚽ ${escapeHTML(team.team)}
+        </td>
+
+        <td>
+          ${team.played}
+        </td>
+
+        <td>
+          ${team.wins}
+        </td>
+
+        <td>
+          ${team.draws}
+        </td>
+
+        <td>
+          ${team.losses}
+        </td>
+
+        <td>
+          ${team.gf}
+        </td>
+
+        <td>
+          ${team.ga}
+        </td>
+
+        <td>
+          ${team.gd}
+        </td>
+
+        <td>
+          <strong>
+            ${team.points}
+          </strong>
+        </td>
+
+      `;
+
+      leagueTable.appendChild(
+        row
+      );
+
+    }
+  );
+
+}
+
+/* =========================
+   WAIT FOR FIREBASE
+========================= */
+
+function waitForFirebase() {
+
+  if (window.firebaseReady) {
+
+    loadCompetition();
+
+    return;
+
+  }
+
+  let attempts = 0;
+
+  const timer =
+    setInterval(
+      function() {
+
+        attempts++;
+
+        if (window.firebaseReady) {
+
+          clearInterval(timer);
+
+          loadCompetition();
+
+        }
+
+        if (attempts >= 100) {
+
+          clearInterval(timer);
+
+          console.error(
+            "Firebase failed to initialize."
+          );
+
+          if (registrationMessage) {
+
+            registrationMessage.textContent =
+              "❌ Database connection failed.";
+
+          }
+
+        }
+
+      },
+      100
+    );
+
+}
+
+
+/* =========================
+   PAGE START
+========================= */
+
+waitForFirebase();
