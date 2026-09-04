@@ -231,8 +231,14 @@ form.addEventListener(
     });
 
 
-    await saveCompetition();
-
+    await addDoc(
+  collection(window.db, "registrations"),
+  {
+    teamName: teamName,
+    playerName: playerName,
+    createdAt: Date.now()
+  }
+);
     displayTeams();
 
     displayTable();
