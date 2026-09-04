@@ -259,174 +259,188 @@ async function loadCompetition() {
    PUBLIC REGISTRATION
 ========================= */
 
-form.addEventListener(
-  "submit",
-  async function(event) {
+if (form) {
 
-    event.preventDefault();
+  form.addEventListener(
+    "submit",
+    async function(event) {
+
+      event.preventDefault();
 
 
-    if (season.started) {
+      if (season.started) {
 
-      registrationMessage.textContent =
-        "🔒 Registration is closed.";
+        registrationMessage.textContent =
+          "🔒 Registration is closed.";
 
-      return;
+        return;
+
+      }
+
+
+      if (!window.db) {
+
+        registrationMessage.textContent =
+          "❌ Database is unavailable.";
+
+        return;
+
+      }
+
+
+      const teamName =
+        document
+          .getElementById("teamName")
+          .value
+          .trim();
+
+
+      const playerName =
+        document
+          .getElementById("playerName")
+          .value
+          .trim();
+
+
+      /* =========================
+         VALIDATION
+      ========================= */
+
+      if (
+        !teamName ||
+        !playerName
+      ) {
+
+        registrationMessage.textContent =
+          "⚠️ Please fill in all fields.";
+
+        return;
+
+      }
+
+
+      if (
+        teamName.length < 2 ||
+        teamName.length > 40
+      ) {
+
+        registrationMessage.textContent =
+          "⚠️ Team name must be 2-40 characters.";
+
+        return;
+
+      }
+
+
+      if (
+        playerName.length < 2 ||
+        playerName.length > 60
+      ) {
+
+        registrationMessage.textContent =
+          "⚠️ Player name must be 2-60 characters.";
+
+        return;
+
+      }
+
+
+      /* =========================
+         CHECK APPROVED TEAMS
+      ========================= */
+
+      const cleanName =
+        teamName
+          .toLowerCase()
+          .replace(/\s+/g, " ")
+          .trim();
+
+
+      const duplicate =
+        teams.some(
+          function(team) {
+
+            const existingName =
+              String(
+                team.teamName || ""
+              )
+                .toLowerCase()
+                .replace(/\s+/g, " ")
+                .trim();
+
+
+            return (
+              existingName ===
+              cleanName
+            );
+
+          }
+        );
+
+
+      if (duplicate) {
+
+        registrationMessage.textContent =
+          "⚠️ This team name is already registered.";
+
+        return;
+
+      }
+
+
+      /* =========================
+         SEND REGISTRATION
+      ========================= */
+
+      try {
+
+        await addDoc(
+          collection(
+            window.db,
+            "registrations"
+          ),
+          {
+
+            teamName:
+              teamName,
+
+            playerName:
+              playerName,
+
+            createdAt:
+              Date.now(),
+
+            status:
+              "pending"
+
+          }
+        );
+
+
+        registrationMessage.textContent =
+          "✅ Registration submitted! Waiting for admin approval.";
+
+
+        form.reset();
+
+
+      } catch (error) {
+
+        console.error(
+          "Registration failed:",
+          error
+        );
+
+
+        registrationMessage.textContent =
+          "❌ Registration failed. Please try again.";
+
+      }
 
     }
+  );
 
-
-    if (!window.db) {
-
-      registrationMessage.textContent =
-        "❌ Database is unavailable.";
-
-      return;
-
-    }
-
-
-    const teamName =
-      document
-        .getElementById("teamName")
-        .value
-        .trim();
-
-
-    const playerName =
-      document
-        .getElementById("playerName")
-        .value
-        .trim();
-
-
-    /* =========================
-       VALIDATION
-    ========================= */
-
-    if (
-      !teamName ||
-      !playerName
-    ) {
-
-      registrationMessage.textContent =
-        "⚠️ Please fill in all fields.";
-
-      return;
-
-    }
-
-
-    if (
-      teamName.length < 2 ||
-      teamName.length > 40
-    ) {
-
-      registrationMessage.textContent =
-        "⚠️ Team name must be 2-40 characters.";
-
-      return;
-
-    }
-
-
-    if (
-      playerName.length < 2 ||
-      playerName.length > 60
-    ) {
-
-      registrationMessage.textContent =
-        "⚠️ Player name must be 2-60 characters.";
-
-      return;
-
-    }
-
-
-    /* =========================
-       CHECK APPROVED TEAMS
-    ========================= */
-
-    const cleanName =
-      teamName
-        .toLowerCase()
-        .replace(/\s+/g, " ")
-        .trim();
-
-
-    const duplicate =
-      teams.some(
-        function(team) {
-
-          return (
-            String(team.teamName || "")
-              .toLowerCase()
-              .replace(/\s+/g, " ")
-              .trim() ===
-            cleanName
-          );
-
-        }
-      );
-
-
-    if (duplicate) {
-
-      registrationMessage.textContent =
-        "⚠️ This team name is already registered.";
-
-      return;
-
-    }
-
-
-    /* =========================
-       SEND FOR APPROVAL
-    ========================= */
-
-    try {
-
-      await addDoc(
-        collection(
-          window.db,
-          "registrations"
-        ),
-        {
-
-          teamName: teamName,
-
-          playerName: playerName,
-
-          createdAt: Date.now(),
-
-          status: "pending"
-
-        }
-      );
-
-
-      registrationMessage.textContent =
-        "✅ Registration submitted! Waiting for admin approval.";
-
-
-      form.reset();
-
-
-    } catch (error) {
-
-      console.error(
-        "Registration failed:",
-        error
-      );
-
-
-      registrationMessage.textContent =
-        "❌ Registration failed. Please try again.";
-
-    }
-
-  }
-);
+}
 
 
 /* =========================
@@ -467,17 +481,23 @@ function displayTeams() {
       card.innerHTML = `
 
         <h3>
-          ⚽ ${escapeHTML(team.teamName)}
+          ⚽ ${escapeHTML(
+            team.teamName
+          )}
         </h3>
 
         <p>
-          ${escapeHTML(team.playerName)}
+          ${escapeHTML(
+            team.playerName
+          )}
         </p>
 
       `;
 
 
-      teamList.appendChild(card);
+      teamList.appendChild(
+        card
+      );
 
     }
   );
@@ -585,7 +605,9 @@ function displayTable() {
           </td>
 
           <td>
-            ${escapeHTML(team.teamName)}
+            ${escapeHTML(
+              team.teamName
+            )}
           </td>
 
           <td>
@@ -680,102 +702,42 @@ function updateRegistrationStatus() {
 async function generateFixtures() {
 
   if (!isAdminUser()) {
-
-    alert(
-      "🔒 Admin login required."
-    );
-
+    alert("🔒 Admin login required.");
     return;
-
   }
-
 
   if (season.started) {
-
-    alert(
-      "🔒 The season has already started."
-    );
-
+    alert("🔒 The season has already started.");
     return;
-
   }
-
 
   if (teams.length < 2) {
-
-    alert(
-      "❌ You need at least 2 teams."
-    );
-
+    alert("❌ You need at least 2 teams.");
     return;
-
   }
-
 
   fixtures = [];
 
-
-  let list =
-    teams.map(
-      function(team) {
-        return team.teamName;
-      }
-    );
-
-
-  /* =========================
-     ADD BYE IF ODD
-  ========================= */
+  let list = teams.map(function(team) {
+    return team.teamName;
+  });
 
   if (list.length % 2 !== 0) {
-
     list.push("BYE");
-
   }
 
+  const total = list.length;
+  const rounds = total - 1;
+  const matches = total / 2;
 
-  const total =
-    list.length;
+  for (let round = 0; round < rounds; round++) {
 
+    for (let i = 0; i < matches; i++) {
 
-  const rounds =
-    total - 1;
+      const home = list[i];
+      const away = list[total - 1 - i];
 
-
-  const matches =
-    total / 2;
-
-
-  /* =========================
-     GENERATE FIRST LEG
-  ========================= */
-
-  for (
-    let round = 0;
-    round < rounds;
-    round++
-  ) {
-
-    for (
-      let i = 0;
-      i < matches;
-      i++
-    ) {
-
-      const home =
-        list[i];
-
-
-      const away =
-        list[
-          total - 1 - i
-        ];
-
-
-      if (
-        home !== "BYE" &&
-        away !== "BYE"
-      ) {
+      if (home !== "BYE" && away !== "BYE") {
 
         fixtures.push({
 
@@ -785,23 +747,17 @@ async function generateFixtures() {
             "-" +
             fixtures.length,
 
-          day:
-            round + 1,
+          day: round + 1,
 
-          home:
-            home,
+          home: home,
 
-          away:
-            away,
+          away: away,
 
-          completed:
-            false,
+          completed: false,
 
-          homeScore:
-            null,
+          homeScore: null,
 
-          awayScore:
-            null
+          awayScore: null
 
         });
 
@@ -809,16 +765,7 @@ async function generateFixtures() {
 
     }
 
-
-    /* =========================
-       ROTATE TEAMS
-    ========================= */
-
-    list.splice(
-      1,
-      0,
-      list.pop()
-    );
+    list.splice(1, 0, list.pop());
 
   }
 
@@ -829,54 +776,43 @@ async function generateFixtures() {
 
   if (season.legs === 2) {
 
-    const firstLeg =
-      [...fixtures];
+    const firstLeg = [...fixtures];
 
+    firstLeg.forEach(function(fixture) {
 
-    firstLeg.forEach(
-      function(fixture) {
+      fixtures.push({
 
-        fixtures.push({
+        id:
+          "fixture-" +
+          Date.now() +
+          "-" +
+          fixtures.length,
 
-          id:
-            "fixture-" +
-            Date.now() +
-            "-" +
-            fixtures.length,
+        day:
+          fixture.day + rounds,
 
-          day:
-            fixture.day +
-            rounds,
+        home:
+          fixture.away,
 
-          home:
-            fixture.away,
+        away:
+          fixture.home,
 
-          away:
-            fixture.home,
+        completed: false,
 
-          completed:
-            false,
+        homeScore: null,
 
-          homeScore:
-            null,
+        awayScore: null
 
-          awayScore:
-            null
+      });
 
-        });
-
-      }
-    );
+    });
 
   }
 
 
   displayFixtures();
 
-
-  const saved =
-    await saveCompetition();
-
+  const saved = await saveCompetition();
 
   if (saved) {
 
@@ -901,7 +837,6 @@ function displayFixtures() {
     return;
   }
 
-
   if (fixtures.length === 0) {
 
     fixtureList.innerHTML =
@@ -911,185 +846,139 @@ function displayFixtures() {
 
   }
 
-
   fixtureList.innerHTML = "";
-
 
   let currentDay = 0;
 
+  fixtures.forEach(function(fixture, index) {
 
-  fixtures.forEach(
-    function(fixture, index) {
+    if (fixture.day !== currentDay) {
 
-      /* =========================
-         MATCH DAY HEADING
-      ========================= */
+      currentDay = fixture.day;
 
-      if (
-        fixture.day !==
-        currentDay
-      ) {
+      const heading =
+        document.createElement("h3");
 
-        currentDay =
-          fixture.day;
+      heading.className =
+        "match-day";
 
-
-        const heading =
-          document.createElement(
-            "h3"
-          );
-
-
-        heading.className =
-          "match-day";
-
-
-        heading.textContent =
-          "📅 Match Day " +
-          fixture.day;
-
-
-        fixtureList.appendChild(
-          heading
-        );
-
-      }
-
-
-      /* =========================
-         MATCH BOX
-      ========================= */
-
-      const match =
-        document.createElement(
-          "div"
-        );
-
-
-      match.className =
-        "fixture";
-
-
-      if (fixture.completed) {
-
-        match.innerHTML = `
-
-          <span class="teams">
-
-            ${escapeHTML(
-              fixture.home
-            )}
-
-            🆚
-
-            ${escapeHTML(
-              fixture.away
-            )}
-
-          </span>
-
-
-          <strong>
-
-            ${fixture.homeScore}
-
-            -
-
-            ${fixture.awayScore}
-
-          </strong>
-
-
-          <span class="completed">
-
-            ✅ Completed
-
-          </span>
-
-        `;
-
-      }
-
-      else {
-
-        match.innerHTML = `
-
-          <span class="teams">
-
-            ${escapeHTML(
-              fixture.home
-            )}
-
-            🆚
-
-            ${escapeHTML(
-              fixture.away
-            )}
-
-          </span>
-
-        `;
-
-
-        if (adminLoggedIn) {
-
-          const button =
-            document.createElement(
-              "button"
-            );
-
-
-          button.textContent =
-            "🏆 Enter Result";
-
-
-          button.onclick =
-            function() {
-
-              enterResult(index);
-
-            };
-
-
-          match.appendChild(
-            button
-          );
-
-        }
-
-        else {
-
-          const waiting =
-            document.createElement(
-              "span"
-            );
-
-
-          waiting.textContent =
-            "⏳ Awaiting Result";
-
-
-          match.appendChild(
-            waiting
-          );
-
-        }
-
-      }
-
+      heading.textContent =
+        "📅 Match Day " +
+        fixture.day;
 
       fixtureList.appendChild(
-        match
+        heading
       );
 
     }
-  );
+
+
+    const match =
+      document.createElement("div");
+
+    match.className =
+      "fixture";
+
+
+    if (fixture.completed) {
+
+      match.innerHTML = `
+
+        <span class="teams">
+
+          ${escapeHTML(
+            fixture.home
+          )}
+
+          🆚
+
+          ${escapeHTML(
+            fixture.away
+          )}
+
+        </span>
+
+        <strong>
+
+          ${fixture.homeScore}
+          -
+          ${fixture.awayScore}
+
+        </strong>
+
+        <span class="completed">
+
+          ✅ Completed
+
+        </span>
+
+      `;
+
+    } else {
+
+      const teamsText =
+        document.createElement("span");
+
+      teamsText.className =
+        "teams";
+
+      teamsText.textContent =
+        fixture.home +
+        " 🆚 " +
+        fixture.away;
+
+      match.appendChild(
+        teamsText
+      );
+
+
+      if (adminLoggedIn) {
+
+        const button =
+          document.createElement("button");
+
+        button.textContent =
+          "🏆 Enter Result";
+
+        button.onclick =
+          function() {
+
+            enterResult(index);
+
+          };
+
+        match.appendChild(
+          button
+        );
+
+      } else {
+
+        const waiting =
+          document.createElement("span");
+
+        waiting.textContent =
+          "⏳ Awaiting Result";
+
+        match.appendChild(
+          waiting
+        );
+
+      }
+
+    }
+
+
+    fixtureList.appendChild(
+      match
+    );
+
+  });
 
 }
 
 
 /* =========================
-   ENTER MATCH RESULT
+   ENTER RESULT
 ========================= */
 
 async function enterResult(index) {
@@ -1104,10 +993,8 @@ async function enterResult(index) {
 
   }
 
-
   const fixture =
     fixtures[index];
-
 
   if (!fixture) {
 
@@ -1118,7 +1005,6 @@ async function enterResult(index) {
     return;
 
   }
-
 
   if (fixture.completed) {
 
@@ -1137,7 +1023,6 @@ async function enterResult(index) {
       " score:"
     );
 
-
   if (homeInput === null) {
     return;
   }
@@ -1149,7 +1034,6 @@ async function enterResult(index) {
       " score:"
     );
 
-
   if (awayInput === null) {
     return;
   }
@@ -1158,14 +1042,9 @@ async function enterResult(index) {
   const homeScore =
     Number(homeInput);
 
-
   const awayScore =
     Number(awayInput);
 
-
-  /* =========================
-     SCORE VALIDATION
-  ========================= */
 
   if (
     !Number.isInteger(homeScore) ||
@@ -1183,40 +1062,29 @@ async function enterResult(index) {
   }
 
 
-  /* =========================
-     FIND TEAMS
-  ========================= */
-
   const homeTeam =
-    teams.find(
-      function(team) {
+    teams.find(function(team) {
 
-        return (
-          team.teamName ===
-          fixture.home
-        );
+      return (
+        team.teamName ===
+        fixture.home
+      );
 
-      }
-    );
+    });
 
 
   const awayTeam =
-    teams.find(
-      function(team) {
+    teams.find(function(team) {
 
-        return (
-          team.teamName ===
-          fixture.away
-        );
+      return (
+        team.teamName ===
+        fixture.away
+      );
 
-      }
-    );
+    });
 
 
-  if (
-    !homeTeam ||
-    !awayTeam
-  ) {
+  if (!homeTeam || !awayTeam) {
 
     alert(
       "❌ Team not found."
@@ -1227,13 +1095,8 @@ async function enterResult(index) {
   }
 
 
-  /* =========================
-     UPDATE MATCH STATS
-  ========================= */
-
   homeTeam.played =
     (homeTeam.played || 0) + 1;
-
 
   awayTeam.played =
     (awayTeam.played || 0) + 1;
@@ -1242,7 +1105,6 @@ async function enterResult(index) {
   homeTeam.goalsFor =
     (homeTeam.goalsFor || 0) +
     homeScore;
-
 
   homeTeam.goalsAgainst =
     (homeTeam.goalsAgainst || 0) +
@@ -1253,46 +1115,31 @@ async function enterResult(index) {
     (awayTeam.goalsFor || 0) +
     awayScore;
 
-
   awayTeam.goalsAgainst =
     (awayTeam.goalsAgainst || 0) +
     homeScore;
 
 
-  /* =========================
-     WIN / DRAW / LOSS
-  ========================= */
-
-  if (
-    homeScore >
-    awayScore
-  ) {
+  if (homeScore > awayScore) {
 
     homeTeam.wins =
       (homeTeam.wins || 0) + 1;
 
-
     homeTeam.points =
       (homeTeam.points || 0) + 3;
-
 
     awayTeam.losses =
       (awayTeam.losses || 0) + 1;
 
   }
 
-  else if (
-    homeScore <
-    awayScore
-  ) {
+  else if (homeScore < awayScore) {
 
     awayTeam.wins =
       (awayTeam.wins || 0) + 1;
 
-
     awayTeam.points =
       (awayTeam.points || 0) + 3;
-
 
     homeTeam.losses =
       (homeTeam.losses || 0) + 1;
@@ -1304,14 +1151,11 @@ async function enterResult(index) {
     homeTeam.draws =
       (homeTeam.draws || 0) + 1;
 
-
     awayTeam.draws =
       (awayTeam.draws || 0) + 1;
 
-
     homeTeam.points =
       (homeTeam.points || 0) + 1;
-
 
     awayTeam.points =
       (awayTeam.points || 0) + 1;
@@ -1319,17 +1163,11 @@ async function enterResult(index) {
   }
 
 
-  /* =========================
-     COMPLETE FIXTURE
-  ========================= */
-
   fixture.homeScore =
     homeScore;
 
-
   fixture.awayScore =
     awayScore;
-
 
   fixture.completed =
     true;
@@ -1402,7 +1240,6 @@ function displaySeason() {
 
       </p>
 
-
       <p>
 
         📅 Start:
@@ -1413,7 +1250,6 @@ function displaySeason() {
 
       </p>
 
-
       <p>
 
         📅 End:
@@ -1423,7 +1259,6 @@ function displaySeason() {
         )}
 
       </p>
-
 
       <p>
 
@@ -1505,10 +1340,7 @@ async function startSeason() {
     );
 
 
-  if (
-    !startDate ||
-    !endDate
-  ) {
+  if (!startDate || !endDate) {
 
     alert(
       "⚠️ Select both season dates."
@@ -1547,30 +1379,18 @@ async function startSeason() {
   }
 
 
-  /* =========================
-     SET LEAGUE FORMAT
-  ========================= */
-
   season.legs =
     legs;
 
 
-  /* =========================
-     GENERATE FIXTURES
-  ========================= */
-
-  if (
-    fixtures.length === 0
-  ) {
+  if (fixtures.length === 0) {
 
     await generateFixtures();
 
   }
 
 
-  if (
-    fixtures.length === 0
-  ) {
+  if (fixtures.length === 0) {
 
     alert(
       "❌ Fixtures could not be generated."
@@ -1580,10 +1400,6 @@ async function startSeason() {
 
   }
 
-
-  /* =========================
-     START SEASON
-  ========================= */
 
   season = {
 
@@ -1669,7 +1485,7 @@ async function reopenRegistration() {
 
 
 /* =========================
-   TEAM MANAGEMENT
+   MANAGE TEAMS
 ========================= */
 
 async function manageTeams() {
@@ -1708,7 +1524,7 @@ async function manageTeams() {
 
 
   let list =
-    "👥 REGISTERED TEAMS\n\n";
+    "👥 APPROVED TEAMS\n\n";
 
 
   teams.forEach(
@@ -1796,9 +1612,6 @@ async function manageTeams() {
     teams[index].playerName =
       newPlayer.trim();
 
-
-    /* Reset fixtures because
-       team names changed */
 
     fixtures = [];
 
@@ -1906,7 +1719,6 @@ async function clearCompetition() {
 
   teams = [];
 
-
   fixtures = [];
 
 
@@ -1954,6 +1766,282 @@ async function clearCompetition() {
 }
 
 /* =========================
+   ADMIN LOGIN
+========================= */
+
+async function adminLogin() {
+
+  if (!window.auth) {
+
+    alert(
+      "❌ Firebase Authentication is not ready."
+    );
+
+    return;
+
+  }
+
+
+  if (adminLoggedIn) {
+
+    displayAdminDashboard();
+
+    return;
+
+  }
+
+
+  const email =
+    prompt(
+      "📧 Enter Admin Email:"
+    );
+
+
+  if (!email) {
+    return;
+  }
+
+
+  const password =
+    prompt(
+      "🔐 Enter Admin Password:"
+    );
+
+
+  if (!password) {
+    return;
+  }
+
+
+  try {
+
+    const result =
+      await signInWithEmailAndPassword(
+        window.auth,
+        email.trim(),
+        password
+      );
+
+
+    /* =========================
+       VERIFY ADMIN ACCOUNT
+    ========================= */
+
+    if (
+      !result.user.email ||
+      result.user.email.toLowerCase() !==
+      ADMIN_EMAIL.toLowerCase()
+    ) {
+
+      await signOut(
+        window.auth
+      );
+
+
+      alert(
+        "❌ This account is not authorized as admin."
+      );
+
+      return;
+
+    }
+
+
+    currentAdmin =
+      result.user;
+
+
+    adminLoggedIn =
+      true;
+
+
+    alert(
+      "✅ Admin login successful!"
+    );
+
+
+    displayAdminDashboard();
+
+    displayFixtures();
+
+    await loadRegistrations();
+
+
+  } catch (error) {
+
+    console.error(
+      "ADMIN LOGIN ERROR:",
+      error
+    );
+
+
+    alert(
+      "❌ Login failed.\n\n" +
+      "Code: " +
+      error.code +
+      "\n\n" +
+      "Message: " +
+      error.message
+    );
+
+  }
+
+}
+
+
+/* =========================
+   ADMIN LOGOUT
+========================= */
+
+async function adminLogout() {
+
+  if (!window.auth) {
+    return;
+  }
+
+
+  try {
+
+    await signOut(
+      window.auth
+    );
+
+
+    adminLoggedIn =
+      false;
+
+
+    currentAdmin =
+      null;
+
+
+    alert(
+      "👋 Admin logged out."
+    );
+
+
+    displayFixtures();
+
+
+    const adminContent =
+      document.getElementById(
+        "adminContent"
+      );
+
+
+    if (adminContent) {
+
+      adminContent.innerHTML =
+        "<p>🔐 Admin login required.</p>";
+
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "Logout failed:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================
+   AUTH STATE
+========================= */
+
+function setupAuthListener() {
+
+  if (!window.auth) {
+
+    console.error(
+      "Firebase Authentication unavailable."
+    );
+
+    return;
+
+  }
+
+
+  onAuthStateChanged(
+    window.auth,
+    async function(user) {
+
+      /* =========================
+         NO USER
+      ========================= */
+
+      if (!user) {
+
+        adminLoggedIn =
+          false;
+
+        currentAdmin =
+          null;
+
+
+        displayFixtures();
+
+        return;
+
+      }
+
+
+      /* =========================
+         CHECK ADMIN EMAIL
+      ========================= */
+
+      if (
+        !user.email ||
+        user.email.toLowerCase() !==
+        ADMIN_EMAIL.toLowerCase()
+      ) {
+
+        await signOut(
+          window.auth
+        );
+
+
+        adminLoggedIn =
+          false;
+
+        currentAdmin =
+          null;
+
+
+        return;
+
+      }
+
+
+      /* =========================
+         ADMIN AUTHENTICATED
+      ========================= */
+
+      adminLoggedIn =
+        true;
+
+
+      currentAdmin =
+        user;
+
+
+      displayAdminDashboard();
+
+      displayFixtures();
+
+      await loadRegistrations();
+
+    }
+  );
+
+}
+
+
+/* =========================
    LOAD REGISTRATIONS
 ========================= */
 
@@ -1990,14 +2078,18 @@ async function loadRegistrations() {
           item.data();
 
 
-        /* Old registrations without
+        /* Older registrations without
            status are treated as pending */
 
         const status =
-          data.status || "pending";
+          data.status ||
+          "pending";
 
 
-        if (status === "pending") {
+        if (
+          status ===
+          "pending"
+        ) {
 
           pending.push({
 
@@ -2020,8 +2112,6 @@ async function loadRegistrations() {
       }
     );
 
-
-    /* Newest first */
 
     pending.sort(
       function(a, b) {
@@ -2155,7 +2245,7 @@ function displayPendingRegistrations(
 
 
       /* =========================
-         APPROVE BUTTON
+         APPROVE
       ========================= */
 
       const approveButton =
@@ -2186,7 +2276,7 @@ function displayPendingRegistrations(
 
 
       /* =========================
-         REJECT BUTTON
+         REJECT
       ========================= */
 
       const rejectButton =
@@ -2286,13 +2376,17 @@ async function approveRegistration(
     teams.some(
       function(team) {
 
-        return (
+        const existingName =
           String(
             team.teamName || ""
           )
             .toLowerCase()
             .replace(/\s+/g, " ")
-            .trim() ===
+            .trim();
+
+
+        return (
+          existingName ===
           cleanName
         );
 
@@ -2365,9 +2459,6 @@ async function approveRegistration(
 
   if (!saved) {
 
-    /* Undo local change
-       if saving failed */
-
     teams.pop();
 
     return;
@@ -2376,7 +2467,7 @@ async function approveRegistration(
 
 
   /* =========================
-     REMOVE PENDING
+     DELETE PENDING REQUEST
   ========================= */
 
   try {
@@ -2488,274 +2579,6 @@ async function rejectRegistration(
 
 
 /* =========================
-   ADMIN LOGIN
-========================= */
-
-async function adminLogin() {
-
-  if (!window.auth) {
-
-    alert(
-      "❌ Firebase Authentication is not ready."
-    );
-
-    return;
-
-  }
-
-
-  if (adminLoggedIn) {
-
-    displayAdminDashboard();
-
-    return;
-
-  }
-
-
-  const email =
-    prompt(
-      "📧 Enter Admin Email:"
-    );
-
-
-  if (!email) {
-    return;
-  }
-
-
-  const password =
-    prompt(
-      "🔐 Enter Admin Password:"
-    );
-
-
-  if (!password) {
-    return;
-  }
-
-
-  try {
-
-    const result =
-      await signInWithEmailAndPassword(
-        window.auth,
-        email.trim(),
-        password
-      );
-
-
-    /* =========================
-       CHECK ADMIN EMAIL
-    ========================= */
-
-    if (
-      !result.user.email ||
-      result.user.email.toLowerCase() !==
-      ADMIN_EMAIL.toLowerCase()
-    ) {
-
-      await signOut(
-        window.auth
-      );
-
-
-      alert(
-        "❌ This account is not authorized as admin."
-      );
-
-      return;
-
-    }
-
-
-    currentAdmin =
-      result.user;
-
-
-    adminLoggedIn =
-      true;
-
-
-    alert(
-      "✅ Admin login successful!"
-    );
-
-
-    displayAdminDashboard();
-
-    displayFixtures();
-
-    await loadRegistrations();
-
-
-  } catch (error) {
-
-    console.error(
-      "ADMIN LOGIN ERROR:",
-      error
-    );
-
-
-    alert(
-      "❌ Login failed.\n\n" +
-      "Code: " +
-      error.code +
-      "\n\n" +
-      "Message: " +
-      error.message
-    );
-
-  }
-
-}
-
-
-/* =========================
-   ADMIN LOGOUT
-========================= */
-
-async function adminLogout() {
-
-  if (!window.auth) {
-    return;
-  }
-
-
-  try {
-
-    await signOut(
-      window.auth
-    );
-
-
-    adminLoggedIn =
-      false;
-
-
-    currentAdmin =
-      null;
-
-
-    alert(
-      "👋 Admin logged out."
-    );
-
-
-    displayFixtures();
-
-
-    const adminContent =
-      document.getElementById(
-        "adminContent"
-      );
-
-
-    if (adminContent) {
-
-      adminContent.innerHTML =
-        "<p>🔐 Admin login required.</p>";
-
-    }
-
-
-  } catch (error) {
-
-    console.error(
-      "Logout failed:",
-      error
-    );
-
-  }
-
-}
-
-
-/* =========================
-   AUTH STATE LISTENER
-========================= */
-
-function setupAuthListener() {
-
-  if (!window.auth) {
-
-    console.error(
-      "Firebase Authentication unavailable."
-    );
-
-    return;
-
-  }
-
-
-  onAuthStateChanged(
-    window.auth,
-    async function(user) {
-
-      if (!user) {
-
-        adminLoggedIn =
-          false;
-
-        currentAdmin =
-          null;
-
-
-        displayFixtures();
-
-        return;
-
-      }
-
-
-      /* =========================
-         ONLY ALLOW ADMIN
-      ========================= */
-
-      if (
-        !user.email ||
-        user.email.toLowerCase() !==
-        ADMIN_EMAIL.toLowerCase()
-      ) {
-
-        await signOut(
-          window.auth
-        );
-
-
-        adminLoggedIn =
-          false;
-
-        currentAdmin =
-          null;
-
-
-        return;
-
-      }
-
-
-      adminLoggedIn =
-        true;
-
-
-      currentAdmin =
-        user;
-
-
-      displayAdminDashboard();
-
-      displayFixtures();
-
-      await loadRegistrations();
-
-    }
-  );
-
-}
-
-
-/* =========================
    ADMIN DASHBOARD
 ========================= */
 
@@ -2785,65 +2608,49 @@ function displayAdminDashboard() {
         👋 Welcome, Admin
       </h3>
 
-
       <p>
-
         Admin:
-
         <strong>
           ${escapeHTML(
             currentAdmin?.email || ""
           )}
         </strong>
-
       </p>
 
-
       <p>
-
         Approved Teams:
-
         <strong>
           ${teams.length}
         </strong>
-
       </p>
 
-
       <hr>
-
 
       <h3>
         ⚙️ Competition Settings
       </h3>
 
-
       <label>
         📅 Season Start Date
       </label>
-
 
       <input
         type="date"
         id="seasonStart"
       >
 
-
       <label>
         📅 Season End Date
       </label>
-
 
       <input
         type="date"
         id="seasonEnd"
       >
 
-
       <label>
         ⚽ League Format
       </label>
-
 
       <select id="legFormat">
 
@@ -2857,7 +2664,6 @@ function displayAdminDashboard() {
 
       </select>
 
-
       <div class="admin-buttons">
 
         <button
@@ -2866,13 +2672,11 @@ function displayAdminDashboard() {
           📅 Generate Fixtures
         </button>
 
-
         <button
           id="startSeasonButton"
         >
           🏆 Start Season
         </button>
-
 
         <button
           id="manageTeamsButton"
@@ -2880,20 +2684,17 @@ function displayAdminDashboard() {
           👥 Manage Teams
         </button>
 
-
         <button
           id="reopenRegistrationButton"
         >
           🔓 Reopen Registration
         </button>
 
-
         <button
           id="clearCompetitionButton"
         >
           🗑️ Clear Competition
         </button>
-
 
         <button
           id="logoutButton"
@@ -2903,16 +2704,14 @@ function displayAdminDashboard() {
 
       </div>
 
-
       <hr>
 
+      <div id="pendingRegistrations">
 
-      <div
-        id="pendingRegistrations"
-      >
         <p>
           Loading registrations...
         </p>
+
       </div>
 
     </div>
@@ -2921,7 +2720,7 @@ function displayAdminDashboard() {
 
 
   /* =========================
-     BUTTON EVENTS
+     BUTTONS
   ========================= */
 
   document
@@ -2985,7 +2784,7 @@ function displayAdminDashboard() {
 
 
   /* =========================
-     RESTORE DATES
+     RESTORE SETTINGS
   ========================= */
 
   const startInput =
@@ -3035,8 +2834,6 @@ function displayAdminDashboard() {
 
   }
 
-
-  /* Load pending registrations */
 
   loadRegistrations();
 
@@ -3101,19 +2898,6 @@ function escapeHTML(value) {
   return div.innerHTML;
 
 }
-
-
-/* =========================
-   STARTUP
-========================= */
-
-displayTeams();
-
-displayFixtures();
-
-displayTable();
-
-displaySeason();
 
 
 /* =========================
@@ -3184,6 +2968,19 @@ window.approveRegistration =
 
 window.rejectRegistration =
   rejectRegistration;
+
+
+/* =========================
+   START APPLICATION
+========================= */
+
+displayTeams();
+
+displayFixtures();
+
+displayTable();
+
+displaySeason();
 
 
 /* =========================
