@@ -3,7 +3,8 @@ import {
   doc,
   getDocs,
   setDoc,
-  addDoc
+  addDoc,
+  deleteDoc
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 import {
@@ -13,7 +14,20 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 
+/* =========================
+   ADMIN SETTINGS
+========================= */
+
+const ADMIN_EMAIL =
+  "obakimoprecious07@gmail.com";
+
+
+/* =========================
+   COMPETITION DATA
+========================= */
+
 let teams = [];
+
 let fixtures = [];
 
 let season = {
@@ -23,7 +37,13 @@ let season = {
   legs: 1
 };
 
+
+/* =========================
+   ADMIN STATE
+========================= */
+
 let adminLoggedIn = false;
+
 let currentAdmin = null;
 
 
@@ -51,20 +71,63 @@ const seasonDetails =
 
 
 /* =========================
-   FIREBASE
+   CHECK ADMIN
+========================= */
+
+function isAdminUser() {
+
+  if (!currentAdmin) {
+    return false;
+  }
+
+  if (!currentAdmin.email) {
+    return false;
+  }
+
+  return (
+    currentAdmin.email.toLowerCase() ===
+    ADMIN_EMAIL.toLowerCase()
+  );
+
+}
+
+
+/* =========================
+   SAVE COMPETITION
 ========================= */
 
 async function saveCompetition() {
 
   if (!window.db) {
-    console.error("Firebase database unavailable.");
-    return;
+
+    console.error(
+      "Firebase database unavailable."
+    );
+
+    return false;
+
   }
+
+
+  if (!isAdminUser()) {
+
+    console.error(
+      "Unauthorized competition save."
+    );
+
+    return false;
+
+  }
+
 
   try {
 
     await setDoc(
-      doc(window.db, "competition", "main"),
+      doc(
+        window.db,
+        "competition",
+        "main"
+      ),
       {
         teams: teams,
         fixtures: fixtures,
@@ -72,64 +135,28 @@ async function saveCompetition() {
       }
     );
 
-    console.log("Competition saved.");
+
+    console.log(
+      "Competition saved successfully."
+    );
+
+
+    return true;
 
   } catch (error) {
 
-    console.error("Save failed:", error);
-
-    alert("❌ Unable to save competition data.");
-
-  }
-
-}
+    console.error(
+      "Save failed:",
+      error
+    );
 
 
-async function loadCompetition() {
+    alert(
+      "❌ Unable to save competition data."
+    );
 
-  if (!window.db) {
-    console.error("Firebase database unavailable.");
-    return;
-  }
 
-  try {
-
-    const snapshot =
-      await getDocs(
-        collection(window.db, "competition")
-      );
-
-    snapshot.forEach(function(item) {
-
-      if (item.id === "main") {
-
-        const data = item.data();
-
-        teams = data.teams || [];
-
-        fixtures = data.fixtures || [];
-
-        season =
-          data.season || {
-            started: false,
-            startDate: null,
-            endDate: null,
-            legs: 1
-          };
-
-      }
-
-    });
-
-    displayTeams();
-    displayFixtures();
-    displayTable();
-    displaySeason();
-    updateRegistrationStatus();
-
-  } catch (error) {
-
-    console.error("Load failed:", error);
+    return false;
 
   }
 
@@ -137,7 +164,99 @@ async function loadCompetition() {
 
 
 /* =========================
-   REGISTRATION
+   LOAD COMPETITION
+========================= */
+
+async function loadCompetition() {
+
+  if (!window.db) {
+
+    console.error(
+      "Firebase database unavailable."
+    );
+
+    return;
+
+  }
+
+
+  try {
+
+    const snapshot =
+      await getDocs(
+        collection(
+          window.db,
+          "competition"
+        )
+      );
+
+
+    snapshot.forEach(
+      function(item) {
+
+        if (item.id !== "main") {
+          return;
+        }
+
+
+        const data =
+          item.data();
+
+
+        teams =
+          Array.isArray(data.teams)
+            ? data.teams
+            : [];
+
+
+        fixtures =
+          Array.isArray(data.fixtures)
+            ? data.fixtures
+            : [];
+
+
+        season =
+          data.season || {
+
+            started: false,
+
+            startDate: null,
+
+            endDate: null,
+
+            legs: 1
+
+          };
+
+      }
+    );
+
+
+    displayTeams();
+
+    displayFixtures();
+
+    displayTable();
+
+    displaySeason();
+
+    updateRegistrationStatus();
+
+
+  } catch (error) {
+
+    console.error(
+      "Load failed:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================
+   PUBLIC REGISTRATION
 ========================= */
 
 form.addEventListener(
@@ -145,6 +264,7 @@ form.addEventListener(
   async function(event) {
 
     event.preventDefault();
+
 
     if (season.started) {
 
@@ -155,11 +275,23 @@ form.addEventListener(
 
     }
 
+
+    if (!window.db) {
+
+      registrationMessage.textContent =
+        "❌ Database is unavailable.";
+
+      return;
+
+    }
+
+
     const teamName =
       document
         .getElementById("teamName")
         .value
         .trim();
+
 
     const playerName =
       document
@@ -168,7 +300,14 @@ form.addEventListener(
         .trim();
 
 
-    if (!teamName || !playerName) {
+    /* =========================
+       VALIDATION
+    ========================= */
+
+    if (
+      !teamName ||
+      !playerName
+    ) {
 
       registrationMessage.textContent =
         "⚠️ Please fill in all fields.";
@@ -178,6 +317,36 @@ form.addEventListener(
     }
 
 
+    if (
+      teamName.length < 2 ||
+      teamName.length > 40
+    ) {
+
+      registrationMessage.textContent =
+        "⚠️ Team name must be 2-40 characters.";
+
+      return;
+
+    }
+
+
+    if (
+      playerName.length < 2 ||
+      playerName.length > 60
+    ) {
+
+      registrationMessage.textContent =
+        "⚠️ Player name must be 2-60 characters.";
+
+      return;
+
+    }
+
+
+    /* =========================
+       CHECK APPROVED TEAMS
+    ========================= */
+
     const cleanName =
       teamName
         .toLowerCase()
@@ -186,14 +355,19 @@ form.addEventListener(
 
 
     const duplicate =
-      teams.some(function(team) {
+      teams.some(
+        function(team) {
 
-        return team.teamName
-          .toLowerCase()
-          .replace(/\s+/g, " ")
-          .trim() === cleanName;
+          return (
+            String(team.teamName || "")
+              .toLowerCase()
+              .replace(/\s+/g, " ")
+              .trim() ===
+            cleanName
+          );
 
-      });
+        }
+      );
 
 
     if (duplicate) {
@@ -206,47 +380,50 @@ form.addEventListener(
     }
 
 
-    teams.push({
+    /* =========================
+       SEND FOR APPROVAL
+    ========================= */
 
-      id: Date.now().toString(),
+    try {
 
-      teamName: teamName,
+      await addDoc(
+        collection(
+          window.db,
+          "registrations"
+        ),
+        {
 
-      playerName: playerName,
+          teamName: teamName,
 
-      played: 0,
+          playerName: playerName,
 
-      wins: 0,
+          createdAt: Date.now(),
 
-      draws: 0,
+          status: "pending"
 
-      losses: 0,
-
-      goalsFor: 0,
-
-      goalsAgainst: 0,
-
-      points: 0
-
-    });
+        }
+      );
 
 
-    await addDoc(
-  collection(window.db, "registrations"),
-  {
-    teamName: teamName,
-    playerName: playerName,
-    createdAt: Date.now()
-  }
-);
-    displayTeams();
+      registrationMessage.textContent =
+        "✅ Registration submitted! Waiting for admin approval.";
 
-    displayTable();
 
-    registrationMessage.textContent =
-      "✅ Team registered successfully!";
+      form.reset();
 
-    form.reset();
+
+    } catch (error) {
+
+      console.error(
+        "Registration failed:",
+        error
+      );
+
+
+      registrationMessage.textContent =
+        "❌ Registration failed. Please try again.";
+
+    }
 
   }
 );
@@ -257,6 +434,11 @@ form.addEventListener(
 ========================= */
 
 function displayTeams() {
+
+  if (!teamList) {
+    return;
+  }
+
 
   if (teams.length === 0) {
 
@@ -271,32 +453,48 @@ function displayTeams() {
   teamList.innerHTML = "";
 
 
-  teams.forEach(function(team) {
+  teams.forEach(
+    function(team) {
 
-    const card =
-      document.createElement("div");
-
-    card.className = "team-card";
-
-
-    card.innerHTML = `
-      <h3>⚽ ${escapeHTML(team.teamName)}</h3>
-      <p>${escapeHTML(team.playerName)}</p>
-    `;
+      const card =
+        document.createElement("div");
 
 
-    teamList.appendChild(card);
+      card.className =
+        "team-card";
 
-  });
+
+      card.innerHTML = `
+
+        <h3>
+          ⚽ ${escapeHTML(team.teamName)}
+        </h3>
+
+        <p>
+          ${escapeHTML(team.playerName)}
+        </p>
+
+      `;
+
+
+      teamList.appendChild(card);
+
+    }
+  );
 
 }
 
 
 /* =========================
-   TABLE
+   DISPLAY TABLE
 ========================= */
 
 function displayTable() {
+
+  if (!leagueTable) {
+    return;
+  }
+
 
   leagueTable.innerHTML = "";
 
@@ -304,11 +502,15 @@ function displayTable() {
   if (teams.length === 0) {
 
     leagueTable.innerHTML = `
+
       <tr>
+
         <td colspan="10">
           No teams registered yet.
         </td>
+
       </tr>
+
     `;
 
     return;
@@ -317,99 +519,171 @@ function displayTable() {
 
 
   const sorted =
-    [...teams].sort(function(a, b) {
+    [...teams].sort(
+      function(a, b) {
 
-      const aGD =
-        (a.goalsFor || 0) -
-        (a.goalsAgainst || 0);
-
-      const bGD =
-        (b.goalsFor || 0) -
-        (b.goalsAgainst || 0);
+        const aGD =
+          (a.goalsFor || 0) -
+          (a.goalsAgainst || 0);
 
 
-      if (
-        (b.points || 0) !==
-        (a.points || 0)
-      ) {
+        const bGD =
+          (b.goalsFor || 0) -
+          (b.goalsAgainst || 0);
+
+
+        if (
+          (b.points || 0) !==
+          (a.points || 0)
+        ) {
+
+          return (
+            (b.points || 0) -
+            (a.points || 0)
+          );
+
+        }
+
+
+        if (bGD !== aGD) {
+
+          return bGD - aGD;
+
+        }
+
 
         return (
-          (b.points || 0) -
-          (a.points || 0)
+          (b.goalsFor || 0) -
+          (a.goalsFor || 0)
         );
 
       }
+    );
 
 
-      if (bGD !== aGD) {
+  sorted.forEach(
+    function(team, index) {
 
-        return bGD - aGD;
-
-      }
-
-
-      return (
-        (b.goalsFor || 0) -
-        (a.goalsFor || 0)
-      );
-
-    });
+      const gf =
+        team.goalsFor || 0;
 
 
-  sorted.forEach(function(team, index) {
-
-    const gf =
-      team.goalsFor || 0;
-
-    const ga =
-      team.goalsAgainst || 0;
-
-    const gd =
-      gf - ga;
+      const ga =
+        team.goalsAgainst || 0;
 
 
-    leagueTable.innerHTML += `
-      <tr>
+      const gd =
+        gf - ga;
 
-        <td>${index + 1}</td>
 
-        <td>
-          ${escapeHTML(team.teamName)}
-        </td>
+      leagueTable.innerHTML += `
 
-        <td>${team.played || 0}</td>
+        <tr>
 
-        <td>${team.wins || 0}</td>
+          <td>
+            ${index + 1}
+          </td>
 
-        <td>${team.draws || 0}</td>
+          <td>
+            ${escapeHTML(team.teamName)}
+          </td>
 
-        <td>${team.losses || 0}</td>
+          <td>
+            ${team.played || 0}
+          </td>
 
-        <td>${gf}</td>
+          <td>
+            ${team.wins || 0}
+          </td>
 
-        <td>${ga}</td>
+          <td>
+            ${team.draws || 0}
+          </td>
 
-        <td>${gd}</td>
+          <td>
+            ${team.losses || 0}
+          </td>
 
-        <td>${team.points || 0}</td>
+          <td>
+            ${gf}
+          </td>
 
-      </tr>
-    `;
+          <td>
+            ${ga}
+          </td>
 
-  });
+          <td>
+            ${gd}
+          </td>
+
+          <td>
+            ${team.points || 0}
+          </td>
+
+        </tr>
+
+      `;
+
+    }
+  );
 
 }
 
 
 /* =========================
+   REGISTRATION STATUS
+========================= */
+
+function updateRegistrationStatus() {
+
+  if (!form) {
+    return;
+  }
+
+
+  const inputs =
+    form.querySelectorAll(
+      "input, button"
+    );
+
+
+  inputs.forEach(
+    function(element) {
+
+      element.disabled =
+        season.started;
+
+    }
+  );
+
+
+  if (season.started) {
+
+    registrationMessage.textContent =
+      "🔒 Registration is CLOSED.";
+
+  }
+
+  else {
+
+    registrationMessage.textContent =
+      "";
+
+  }
+
+}
+
+/* =========================
    FIXTURE GENERATION
 ========================= */
 
-function generateFixtures() {
+async function generateFixtures() {
 
-  if (!adminLoggedIn) {
+  if (!isAdminUser()) {
 
-    alert("🔒 Admin login required.");
+    alert(
+      "🔒 Admin login required."
+    );
 
     return;
 
@@ -442,10 +716,16 @@ function generateFixtures() {
 
 
   let list =
-    teams.map(function(team) {
-      return team.teamName;
-    });
+    teams.map(
+      function(team) {
+        return team.teamName;
+      }
+    );
 
+
+  /* =========================
+     ADD BYE IF ODD
+  ========================= */
 
   if (list.length % 2 !== 0) {
 
@@ -454,12 +734,21 @@ function generateFixtures() {
   }
 
 
-  const total = list.length;
+  const total =
+    list.length;
 
-  const rounds = total - 1;
 
-  const matches = total / 2;
+  const rounds =
+    total - 1;
 
+
+  const matches =
+    total / 2;
+
+
+  /* =========================
+     GENERATE FIRST LEG
+  ========================= */
 
   for (
     let round = 0;
@@ -473,10 +762,14 @@ function generateFixtures() {
       i++
     ) {
 
-      const home = list[i];
+      const home =
+        list[i];
+
 
       const away =
-        list[total - 1 - i];
+        list[
+          total - 1 - i
+        ];
 
 
       if (
@@ -492,17 +785,23 @@ function generateFixtures() {
             "-" +
             fixtures.length,
 
-          day: round + 1,
+          day:
+            round + 1,
 
-          home: home,
+          home:
+            home,
 
-          away: away,
+          away:
+            away,
 
-          completed: false,
+          completed:
+            false,
 
-          homeScore: null,
+          homeScore:
+            null,
 
-          awayScore: null
+          awayScore:
+            null
 
         });
 
@@ -510,6 +809,10 @@ function generateFixtures() {
 
     }
 
+
+    /* =========================
+       ROTATE TEAMS
+    ========================= */
 
     list.splice(
       1,
@@ -520,54 +823,70 @@ function generateFixtures() {
   }
 
 
+  /* =========================
+     SECOND LEG
+  ========================= */
+
   if (season.legs === 2) {
 
     const firstLeg =
       [...fixtures];
 
 
-    firstLeg.forEach(function(fixture) {
+    firstLeg.forEach(
+      function(fixture) {
 
-      fixtures.push({
+        fixtures.push({
 
-        id:
-          "fixture-" +
-          Date.now() +
-          "-" +
-          fixtures.length,
+          id:
+            "fixture-" +
+            Date.now() +
+            "-" +
+            fixtures.length,
 
-        day:
-          fixture.day + rounds,
+          day:
+            fixture.day +
+            rounds,
 
-        home:
-          fixture.away,
+          home:
+            fixture.away,
 
-        away:
-          fixture.home,
+          away:
+            fixture.home,
 
-        completed: false,
+          completed:
+            false,
 
-        homeScore: null,
+          homeScore:
+            null,
 
-        awayScore: null
+          awayScore:
+            null
 
-      });
+        });
 
-    });
+      }
+    );
 
   }
 
 
   displayFixtures();
 
-  saveCompetition();
+
+  const saved =
+    await saveCompetition();
 
 
-  alert(
-    "✅ " +
-    fixtures.length +
-    " fixtures generated."
-  );
+  if (saved) {
+
+    alert(
+      "✅ " +
+      fixtures.length +
+      " fixtures generated."
+    );
+
+  }
 
 }
 
@@ -577,6 +896,11 @@ function generateFixtures() {
 ========================= */
 
 function displayFixtures() {
+
+  if (!fixtureList) {
+    return;
+  }
+
 
   if (fixtures.length === 0) {
 
@@ -590,121 +914,187 @@ function displayFixtures() {
 
   fixtureList.innerHTML = "";
 
+
   let currentDay = 0;
 
 
-  fixtures.forEach(function(fixture, index) {
+  fixtures.forEach(
+    function(fixture, index) {
 
-    if (fixture.day !== currentDay) {
+      /* =========================
+         MATCH DAY HEADING
+      ========================= */
 
-      currentDay = fixture.day;
+      if (
+        fixture.day !==
+        currentDay
+      ) {
+
+        currentDay =
+          fixture.day;
 
 
-      const heading =
-        document.createElement("h3");
+        const heading =
+          document.createElement(
+            "h3"
+          );
 
-      heading.className =
-        "match-day";
+
+        heading.className =
+          "match-day";
 
 
-      heading.textContent =
-        "📅 Match Day " +
-        fixture.day;
+        heading.textContent =
+          "📅 Match Day " +
+          fixture.day;
+
+
+        fixtureList.appendChild(
+          heading
+        );
+
+      }
+
+
+      /* =========================
+         MATCH BOX
+      ========================= */
+
+      const match =
+        document.createElement(
+          "div"
+        );
+
+
+      match.className =
+        "fixture";
+
+
+      if (fixture.completed) {
+
+        match.innerHTML = `
+
+          <span class="teams">
+
+            ${escapeHTML(
+              fixture.home
+            )}
+
+            🆚
+
+            ${escapeHTML(
+              fixture.away
+            )}
+
+          </span>
+
+
+          <strong>
+
+            ${fixture.homeScore}
+
+            -
+
+            ${fixture.awayScore}
+
+          </strong>
+
+
+          <span class="completed">
+
+            ✅ Completed
+
+          </span>
+
+        `;
+
+      }
+
+      else {
+
+        match.innerHTML = `
+
+          <span class="teams">
+
+            ${escapeHTML(
+              fixture.home
+            )}
+
+            🆚
+
+            ${escapeHTML(
+              fixture.away
+            )}
+
+          </span>
+
+        `;
+
+
+        if (adminLoggedIn) {
+
+          const button =
+            document.createElement(
+              "button"
+            );
+
+
+          button.textContent =
+            "🏆 Enter Result";
+
+
+          button.onclick =
+            function() {
+
+              enterResult(index);
+
+            };
+
+
+          match.appendChild(
+            button
+          );
+
+        }
+
+        else {
+
+          const waiting =
+            document.createElement(
+              "span"
+            );
+
+
+          waiting.textContent =
+            "⏳ Awaiting Result";
+
+
+          match.appendChild(
+            waiting
+          );
+
+        }
+
+      }
 
 
       fixtureList.appendChild(
-        heading
+        match
       );
 
     }
-
-
-    const match =
-      document.createElement("div");
-
-    match.className =
-      "fixture";
-
-
-    if (fixture.completed) {
-
-      match.innerHTML = `
-
-        <span class="teams">
-
-          ${escapeHTML(fixture.home)}
-
-          🆚
-
-          ${escapeHTML(fixture.away)}
-
-        </span>
-
-        <strong>
-
-          ${fixture.homeScore}
-          -
-          ${fixture.awayScore}
-
-        </strong>
-
-        <span class="completed">
-
-          ✅ Completed
-
-        </span>
-
-      `;
-
-    } else {
-
-      match.innerHTML = `
-
-        <span class="teams">
-
-          ${escapeHTML(fixture.home)}
-
-          🆚
-
-          ${escapeHTML(fixture.away)}
-
-        </span>
-
-        ${
-          adminLoggedIn
-            ? `
-              <button
-                onclick="enterResult(${index})"
-              >
-                🏆 Enter Result
-              </button>
-            `
-            : `
-              <span>
-                ⏳ Awaiting Result
-              </span>
-            `
-        }
-
-      `;
-
-    }
-
-
-    fixtureList.appendChild(match);
-
-  });
+  );
 
 }
 
 
 /* =========================
-   ENTER RESULT
+   ENTER MATCH RESULT
 ========================= */
 
 async function enterResult(index) {
 
-  if (!adminLoggedIn) {
+  if (!isAdminUser()) {
 
     alert(
       "🔒 Admin login required."
@@ -719,10 +1109,18 @@ async function enterResult(index) {
     fixtures[index];
 
 
-  if (
-    !fixture ||
-    fixture.completed
-  ) {
+  if (!fixture) {
+
+    alert(
+      "❌ Fixture not found."
+    );
+
+    return;
+
+  }
+
+
+  if (fixture.completed) {
 
     alert(
       "⚠️ This match is already completed."
@@ -733,21 +1131,41 @@ async function enterResult(index) {
   }
 
 
-  const homeScore =
-    Number(
-      prompt(
-        fixture.home + " score:"
-      )
+  const homeInput =
+    prompt(
+      fixture.home +
+      " score:"
     );
+
+
+  if (homeInput === null) {
+    return;
+  }
+
+
+  const awayInput =
+    prompt(
+      fixture.away +
+      " score:"
+    );
+
+
+  if (awayInput === null) {
+    return;
+  }
+
+
+  const homeScore =
+    Number(homeInput);
 
 
   const awayScore =
-    Number(
-      prompt(
-        fixture.away + " score:"
-      )
-    );
+    Number(awayInput);
 
+
+  /* =========================
+     SCORE VALIDATION
+  ========================= */
 
   if (
     !Number.isInteger(homeScore) ||
@@ -765,29 +1183,40 @@ async function enterResult(index) {
   }
 
 
+  /* =========================
+     FIND TEAMS
+  ========================= */
+
   const homeTeam =
-    teams.find(function(team) {
+    teams.find(
+      function(team) {
 
-      return (
-        team.teamName ===
-        fixture.home
-      );
+        return (
+          team.teamName ===
+          fixture.home
+        );
 
-    });
+      }
+    );
 
 
   const awayTeam =
-    teams.find(function(team) {
+    teams.find(
+      function(team) {
 
-      return (
-        team.teamName ===
-        fixture.away
-      );
+        return (
+          team.teamName ===
+          fixture.away
+        );
 
-    });
+      }
+    );
 
 
-  if (!homeTeam || !awayTeam) {
+  if (
+    !homeTeam ||
+    !awayTeam
+  ) {
 
     alert(
       "❌ Team not found."
@@ -798,68 +1227,121 @@ async function enterResult(index) {
   }
 
 
-  homeTeam.played++;
-  awayTeam.played++;
+  /* =========================
+     UPDATE MATCH STATS
+  ========================= */
+
+  homeTeam.played =
+    (homeTeam.played || 0) + 1;
 
 
-  homeTeam.goalsFor +=
+  awayTeam.played =
+    (awayTeam.played || 0) + 1;
+
+
+  homeTeam.goalsFor =
+    (homeTeam.goalsFor || 0) +
     homeScore;
 
-  homeTeam.goalsAgainst +=
+
+  homeTeam.goalsAgainst =
+    (homeTeam.goalsAgainst || 0) +
     awayScore;
 
 
-  awayTeam.goalsFor +=
+  awayTeam.goalsFor =
+    (awayTeam.goalsFor || 0) +
     awayScore;
 
-  awayTeam.goalsAgainst +=
+
+  awayTeam.goalsAgainst =
+    (awayTeam.goalsAgainst || 0) +
     homeScore;
 
 
-  if (homeScore > awayScore) {
+  /* =========================
+     WIN / DRAW / LOSS
+  ========================= */
 
-    homeTeam.wins++;
+  if (
+    homeScore >
+    awayScore
+  ) {
 
-    homeTeam.points += 3;
+    homeTeam.wins =
+      (homeTeam.wins || 0) + 1;
 
-    awayTeam.losses++;
+
+    homeTeam.points =
+      (homeTeam.points || 0) + 3;
+
+
+    awayTeam.losses =
+      (awayTeam.losses || 0) + 1;
 
   }
 
-  else if (homeScore < awayScore) {
+  else if (
+    homeScore <
+    awayScore
+  ) {
 
-    awayTeam.wins++;
+    awayTeam.wins =
+      (awayTeam.wins || 0) + 1;
 
-    awayTeam.points += 3;
 
-    homeTeam.losses++;
+    awayTeam.points =
+      (awayTeam.points || 0) + 3;
+
+
+    homeTeam.losses =
+      (homeTeam.losses || 0) + 1;
 
   }
 
   else {
 
-    homeTeam.draws++;
+    homeTeam.draws =
+      (homeTeam.draws || 0) + 1;
 
-    awayTeam.draws++;
 
-    homeTeam.points++;
+    awayTeam.draws =
+      (awayTeam.draws || 0) + 1;
 
-    awayTeam.points++;
+
+    homeTeam.points =
+      (homeTeam.points || 0) + 1;
+
+
+    awayTeam.points =
+      (awayTeam.points || 0) + 1;
 
   }
 
 
+  /* =========================
+     COMPLETE FIXTURE
+  ========================= */
+
   fixture.homeScore =
     homeScore;
 
+
   fixture.awayScore =
     awayScore;
+
 
   fixture.completed =
     true;
 
 
-  await saveCompetition();
+  const saved =
+    await saveCompetition();
+
+
+  if (!saved) {
+    return;
+  }
 
 
   displayFixtures();
@@ -873,11 +1355,17 @@ async function enterResult(index) {
 
 }
 
+
 /* =========================
    SEASON DISPLAY
 ========================= */
 
 function displaySeason() {
+
+  if (!seasonDetails) {
+    return;
+  }
+
 
   if (!season.started) {
 
@@ -886,7 +1374,9 @@ function displaySeason() {
       <div class="season-status">
 
         <p class="warning">
+
           🟡 Season has not started.
+
         </p>
 
       </div>
@@ -903,23 +1393,50 @@ function displaySeason() {
     <div class="season-status">
 
       <p>
-        🟢 <strong>Season Active</strong>
+
+        🟢
+
+        <strong>
+          Season Active
+        </strong>
+
       </p>
 
+
       <p>
+
         📅 Start:
-        ${formatDate(season.startDate)}
+
+        ${formatDate(
+          season.startDate
+        )}
+
       </p>
 
+
       <p>
+
         📅 End:
-        ${formatDate(season.endDate)}
+
+        ${formatDate(
+          season.endDate
+        )}
+
       </p>
 
+
       <p>
+
         ⚽ Format:
+
         ${season.legs}
-        Leg${season.legs === 1 ? "" : "s"}
+
+        Leg${
+          season.legs === 1
+            ? ""
+            : "s"
+        }
+
       </p>
 
     </div>
@@ -935,7 +1452,7 @@ function displaySeason() {
 
 async function startSeason() {
 
-  if (!adminLoggedIn) {
+  if (!isAdminUser()) {
 
     alert(
       "🔒 Admin login required."
@@ -971,24 +1488,27 @@ async function startSeason() {
   const startDate =
     document.getElementById(
       "seasonStart"
-    ).value;
+    )?.value;
 
 
   const endDate =
     document.getElementById(
       "seasonEnd"
-    ).value;
+    )?.value;
 
 
   const legs =
     Number(
       document.getElementById(
         "legFormat"
-      ).value
+      )?.value
     );
 
 
-  if (!startDate || !endDate) {
+  if (
+    !startDate ||
+    !endDate
+  ) {
 
     alert(
       "⚠️ Select both season dates."
@@ -1013,36 +1533,82 @@ async function startSeason() {
   }
 
 
-  if (fixtures.length === 0) {
+  if (
+    legs !== 1 &&
+    legs !== 2
+  ) {
 
-    season.legs = legs;
-
-    generateFixtures();
-
-  }
-
-
-  if (fixtures.length === 0) {
+    alert(
+      "⚠️ Invalid league format."
+    );
 
     return;
 
   }
 
 
+  /* =========================
+     SET LEAGUE FORMAT
+  ========================= */
+
+  season.legs =
+    legs;
+
+
+  /* =========================
+     GENERATE FIXTURES
+  ========================= */
+
+  if (
+    fixtures.length === 0
+  ) {
+
+    await generateFixtures();
+
+  }
+
+
+  if (
+    fixtures.length === 0
+  ) {
+
+    alert(
+      "❌ Fixtures could not be generated."
+    );
+
+    return;
+
+  }
+
+
+  /* =========================
+     START SEASON
+  ========================= */
+
   season = {
 
-    started: true,
+    started:
+      true,
 
-    startDate: startDate,
+    startDate:
+      startDate,
 
-    endDate: endDate,
+    endDate:
+      endDate,
 
-    legs: legs
+    legs:
+      legs
 
   };
 
 
-  await saveCompetition();
+  const saved =
+    await saveCompetition();
+
+
+  if (!saved) {
+    return;
+  }
 
 
   displaySeason();
@@ -1066,7 +1632,7 @@ async function startSeason() {
 
 async function reopenRegistration() {
 
-  if (!adminLoggedIn) {
+  if (!isAdminUser()) {
 
     alert(
       "🔒 Admin login required."
@@ -1077,10 +1643,17 @@ async function reopenRegistration() {
   }
 
 
-  season.started = false;
+  season.started =
+    false;
 
 
-  await saveCompetition();
+  const saved =
+    await saveCompetition();
+
+
+  if (!saved) {
+    return;
+  }
 
 
   updateRegistrationStatus();
@@ -1096,49 +1669,12 @@ async function reopenRegistration() {
 
 
 /* =========================
-   REGISTRATION STATUS
-========================= */
-
-function updateRegistrationStatus() {
-
-  const inputs =
-    form.querySelectorAll(
-      "input, button"
-    );
-
-
-  inputs.forEach(function(element) {
-
-    element.disabled =
-      season.started;
-
-  });
-
-
-  if (season.started) {
-
-    registrationMessage.textContent =
-      "🔒 Registration is CLOSED.";
-
-  }
-
-  else {
-
-    registrationMessage.textContent =
-      "";
-
-  }
-
-}
-
-
-/* =========================
-   MANAGE TEAMS
+   TEAM MANAGEMENT
 ========================= */
 
 async function manageTeams() {
 
-  if (!adminLoggedIn) {
+  if (!isAdminUser()) {
 
     alert(
       "🔒 Admin login required."
@@ -1175,17 +1711,19 @@ async function manageTeams() {
     "👥 REGISTERED TEAMS\n\n";
 
 
-  teams.forEach(function(team, index) {
+  teams.forEach(
+    function(team, index) {
 
-    list +=
-      (index + 1) +
-      ". " +
-      team.teamName +
-      " — " +
-      team.playerName +
-      "\n";
+      list +=
+        (index + 1) +
+        ". " +
+        team.teamName +
+        " — " +
+        team.playerName +
+        "\n";
 
-  });
+    }
+  );
 
 
   const choice =
@@ -1254,14 +1792,24 @@ async function manageTeams() {
     teams[index].teamName =
       newName.trim();
 
+
     teams[index].playerName =
       newPlayer.trim();
 
 
+    /* Reset fixtures because
+       team names changed */
+
     fixtures = [];
 
 
-    await saveCompetition();
+    const saved =
+      await saveCompetition();
+
+
+    if (!saved) {
+      return;
+    }
 
 
     displayTeams();
@@ -1293,13 +1841,22 @@ async function manageTeams() {
     }
 
 
-    teams.splice(index, 1);
+    teams.splice(
+      index,
+      1
+    );
 
 
     fixtures = [];
 
 
-    await saveCompetition();
+    const saved =
+      await saveCompetition();
+
+
+    if (!saved) {
+      return;
+    }
 
 
     displayTeams();
@@ -1324,7 +1881,7 @@ async function manageTeams() {
 
 async function clearCompetition() {
 
-  if (!adminLoggedIn) {
+  if (!isAdminUser()) {
 
     alert(
       "🔒 Admin login required."
@@ -1349,23 +1906,34 @@ async function clearCompetition() {
 
   teams = [];
 
+
   fixtures = [];
 
 
   season = {
 
-    started: false,
+    started:
+      false,
 
-    startDate: null,
+    startDate:
+      null,
 
-    endDate: null,
+    endDate:
+      null,
 
-    legs: 1
+    legs:
+      1
 
   };
 
 
-  await saveCompetition();
+  const saved =
+    await saveCompetition();
+
+
+  if (!saved) {
+    return;
+  }
 
 
   displayTeams();
@@ -1385,17 +1953,555 @@ async function clearCompetition() {
 
 }
 
+/* =========================
+   LOAD REGISTRATIONS
+========================= */
+
+async function loadRegistrations() {
+
+  if (!isAdminUser()) {
+    return;
+  }
+
+
+  if (!window.db) {
+    return;
+  }
+
+
+  try {
+
+    const snapshot =
+      await getDocs(
+        collection(
+          window.db,
+          "registrations"
+        )
+      );
+
+
+    const pending = [];
+
+
+    snapshot.forEach(
+      function(item) {
+
+        const data =
+          item.data();
+
+
+        /* Old registrations without
+           status are treated as pending */
+
+        const status =
+          data.status || "pending";
+
+
+        if (status === "pending") {
+
+          pending.push({
+
+            id:
+              item.id,
+
+            teamName:
+              data.teamName || "",
+
+            playerName:
+              data.playerName || "",
+
+            createdAt:
+              data.createdAt || 0
+
+          });
+
+        }
+
+      }
+    );
+
+
+    /* Newest first */
+
+    pending.sort(
+      function(a, b) {
+
+        return (
+          b.createdAt -
+          a.createdAt
+        );
+
+      }
+    );
+
+
+    displayPendingRegistrations(
+      pending
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Unable to load registrations:",
+      error
+    );
+
+  }
+
+}
+
 
 /* =========================
-   FIREBASE ADMIN LOGIN
+   DISPLAY PENDING
+   REGISTRATIONS
+========================= */
+
+function displayPendingRegistrations(
+  pending
+) {
+
+  const box =
+    document.getElementById(
+      "pendingRegistrations"
+    );
+
+
+  if (!box) {
+    return;
+  }
+
+
+  box.innerHTML = "";
+
+
+  const heading =
+    document.createElement(
+      "h3"
+    );
+
+
+  heading.textContent =
+    "📥 Pending Registrations";
+
+
+  box.appendChild(
+    heading
+  );
+
+
+  if (pending.length === 0) {
+
+    const empty =
+      document.createElement(
+        "p"
+      );
+
+
+    empty.textContent =
+      "No pending registrations.";
+
+
+    box.appendChild(
+      empty
+    );
+
+
+    return;
+
+  }
+
+
+  pending.forEach(
+    function(registration) {
+
+      const card =
+        document.createElement(
+          "div"
+        );
+
+
+      card.className =
+        "pending-registration";
+
+
+      const info =
+        document.createElement(
+          "div"
+        );
+
+
+      info.innerHTML = `
+
+        <strong>
+          ⚽ ${escapeHTML(
+            registration.teamName
+          )}
+        </strong>
+
+        <p>
+          Player:
+          ${escapeHTML(
+            registration.playerName
+          )}
+        </p>
+
+      `;
+
+
+      card.appendChild(
+        info
+      );
+
+
+      /* =========================
+         APPROVE BUTTON
+      ========================= */
+
+      const approveButton =
+        document.createElement(
+          "button"
+        );
+
+
+      approveButton.textContent =
+        "✅ Approve";
+
+
+      approveButton.onclick =
+        function() {
+
+          approveRegistration(
+            registration.id,
+            registration.teamName,
+            registration.playerName
+          );
+
+        };
+
+
+      card.appendChild(
+        approveButton
+      );
+
+
+      /* =========================
+         REJECT BUTTON
+      ========================= */
+
+      const rejectButton =
+        document.createElement(
+          "button"
+        );
+
+
+      rejectButton.textContent =
+        "❌ Reject";
+
+
+      rejectButton.onclick =
+        function() {
+
+          rejectRegistration(
+            registration.id
+          );
+
+        };
+
+
+      card.appendChild(
+        rejectButton
+      );
+
+
+      box.appendChild(
+        card
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================
+   APPROVE REGISTRATION
+========================= */
+
+async function approveRegistration(
+  registrationId,
+  teamName,
+  playerName
+) {
+
+  if (!isAdminUser()) {
+
+    alert(
+      "🔒 Admin login required."
+    );
+
+    return;
+
+  }
+
+
+  if (season.started) {
+
+    alert(
+      "🔒 The season has already started."
+    );
+
+    return;
+
+  }
+
+
+  if (
+    !registrationId ||
+    !teamName ||
+    !playerName
+  ) {
+
+    alert(
+      "❌ Invalid registration."
+    );
+
+    return;
+
+  }
+
+
+  /* =========================
+     CHECK DUPLICATE
+  ========================= */
+
+  const cleanName =
+    teamName
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
+
+
+  const duplicate =
+    teams.some(
+      function(team) {
+
+        return (
+          String(
+            team.teamName || ""
+          )
+            .toLowerCase()
+            .replace(/\s+/g, " ")
+            .trim() ===
+          cleanName
+        );
+
+      }
+    );
+
+
+  if (duplicate) {
+
+    alert(
+      "⚠️ This team is already approved."
+    );
+
+    return;
+
+  }
+
+
+  /* =========================
+     CREATE TEAM
+  ========================= */
+
+  const newTeam = {
+
+    id:
+      Date.now().toString(),
+
+    teamName:
+      teamName.trim(),
+
+    playerName:
+      playerName.trim(),
+
+    played:
+      0,
+
+    wins:
+      0,
+
+    draws:
+      0,
+
+    losses:
+      0,
+
+    goalsFor:
+      0,
+
+    goalsAgainst:
+      0,
+
+    points:
+      0
+
+  };
+
+
+  teams.push(
+    newTeam
+  );
+
+
+  /* =========================
+     SAVE TEAM
+  ========================= */
+
+  const saved =
+    await saveCompetition();
+
+
+  if (!saved) {
+
+    /* Undo local change
+       if saving failed */
+
+    teams.pop();
+
+    return;
+
+  }
+
+
+  /* =========================
+     REMOVE PENDING
+  ========================= */
+
+  try {
+
+    await deleteDoc(
+      doc(
+        window.db,
+        "registrations",
+        registrationId
+      )
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Unable to remove registration:",
+      error
+    );
+
+  }
+
+
+  displayTeams();
+
+  displayTable();
+
+  displayFixtures();
+
+  displayAdminDashboard();
+
+
+  alert(
+    "✅ Team approved successfully!"
+  );
+
+}
+
+
+/* =========================
+   REJECT REGISTRATION
+========================= */
+
+async function rejectRegistration(
+  registrationId
+) {
+
+  if (!isAdminUser()) {
+
+    alert(
+      "🔒 Admin login required."
+    );
+
+    return;
+
+  }
+
+
+  if (!registrationId) {
+    return;
+  }
+
+
+  const confirmed =
+    confirm(
+      "❌ Reject this registration?"
+    );
+
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  try {
+
+    await deleteDoc(
+      doc(
+        window.db,
+        "registrations",
+        registrationId
+      )
+    );
+
+
+    await loadRegistrations();
+
+
+    alert(
+      "🗑️ Registration rejected."
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Reject failed:",
+      error
+    );
+
+
+    alert(
+      "❌ Unable to reject registration."
+    );
+
+  }
+
+}
+
+
+/* =========================
+   ADMIN LOGIN
 ========================= */
 
 async function adminLogin() {
 
   if (!window.auth) {
-  alert("❌ Firebase Authentication is not ready.");
-  return;
-}
+
+    alert(
+      "❌ Firebase Authentication is not ready."
+    );
+
+    return;
+
+  }
 
 
   if (adminLoggedIn) {
@@ -1439,10 +2545,36 @@ async function adminLogin() {
       );
 
 
+    /* =========================
+       CHECK ADMIN EMAIL
+    ========================= */
+
+    if (
+      !result.user.email ||
+      result.user.email.toLowerCase() !==
+      ADMIN_EMAIL.toLowerCase()
+    ) {
+
+      await signOut(
+        window.auth
+      );
+
+
+      alert(
+        "❌ This account is not authorized as admin."
+      );
+
+      return;
+
+    }
+
+
     currentAdmin =
       result.user;
 
-    adminLoggedIn = true;
+
+    adminLoggedIn =
+      true;
 
 
     alert(
@@ -1454,15 +2586,27 @@ async function adminLogin() {
 
     displayFixtures();
 
-  } catch (error) {
-  console.error("ADMIN LOGIN ERROR:", error);
+    await loadRegistrations();
 
-  alert(
-    "FIREBASE ERROR:\n\n" +
-    "Code: " + error.code + "\n\n" +
-    "Message: " + error.message
-  );
-}
+
+  } catch (error) {
+
+    console.error(
+      "ADMIN LOGIN ERROR:",
+      error
+    );
+
+
+    alert(
+      "❌ Login failed.\n\n" +
+      "Code: " +
+      error.code +
+      "\n\n" +
+      "Message: " +
+      error.message
+    );
+
+  }
 
 }
 
@@ -1485,9 +2629,12 @@ async function adminLogout() {
     );
 
 
-    adminLoggedIn = false;
+    adminLoggedIn =
+      false;
 
-    currentAdmin = null;
+
+    currentAdmin =
+      null;
 
 
     alert(
@@ -1497,14 +2644,20 @@ async function adminLogout() {
 
     displayFixtures();
 
+
     const adminContent =
       document.getElementById(
         "adminContent"
       );
 
 
-    adminContent.innerHTML =
-      "<p>🔐 Admin login required.</p>";
+    if (adminContent) {
+
+      adminContent.innerHTML =
+        "<p>🔐 Admin login required.</p>";
+
+    }
+
 
   } catch (error) {
 
@@ -1519,7 +2672,7 @@ async function adminLogout() {
 
 
 /* =========================
-   AUTH STATE
+   AUTH STATE LISTENER
 ========================= */
 
 function setupAuthListener() {
@@ -1537,27 +2690,64 @@ function setupAuthListener() {
 
   onAuthStateChanged(
     window.auth,
-    function(user) {
+    async function(user) {
 
-      if (user) {
+      if (!user) {
 
-        adminLoggedIn = true;
+        adminLoggedIn =
+          false;
 
-        currentAdmin = user;
+        currentAdmin =
+          null;
 
-        displayAdminDashboard();
-
-        displayFixtures();
-
-      } else {
-
-        adminLoggedIn = false;
-
-        currentAdmin = null;
 
         displayFixtures();
+
+        return;
 
       }
+
+
+      /* =========================
+         ONLY ALLOW ADMIN
+      ========================= */
+
+      if (
+        !user.email ||
+        user.email.toLowerCase() !==
+        ADMIN_EMAIL.toLowerCase()
+      ) {
+
+        await signOut(
+          window.auth
+        );
+
+
+        adminLoggedIn =
+          false;
+
+        currentAdmin =
+          null;
+
+
+        return;
+
+      }
+
+
+      adminLoggedIn =
+        true;
+
+
+      currentAdmin =
+        user;
+
+
+      displayAdminDashboard();
+
+      displayFixtures();
+
+      await loadRegistrations();
 
     }
   );
@@ -1571,7 +2761,7 @@ function setupAuthListener() {
 
 function displayAdminDashboard() {
 
-  if (!adminLoggedIn) {
+  if (!isAdminUser()) {
     return;
   }
 
@@ -1582,6 +2772,11 @@ function displayAdminDashboard() {
     );
 
 
+  if (!adminContent) {
+    return;
+  }
+
+
   adminContent.innerHTML = `
 
     <div class="admin-box">
@@ -1590,26 +2785,43 @@ function displayAdminDashboard() {
         👋 Welcome, Admin
       </h3>
 
+
       <p>
+
         Admin:
+
         <strong>
           ${escapeHTML(
             currentAdmin?.email || ""
           )}
         </strong>
+
       </p>
 
+
       <p>
-        Registered Teams:
+
+        Approved Teams:
+
         <strong>
           ${teams.length}
         </strong>
+
       </p>
+
+
+      <hr>
+
+
+      <h3>
+        ⚙️ Competition Settings
+      </h3>
 
 
       <label>
         📅 Season Start Date
       </label>
+
 
       <input
         type="date"
@@ -1621,6 +2833,7 @@ function displayAdminDashboard() {
         📅 Season End Date
       </label>
 
+
       <input
         type="date"
         id="seasonEnd"
@@ -1630,6 +2843,7 @@ function displayAdminDashboard() {
       <label>
         ⚽ League Format
       </label>
+
 
       <select id="legFormat">
 
@@ -1647,46 +2861,58 @@ function displayAdminDashboard() {
       <div class="admin-buttons">
 
         <button
-          onclick="generateFixtures()"
+          id="generateFixturesButton"
         >
           📅 Generate Fixtures
         </button>
 
 
         <button
-          onclick="startSeason()"
+          id="startSeasonButton"
         >
           🏆 Start Season
         </button>
 
 
         <button
-          onclick="manageTeams()"
+          id="manageTeamsButton"
         >
           👥 Manage Teams
         </button>
 
 
         <button
-          onclick="reopenRegistration()"
+          id="reopenRegistrationButton"
         >
           🔓 Reopen Registration
         </button>
 
 
         <button
-          onclick="clearCompetition()"
+          id="clearCompetitionButton"
         >
           🗑️ Clear Competition
         </button>
 
 
         <button
-          onclick="adminLogout()"
+          id="logoutButton"
         >
           🚪 Logout
         </button>
 
+      </div>
+
+
+      <hr>
+
+
+      <div
+        id="pendingRegistrations"
+      >
+        <p>
+          Loading registrations...
+        </p>
       </div>
 
     </div>
@@ -1694,36 +2920,131 @@ function displayAdminDashboard() {
   `;
 
 
-  if (season.startDate) {
+  /* =========================
+     BUTTON EVENTS
+  ========================= */
 
+  document
+    .getElementById(
+      "generateFixturesButton"
+    )
+    ?.addEventListener(
+      "click",
+      generateFixtures
+    );
+
+
+  document
+    .getElementById(
+      "startSeasonButton"
+    )
+    ?.addEventListener(
+      "click",
+      startSeason
+    );
+
+
+  document
+    .getElementById(
+      "manageTeamsButton"
+    )
+    ?.addEventListener(
+      "click",
+      manageTeams
+    );
+
+
+  document
+    .getElementById(
+      "reopenRegistrationButton"
+    )
+    ?.addEventListener(
+      "click",
+      reopenRegistration
+    );
+
+
+  document
+    .getElementById(
+      "clearCompetitionButton"
+    )
+    ?.addEventListener(
+      "click",
+      clearCompetition
+    );
+
+
+  document
+    .getElementById(
+      "logoutButton"
+    )
+    ?.addEventListener(
+      "click",
+      adminLogout
+    );
+
+
+  /* =========================
+     RESTORE DATES
+  ========================= */
+
+  const startInput =
     document.getElementById(
       "seasonStart"
-    ).value =
+    );
+
+
+  const endInput =
+    document.getElementById(
+      "seasonEnd"
+    );
+
+
+  const legInput =
+    document.getElementById(
+      "legFormat"
+    );
+
+
+  if (
+    startInput &&
+    season.startDate
+  ) {
+
+    startInput.value =
       season.startDate;
 
   }
 
 
-  if (season.endDate) {
+  if (
+    endInput &&
+    season.endDate
+  ) {
 
-    document.getElementById(
-      "seasonEnd"
-    ).value =
+    endInput.value =
       season.endDate;
 
   }
 
 
-  document.getElementById(
-    "legFormat"
-  ).value =
-    season.legs || 1;
+  if (legInput) {
+
+    legInput.value =
+      season.legs || 1;
+
+  }
+
+
+  /* Load pending registrations */
+
+  loadRegistrations();
 
 }
 
 
 /* =========================
-   HELPERS
+   FORMAT DATE
 ========================= */
 
 function formatDate(date) {
@@ -1735,29 +3056,47 @@ function formatDate(date) {
 
   const value =
     new Date(
-      date + "T00:00:00"
+      date +
+      "T00:00:00"
     );
 
 
   return value.toLocaleDateString(
     "en-GB",
     {
-      day: "numeric",
-      month: "long",
-      year: "numeric"
+
+      day:
+        "numeric",
+
+      month:
+        "long",
+
+      year:
+        "numeric"
+
     }
   );
 
 }
 
 
+/* =========================
+   ESCAPE HTML
+========================= */
+
 function escapeHTML(value) {
 
   const div =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
+
 
   div.textContent =
-    String(value ?? "");
+    String(
+      value ?? ""
+    );
+
 
   return div.innerHTML;
 
@@ -1777,41 +3116,74 @@ displayTable();
 displaySeason();
 
 
+/* =========================
+   REGISTER BUTTON
+========================= */
+
 window.showRegister =
   function() {
 
-    document
-      .getElementById("register")
-      .scrollIntoView({
-        behavior: "smooth"
-      });
+    const register =
+      document.getElementById(
+        "register"
+      );
+
+
+    if (!register) {
+      return;
+    }
+
+
+    register.scrollIntoView({
+      behavior:
+        "smooth"
+    });
 
   };
 
 
+/* =========================
+   GLOBAL FUNCTIONS
+========================= */
+
 window.adminLogin =
   adminLogin;
+
 
 window.adminLogout =
   adminLogout;
 
+
 window.generateFixtures =
   generateFixtures;
+
 
 window.startSeason =
   startSeason;
 
+
 window.reopenRegistration =
   reopenRegistration;
+
 
 window.manageTeams =
   manageTeams;
 
+
 window.clearCompetition =
   clearCompetition;
 
+
 window.enterResult =
   enterResult;
+
+
+window.approveRegistration =
+  approveRegistration;
+
+
+window.rejectRegistration =
+  rejectRegistration;
 
 
 /* =========================
@@ -1819,11 +3191,20 @@ window.enterResult =
 ========================= */
 
 setTimeout(
-  setupAuthListener,
+  function() {
+
+    setupAuthListener();
+
+  },
   1000
 );
 
+
 setTimeout(
-  loadCompetition,
+  function() {
+
+    loadCompetition();
+
+  },
   1000
 );
