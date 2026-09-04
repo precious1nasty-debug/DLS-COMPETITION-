@@ -315,7 +315,7 @@ window.submitResult = async function(index) {
   alert("✅ Result saved.");
 };
 
-function generateRoundRobin(teams, legs) {
+function generateRoundRobin(teams, legs, startDate, endDate) {
 
   const list = [...teams];
 
@@ -323,19 +323,58 @@ function generateRoundRobin(teams, legs) {
     return [];
   }
 
+  if (!startDate || !endDate) {
+    alert("❌ Please select a start date and end date.");
+    return [];
+  }
+
+  const start = new Date(startDate + "T00:00:00");
+  const end = new Date(endDate + "T00:00:00");
+
+  if (end < start) {
+    alert("❌ End date cannot be before start date.");
+    return [];
+  }
+
   if (list.length % 2 !== 0) {
     list.push(null);
   }
 
-  const fixtures = [];
-
   const rounds = list.length - 1;
-
   const half = list.length / 2;
+
+  const availableDays =
+    Math.floor(
+      (end - start) / (1000 * 60 * 60 * 24)
+    ) + 1;
+
+  const requiredRounds =
+    Number(legs) === 2
+      ? rounds * 2
+      : rounds;
+
+  if (availableDays < requiredRounds) {
+    alert(
+      `❌ The selected date range is too short.\n\n` +
+      `${list.length - 1} teams require ${requiredRounds} Match Days.\n` +
+      `You selected only ${availableDays} days.`
+    );
+
+    return [];
+  }
+
+  const fixtures = [];
 
   for (let round = 0; round < rounds; round++) {
 
-    const matchDay = round + 1;
+    const matchDate = new Date(start);
+
+    matchDate.setDate(
+      start.getDate() + round
+    );
+
+    const dateString =
+      matchDate.toISOString().split("T")[0];
 
     for (let i = 0; i < half; i++) {
 
@@ -347,7 +386,8 @@ function generateRoundRobin(teams, legs) {
       if (home && away) {
 
         fixtures.push({
-          day: matchDay,
+          day: round + 1,
+          date: dateString,
           home: home.name,
           away: away.name,
           homeScore: null,
@@ -364,21 +404,35 @@ function generateRoundRobin(teams, legs) {
 
     const firstLegFixtures = [...fixtures];
 
-    const secondLeg = firstLegFixtures.map(
-      (match, index) => {
+    for (let round = 0; round < rounds; round++) {
 
-        return {
-          day: rounds + match.day,
+      const matchDate = new Date(start);
+
+      matchDate.setDate(
+        start.getDate() + rounds + round
+      );
+
+      const dateString =
+        matchDate.toISOString().split("T")[0];
+
+      const roundFixtures =
+        firstLegFixtures.filter(
+          match => match.day === round + 1
+        );
+
+      roundFixtures.forEach(match => {
+
+        fixtures.push({
+          day: rounds + round + 1,
+          date: dateString,
           home: match.away,
           away: match.home,
           homeScore: null,
           awayScore: null
-        };
+        });
 
-      }
-    );
-
-    fixtures.push(...secondLeg);
+      });
+    }
   }
 
   return fixtures;
