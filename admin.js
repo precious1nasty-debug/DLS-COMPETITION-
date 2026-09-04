@@ -457,9 +457,11 @@ $("generateFixturesButton").addEventListener("click", async () => {
   competitionData.legFormat = legs;
 
   competitionData.fixtures = generateRoundRobin(
-    competitionData.teams,
-    legs
-  );
+  competitionData.teams,
+  legs,
+  $("seasonStart").value,
+  $("seasonEnd").value
+);
 
   await saveCompetition();
 
