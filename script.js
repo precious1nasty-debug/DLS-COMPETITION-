@@ -1384,6 +1384,7 @@ async function clearCompetition() {
 ========================= */
 
 async function adminLogin() {
+alert("NEW ADMIN LOGIN CODE IS RUNNING");
 
   if (!window.auth) {
 
