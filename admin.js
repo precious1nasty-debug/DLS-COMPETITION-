@@ -19,9 +19,7 @@ const ADMIN_EMAIL =
 
 
 let currentAdmin = null;
-
 let teams = [];
-
 let fixtures = [];
 
 let season = {
@@ -31,69 +29,48 @@ let season = {
   legs: 1
 };
 
-let registrationUnsubscribe =
-  null;
+let registrationUnsubscribe = null;
 
 
 const loginSection =
-  document.getElementById(
-    "adminLogin"
-  );
+  document.getElementById("adminLogin");
 
 const dashboard =
-  document.getElementById(
-    "adminDashboard"
-  );
+  document.getElementById("adminDashboard");
 
 const loginForm =
-  document.getElementById(
-    "adminLoginForm"
-  );
+  document.getElementById("adminLoginForm");
 
 const loginMessage =
-  document.getElementById(
-    "adminLoginMessage"
-  );
+  document.getElementById("adminLoginMessage");
 
 const pendingBox =
-  document.getElementById(
-    "pendingRegistrations"
-  );
+  document.getElementById("pendingRegistrations");
 
 const adminTeamList =
-  document.getElementById(
-    "adminTeamList"
-  );
+  document.getElementById("adminTeamList");
 
 const adminFixtureList =
-  document.getElementById(
-    "adminFixtureList"
-  );
+  document.getElementById("adminFixtureList");
 
 const adminTable =
-  document.getElementById(
-    "adminLeagueTable"
-  );
+  document.getElementById("adminLeagueTable");
 
 const adminSeasonDetails =
-  document.getElementById(
-    "adminSeasonDetails"
-  );
+  document.getElementById("adminSeasonDetails");
 
 
 function isAdmin() {
-
   return (
     currentAdmin &&
     currentAdmin.email &&
     currentAdmin.email.toLowerCase() ===
-    ADMIN_EMAIL.toLowerCase()
+      ADMIN_EMAIL.toLowerCase()
   );
 }
 
 
 function normalizeTeamName(name) {
-
   return String(name || "")
     .toLowerCase()
     .replace(/\s+/g, " ")
@@ -102,11 +79,8 @@ function normalizeTeamName(name) {
 
 
 function escapeHTML(value) {
-
   const div =
-    document.createElement(
-      "div"
-    );
+    document.createElement("div");
 
   div.textContent =
     String(value ?? "");
@@ -116,7 +90,6 @@ function escapeHTML(value) {
 
 
 function formatDate(date) {
-
   if (!date) return "Not set";
 
   return new Date(
@@ -134,37 +107,32 @@ function formatDate(date) {
 
 async function loadCompetition() {
 
-  if (!window.db) return;
-
   try {
 
-    const snapshot =
-      await getDoc(
-        doc(
-          window.db,
-          "competition",
-          "main"
-        )
+    const ref =
+      doc(
+        window.db,
+        "competition",
+        "main"
       );
 
+    const snapshot =
+      await getDoc(ref);
 
     if (snapshot.exists()) {
 
       const data =
         snapshot.data();
 
-
       teams =
         Array.isArray(data.teams)
           ? data.teams
           : [];
 
-
       fixtures =
         Array.isArray(data.fixtures)
           ? data.fixtures
           : [];
-
 
       season =
         data.season || {
@@ -177,7 +145,6 @@ async function loadCompetition() {
     } else {
 
       teams = [];
-
       fixtures = [];
 
       season = {
@@ -188,15 +155,15 @@ async function loadCompetition() {
       };
     }
 
-
     displayEverything();
 
   } catch (error) {
 
     console.error(
-      "Competition load failed:",
+      "Competition load error:",
       error
     );
+
   }
 }
 
@@ -206,12 +173,11 @@ async function saveCompetition() {
   if (!isAdmin()) {
 
     alert(
-      "🔒 Admin login required."
+      "🔒 Administrator access required."
     );
 
     return false;
   }
-
 
   try {
 
@@ -222,30 +188,28 @@ async function saveCompetition() {
         "main"
       ),
       {
-        teams: teams,
-        fixtures: fixtures,
-        season: season
+        teams,
+        fixtures,
+        season
       }
     );
-
 
     return true;
 
   } catch (error) {
 
     console.error(
-      "Save failed:",
+      "Competition save error:",
       error
     );
 
     alert(
-      "❌ Unable to save competition."
+      "❌ Could not save competition data."
     );
 
     return false;
   }
 }
-
 
 if (loginForm) {
 
@@ -255,23 +219,44 @@ if (loginForm) {
 
       event.preventDefault();
 
-
-      const email =
+      const emailInput =
         document.getElementById(
           "adminEmail"
-        )?.value.trim();
+        );
 
-
-      const password =
+      const passwordInput =
         document.getElementById(
           "adminPassword"
-        )?.value;
+        );
+
+      const email =
+        emailInput
+          ? emailInput.value.trim()
+          : "";
+
+      const password =
+        passwordInput
+          ? passwordInput.value
+          : "";
 
 
       if (!email || !password) {
 
         showLoginMessage(
           "⚠️ Enter your email and password."
+        );
+
+        return;
+      }
+
+
+      if (
+        email.toLowerCase() !==
+        ADMIN_EMAIL.toLowerCase()
+      ) {
+
+        showLoginMessage(
+          "❌ This email is not the authorized admin email."
         );
 
         return;
@@ -296,7 +281,7 @@ if (loginForm) {
         if (
           !result.user.email ||
           result.user.email.toLowerCase() !==
-          ADMIN_EMAIL.toLowerCase()
+            ADMIN_EMAIL.toLowerCase()
         ) {
 
           await signOut(
@@ -325,14 +310,71 @@ if (loginForm) {
       } catch (error) {
 
         console.error(
-          "Login failed:",
-          error
+          "LOGIN ERROR:",
+          error.code,
+          error.message
         );
 
+
+        let message =
+          "❌ Login failed.";
+
+
+        if (
+          error.code ===
+          "auth/invalid-credential"
+        ) {
+
+          message =
+            "❌ Incorrect email or password.";
+
+        } else if (
+          error.code ===
+          "auth/wrong-password"
+        ) {
+
+          message =
+            "❌ Incorrect password.";
+
+        } else if (
+          error.code ===
+          "auth/user-not-found"
+        ) {
+
+          message =
+            "❌ Admin account was not found.";
+
+        } else if (
+          error.code ===
+          "auth/invalid-email"
+        ) {
+
+          message =
+            "❌ Invalid email address.";
+
+        } else if (
+          error.code ===
+          "auth/too-many-requests"
+        ) {
+
+          message =
+            "⏳ Too many attempts. Try again later.";
+
+        } else {
+
+          message =
+            "❌ " +
+            error.code +
+            ": " +
+            error.message;
+        }
+
+
         showLoginMessage(
-          "❌ Login failed. Check your email and password."
+          message
         );
       }
+
     }
   );
 }
@@ -376,99 +418,10 @@ function showDashboard() {
   displayEverything();
 }
 
-async function adminLogout() {
-
-  if (!window.auth) return;
-
-
-  try {
-
-    stopRegistrationListener();
-
-    await signOut(
-      window.auth
-    );
-
-    currentAdmin = null;
-
-    showLogin();
-
-  } catch (error) {
-
-    console.error(
-      "Logout failed:",
-      error
-    );
-  }
-}
-
-
-function setupAuth() {
-
-  if (
-    !window.auth
-  ) {
-
-    setTimeout(
-      setupAuth,
-      500
-    );
-
-    return;
-  }
-
-
-  onAuthStateChanged(
-    window.auth,
-    async function(user) {
-
-      if (!user) {
-
-        currentAdmin = null;
-
-        stopRegistrationListener();
-
-        showLogin();
-
-        return;
-      }
-
-
-      if (
-        !user.email ||
-        user.email.toLowerCase() !==
-        ADMIN_EMAIL.toLowerCase()
-      ) {
-
-        await signOut(
-          window.auth
-        );
-
-        return;
-      }
-
-
-      currentAdmin =
-        user;
-
-
-      await loadCompetition();
-
-      showDashboard();
-
-      startRegistrationListener();
-
-    }
-  );
-}
-
 
 function startRegistrationListener() {
 
   if (!isAdmin()) return;
-
-  if (!window.db) return;
-
 
   stopRegistrationListener();
 
@@ -492,28 +445,19 @@ function startRegistrationListener() {
 
 
             if (
-              (data.status ||
-                "pending") ===
-              "pending"
+              data.status ===
+                "pending" ||
+              !data.status
             ) {
 
               pending.push({
-
-                id:
-                  item.id,
-
+                id: item.id,
                 teamName:
-                  data.teamName ||
-                  "",
-
+                  data.teamName || "",
                 playerName:
-                  data.playerName ||
-                  "",
-
+                  data.playerName || "",
                 createdAt:
-                  data.createdAt ||
-                  0
-
+                  data.createdAt || 0
               });
 
             }
@@ -524,12 +468,10 @@ function startRegistrationListener() {
 
         pending.sort(
           function(a, b) {
-
             return (
               b.createdAt -
               a.createdAt
             );
-
           }
         );
 
@@ -542,7 +484,7 @@ function startRegistrationListener() {
       function(error) {
 
         console.error(
-          "Live registration error:",
+          "Registration listener error:",
           error
         );
 
@@ -553,9 +495,7 @@ function startRegistrationListener() {
 
 function stopRegistrationListener() {
 
-  if (
-    registrationUnsubscribe
-  ) {
+  if (registrationUnsubscribe) {
 
     registrationUnsubscribe();
 
@@ -570,7 +510,6 @@ function displayPendingRegistrations(
 ) {
 
   if (!pendingBox) return;
-
 
   pendingBox.innerHTML = "";
 
@@ -588,20 +527,14 @@ function displayPendingRegistrations(
     function(registration) {
 
       const card =
-        document.createElement(
-          "div"
-        );
-
+        document.createElement("div");
 
       card.className =
         "pending-registration";
 
 
       const title =
-        document.createElement(
-          "h3"
-        );
-
+        document.createElement("h3");
 
       title.textContent =
         "⚽ " +
@@ -609,10 +542,7 @@ function displayPendingRegistrations(
 
 
       const player =
-        document.createElement(
-          "p"
-        );
-
+        document.createElement("p");
 
       player.textContent =
         "Player: " +
@@ -620,93 +550,49 @@ function displayPendingRegistrations(
 
 
       const approve =
-        document.createElement(
-          "button"
-        );
-
+        document.createElement("button");
 
       approve.textContent =
         "✅ Approve";
 
-
       approve.onclick =
         function() {
-
           approveRegistration(
             registration
           );
-
         };
 
 
       const reject =
-        document.createElement(
-          "button"
-        );
-
+        document.createElement("button");
 
       reject.textContent =
         "❌ Reject";
 
-
       reject.onclick =
         function() {
-
           rejectRegistration(
             registration.id
           );
-
         };
 
 
       card.appendChild(title);
-
       card.appendChild(player);
-
       card.appendChild(approve);
-
       card.appendChild(reject);
 
-
-      pendingBox.appendChild(
-        card
-      );
+      pendingBox.appendChild(card);
 
     }
   );
 }
 
-
 async function approveRegistration(
   registration
 ) {
 
-  if (!isAdmin()) {
-
-    alert(
-      "🔒 Admin login required."
-    );
-
-    return;
-  }
-
-
-  if (season.started) {
-
-    alert(
-      "🔒 Season has already started."
-    );
-
-    return;
-  }
-
-
-  const teamName =
-    registration.teamName.trim();
-
-
-  const playerName =
-    registration.playerName.trim();
+  if (!isAdmin()) return;
 
 
   const duplicate =
@@ -718,7 +604,7 @@ async function approveRegistration(
             team.teamName
           ) ===
           normalizeTeamName(
-            teamName
+            registration.teamName
           )
         );
 
@@ -742,31 +628,22 @@ async function approveRegistration(
       Date.now().toString(),
 
     teamName:
-      teamName,
+      registration.teamName.trim(),
 
     playerName:
-      playerName,
+      registration.playerName.trim(),
 
     played: 0,
-
     wins: 0,
-
     draws: 0,
-
     losses: 0,
-
     goalsFor: 0,
-
     goalsAgainst: 0,
-
     points: 0
-
   };
 
 
-  teams.push(
-    newTeam
-  );
+  teams.push(newTeam);
 
 
   const saved =
@@ -794,7 +671,7 @@ async function approveRegistration(
   } catch (error) {
 
     console.error(
-      "Registration deletion failed:",
+      "Registration removal error:",
       error
     );
   }
@@ -802,6 +679,9 @@ async function approveRegistration(
 
   displayEverything();
 
+  alert(
+    "✅ Team approved successfully!"
+  );
 }
 
 
@@ -809,14 +689,7 @@ async function rejectRegistration(
   registrationId
 ) {
 
-  if (!isAdmin()) {
-
-    alert(
-      "🔒 Admin login required."
-    );
-
-    return;
-  }
+  if (!isAdmin()) return;
 
 
   if (
@@ -824,7 +697,6 @@ async function rejectRegistration(
       "Reject this registration?"
     )
   ) {
-
     return;
   }
 
@@ -842,12 +714,12 @@ async function rejectRegistration(
   } catch (error) {
 
     console.error(
-      "Reject failed:",
+      "Reject error:",
       error
     );
 
     alert(
-      "❌ Unable to reject registration."
+      "❌ Could not reject registration."
     );
   }
 }
@@ -855,10 +727,13 @@ async function rejectRegistration(
 
 async function generateFixtures() {
 
-  if (!isAdmin()) {
+  if (!isAdmin()) return;
+
+
+  if (teams.length < 2) {
 
     alert(
-      "🔒 Admin login required."
+      "❌ You need at least 2 approved teams."
     );
 
     return;
@@ -869,16 +744,6 @@ async function generateFixtures() {
 
     alert(
       "🔒 Season has already started."
-    );
-
-    return;
-  }
-
-
-  if (teams.length < 2) {
-
-    alert(
-      "❌ You need at least 2 approved teams."
     );
 
     return;
@@ -899,7 +764,6 @@ async function generateFixtures() {
   if (
     list.length % 2 !== 0
   ) {
-
     list.push("BYE");
   }
 
@@ -965,9 +829,7 @@ async function generateFixtures() {
 
           awayScore:
             null
-
         });
-
       }
     }
 
@@ -977,12 +839,11 @@ async function generateFixtures() {
       0,
       list.pop()
     );
-
   }
 
 
   if (
-    season.legs === 2
+    Number(season.legs) === 2
   ) {
 
     const firstLeg =
@@ -1018,12 +879,10 @@ async function generateFixtures() {
 
           awayScore:
             null
-
         });
 
       }
     );
-
   }
 
 
@@ -1040,30 +899,14 @@ async function generateFixtures() {
   alert(
     "✅ " +
     fixtures.length +
-    " fixtures generated."
+    " fixtures generated!"
   );
 }
 
+
 async function startSeason() {
 
-  if (!isAdmin()) {
-
-    alert(
-      "🔒 Admin login required."
-    );
-
-    return;
-  }
-
-
-  if (season.started) {
-
-    alert(
-      "⚠️ Season already started."
-    );
-
-    return;
-  }
+  if (!isAdmin()) return;
 
 
   if (teams.length < 2) {
@@ -1099,7 +942,7 @@ async function startSeason() {
   if (!startDate || !endDate) {
 
     alert(
-      "⚠️ Select both season dates."
+      "⚠️ Select the season start and end dates."
     );
 
     return;
@@ -1119,21 +962,19 @@ async function startSeason() {
   }
 
 
-  if (
-    legs !== 1 &&
-    legs !== 2
-  ) {
+  season = {
 
-    alert(
-      "⚠️ Invalid league format."
-    );
+    started: true,
 
-    return;
-  }
+    startDate:
+      startDate,
 
+    endDate:
+      endDate,
 
-  season.legs =
-    legs;
+    legs:
+      legs
+  };
 
 
   if (
@@ -1149,22 +990,11 @@ async function startSeason() {
     fixtures.length === 0
   ) {
 
-    alert(
-      "❌ Fixtures could not be generated."
-    );
+    season.started =
+      false;
 
     return;
   }
-
-
-  season.started =
-    true;
-
-  season.startDate =
-    startDate;
-
-  season.endDate =
-    endDate;
 
 
   const saved =
@@ -1178,22 +1008,14 @@ async function startSeason() {
 
 
   alert(
-    "🏆 SEASON STARTED!\n\n" +
-    "🔒 Registration is now closed."
+    "🏆 SEASON STARTED!\n\nRegistration is now closed."
   );
 }
 
 
 async function reopenRegistration() {
 
-  if (!isAdmin()) {
-
-    alert(
-      "🔒 Admin login required."
-    );
-
-    return;
-  }
+  if (!isAdmin()) return;
 
 
   season.started =
@@ -1218,28 +1040,14 @@ async function reopenRegistration() {
 
 async function enterResult(index) {
 
-  if (!isAdmin()) {
-
-    alert(
-      "🔒 Admin login required."
-    );
-
-    return;
-  }
+  if (!isAdmin()) return;
 
 
   const fixture =
     fixtures[index];
 
 
-  if (!fixture) {
-
-    alert(
-      "❌ Fixture not found."
-    );
-
-    return;
-  }
+  if (!fixture) return;
 
 
   if (fixture.completed) {
@@ -1285,12 +1093,8 @@ async function enterResult(index) {
 
 
   if (
-    !Number.isInteger(
-      homeScore
-    ) ||
-    !Number.isInteger(
-      awayScore
-    ) ||
+    !Number.isInteger(homeScore) ||
+    !Number.isInteger(awayScore) ||
     homeScore < 0 ||
     awayScore < 0
   ) {
@@ -1306,12 +1110,10 @@ async function enterResult(index) {
   const homeTeam =
     teams.find(
       function(team) {
-
         return (
           team.teamName ===
           fixture.home
         );
-
       }
     );
 
@@ -1319,12 +1121,10 @@ async function enterResult(index) {
   const awayTeam =
     teams.find(
       function(team) {
-
         return (
           team.teamName ===
           fixture.away
         );
-
       }
     );
 
@@ -1434,17 +1234,9 @@ async function enterResult(index) {
   );
 }
 
-
 async function manageTeams() {
 
-  if (!isAdmin()) {
-
-    alert(
-      "🔒 Admin login required."
-    );
-
-    return;
-  }
+  if (!isAdmin()) return;
 
 
   if (season.started) {
@@ -1481,7 +1273,6 @@ async function manageTeams() {
         " — " +
         team.playerName +
         "\n";
-
     }
   );
 
@@ -1489,7 +1280,7 @@ async function manageTeams() {
   const choice =
     prompt(
       list +
-      "\n\nEnter team number:"
+      "\nEnter team number:"
     );
 
 
@@ -1517,8 +1308,7 @@ async function manageTeams() {
 
   const action =
     prompt(
-      "1 = Edit Team\n" +
-      "2 = Remove Team"
+      "1 = Edit Team\n2 = Remove Team"
     );
 
 
@@ -1552,7 +1342,9 @@ async function manageTeams() {
 
           if (
             teamIndex === index
-          ) return false;
+          ) {
+            return false;
+          }
 
 
           return (
@@ -1563,7 +1355,6 @@ async function manageTeams() {
               newName
             )
           );
-
         }
       );
 
@@ -1580,7 +1371,6 @@ async function manageTeams() {
 
     teams[index].teamName =
       newName.trim();
-
 
     teams[index].playerName =
       newPlayer.trim();
@@ -1602,7 +1392,6 @@ async function manageTeams() {
     alert(
       "✅ Team updated."
     );
-
   }
 
 
@@ -1610,15 +1399,15 @@ async function manageTeams() {
     action === "2"
   ) {
 
-    const confirmed =
-      confirm(
+    if (
+      !confirm(
         "Remove " +
         teams[index].teamName +
         "?"
-      );
-
-
-    if (!confirmed) return;
+      )
+    ) {
+      return;
+    }
 
 
     teams.splice(
@@ -1649,24 +1438,17 @@ async function manageTeams() {
 
 async function clearCompetition() {
 
-  if (!isAdmin()) {
+  if (!isAdmin()) return;
 
-    alert(
-      "🔒 Admin login required."
-    );
 
+  if (
+    !confirm(
+      "⚠️ CLEAR COMPETITION?\n\n" +
+      "All approved teams, fixtures and season information will be removed."
+    )
+  ) {
     return;
   }
-
-
-  const confirmed =
-    confirm(
-      "⚠️ CLEAR COMPETITION?\n\n" +
-      "This removes approved teams, fixtures and season data."
-    );
-
-
-  if (!confirmed) return;
 
 
   teams = [];
@@ -1683,7 +1465,6 @@ async function clearCompetition() {
     endDate: null,
 
     legs: 1
-
   };
 
 
@@ -1702,6 +1483,7 @@ async function clearCompetition() {
   );
 }
 
+
 function displayEverything() {
 
   displayAdminTeams();
@@ -1711,7 +1493,6 @@ function displayEverything() {
   displayAdminFixtures();
 
   displayAdminSeason();
-
 }
 
 
@@ -1736,25 +1517,19 @@ function displayAdminTeams() {
     function(team) {
 
       const item =
-        document.createElement(
-          "div"
-        );
-
+        document.createElement("div");
 
       item.className =
         "admin-team";
-
 
       item.textContent =
         team.teamName +
         " — " +
         team.playerName;
 
-
       adminTeamList.appendChild(
         item
       );
-
     }
   );
 }
@@ -1776,7 +1551,6 @@ function displayAdminTable() {
           (a.goalsFor || 0) -
           (a.goalsAgainst || 0);
 
-
         const bGD =
           (b.goalsFor || 0) -
           (b.goalsAgainst || 0);
@@ -1794,7 +1568,9 @@ function displayAdminTable() {
         }
 
 
-        if (bGD !== aGD) {
+        if (
+          bGD !== aGD
+        ) {
 
           return bGD - aGD;
         }
@@ -1824,13 +1600,7 @@ function displayAdminTable() {
       adminTable.innerHTML += `
         <tr>
           <td>${index + 1}</td>
-
-          <td>
-            ${escapeHTML(
-              team.teamName
-            )}
-          </td>
-
+          <td>${escapeHTML(team.teamName)}</td>
           <td>${team.played || 0}</td>
           <td>${team.wins || 0}</td>
           <td>${team.draws || 0}</td>
@@ -1879,15 +1649,11 @@ function displayAdminFixtures() {
 
 
         const heading =
-          document.createElement(
-            "h3"
-          );
-
+          document.createElement("h3");
 
         heading.textContent =
           "📅 Match Day " +
           fixture.day;
-
 
         adminFixtureList.appendChild(
           heading
@@ -1896,30 +1662,21 @@ function displayAdminFixtures() {
 
 
       const match =
-        document.createElement(
-          "div"
-        );
-
+        document.createElement("div");
 
       match.className =
         "admin-fixture";
 
 
       const text =
-        document.createElement(
-          "span"
-        );
-
+        document.createElement("span");
 
       text.textContent =
         fixture.home +
         " 🆚 " +
         fixture.away;
 
-
-      match.appendChild(
-        text
-      );
+      match.appendChild(text);
 
 
       if (
@@ -1927,10 +1684,7 @@ function displayAdminFixtures() {
       ) {
 
         const score =
-          document.createElement(
-            "strong"
-          );
-
+          document.createElement("strong");
 
         score.textContent =
           " " +
@@ -1938,43 +1692,28 @@ function displayAdminFixtures() {
           " - " +
           fixture.awayScore;
 
-
-        match.appendChild(
-          score
-        );
+        match.appendChild(score);
 
       } else {
 
         const button =
-          document.createElement(
-            "button"
-          );
-
+          document.createElement("button");
 
         button.textContent =
           "🏆 Enter Result";
 
-
         button.onclick =
           function() {
-
-            enterResult(
-              index
-            );
-
+            enterResult(index);
           };
 
-
-        match.appendChild(
-          button
-        );
+        match.appendChild(button);
       }
 
 
       adminFixtureList.appendChild(
         match
       );
-
     }
   );
 }
@@ -1995,26 +1734,20 @@ function displayAdminSeason() {
 
 
   adminSeasonDetails.innerHTML = `
+    <p>🟢 <strong>Season Active</strong></p>
+
     <p>
-      🟢 <strong>Season Active</strong>
+      📅 Start:
+      ${formatDate(season.startDate)}
     </p>
 
     <p>
-      Start:
-      ${formatDate(
-        season.startDate
-      )}
+      📅 End:
+      ${formatDate(season.endDate)}
     </p>
 
     <p>
-      End:
-      ${formatDate(
-        season.endDate
-      )}
-    </p>
-
-    <p>
-      Format:
+      ⚽ Format:
       ${season.legs}
       Leg${season.legs === 1 ? "" : "s"}
     </p>
@@ -2023,9 +1756,7 @@ function displayAdminSeason() {
 
 
 document
-  .getElementById(
-    "generateFixturesButton"
-  )
+  .getElementById("generateFixturesButton")
   ?.addEventListener(
     "click",
     generateFixtures
@@ -2033,9 +1764,7 @@ document
 
 
 document
-  .getElementById(
-    "startSeasonButton"
-  )
+  .getElementById("startSeasonButton")
   ?.addEventListener(
     "click",
     startSeason
@@ -2043,19 +1772,7 @@ document
 
 
 document
-  .getElementById(
-    "manageTeamsButton"
-  )
-  ?.addEventListener(
-    "click",
-    manageTeams
-  );
-
-
-document
-  .getElementById(
-    "reopenRegistrationButton"
-  )
+  .getElementById("reopenRegistrationButton")
   ?.addEventListener(
     "click",
     reopenRegistration
@@ -2063,9 +1780,15 @@ document
 
 
 document
-  .getElementById(
-    "clearCompetitionButton"
-  )
+  .getElementById("manageTeamsButton")
+  ?.addEventListener(
+    "click",
+    manageTeams
+  );
+
+
+document
+  .getElementById("clearCompetitionButton")
   ?.addEventListener(
     "click",
     clearCompetition
@@ -2073,16 +1796,32 @@ document
 
 
 document
-  .getElementById(
-    "logoutButton"
-  )
+  .getElementById("logoutButton")
   ?.addEventListener(
     "click",
-    adminLogout
+    async function() {
+
+      try {
+
+        stopRegistrationListener();
+
+        await signOut(
+          window.auth
+        );
+
+      } catch (error) {
+
+        console.error(
+          "Logout error:",
+          error
+        );
+
+      }
+    }
   );
 
 
-function startAdminWebsite() {
+function initializeAdmin() {
 
   if (
     !window.db ||
@@ -2090,7 +1829,7 @@ function startAdminWebsite() {
   ) {
 
     setTimeout(
-      startAdminWebsite,
+      initializeAdmin,
       500
     );
 
@@ -2098,9 +1837,49 @@ function startAdminWebsite() {
   }
 
 
-  setupAuth();
+  onAuthStateChanged(
+    window.auth,
+    async function(user) {
 
+      if (!user) {
+
+        currentAdmin = null;
+
+        stopRegistrationListener();
+
+        showLogin();
+
+        return;
+      }
+
+
+      if (
+        !user.email ||
+        user.email.toLowerCase() !==
+          ADMIN_EMAIL.toLowerCase()
+      ) {
+
+        await signOut(
+          window.auth
+        );
+
+        return;
+      }
+
+
+      currentAdmin =
+        user;
+
+
+      await loadCompetition();
+
+      showDashboard();
+
+      startRegistrationListener();
+
+    }
+  );
 }
 
 
-startAdminWebsite();
+initializeAdmin();
