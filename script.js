@@ -1388,9 +1388,10 @@ async function adminLogin() {
   if (!window.auth) {
 
     alert(
-      "❌ Firebase Authentication is not ready."
-    );
-
+  "❌ Login failed.\n\n" +
+  error.code + "\n\n" +
+  error.message
+);
     return;
 
   }
