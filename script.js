@@ -638,13 +638,22 @@ function getFixtureResult(fixture) {
     fixture.result &&
     typeof fixture.result === "object"
   ) {
-
     return fixture.result;
+  }
 
+  if (
+    fixture.homeScore !== null &&
+    fixture.homeScore !== undefined &&
+    fixture.awayScore !== null &&
+    fixture.awayScore !== undefined
+  ) {
+    return {
+      homeGoals: fixture.homeScore,
+      awayGoals: fixture.awayScore
+    };
   }
 
   return null;
-
 }
 
 
