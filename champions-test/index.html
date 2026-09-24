@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="description"
+    content="DLS Competition - Champions League Test"
+  >
+
+  <title>DLS Competition - Champions League</title>
+
+  <link rel="stylesheet" href="champions.css">
+
+</head>
+
+<body>
+
+<header class="site-header">
+
+  <div class="header-inner">
+
+    <h1>⚽ DLS COMPETITION</h1>
+
+    <p>🏆 Champions League Format</p>
+
+  </div>
+
+</header>
+
+
+<nav class="main-nav">
+
+  <a href="#home">Home</a>
+
+  <a href="#season">Season</a>
+
+  <a href="#teams">Teams</a>
+
+  <a href="#table">League Table</a>
+
+  <a href="#knockout">Knockout</a>
+
+</nav>
+
+
+<main>
+
+
+  <!-- =========================
+       HOME
+  ========================== -->
+
+  <section
+    id="home"
+    class="hero-section"
+  >
+
+    <div class="hero-card">
+
+      <div class="hero-icon">
+        🏆
+      </div>
+
+      <h2>
+        Champions League
+      </h2>
+
+      <p>
+        League Phase → Knockout Stage → Final
+      </p>
+
+      <p class="hero-note">
+        This is a test version of the new DLS
+        Champions League competition format.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================
+       SEASON INFORMATION
+  ========================== -->
+
+  <section
+    id="season"
+    class="content-section"
+  >
+
+    <h2>
+      📅 Season Information
+    </h2>
+
+    <div
+      id="seasonDetails"
+      class="season-details"
+    >
+
+      <p>
+        Champions League season has not started.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================
+       TEAMS
+  ========================== -->
+
+  <section
+    id="teams"
+    class="content-section"
+  >
+
+    <h2>
+      👥 Teams
+    </h2>
+
+    <div
+      id="teamList"
+      class="team-list"
+    >
+
+      <p>
+        No teams available yet.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================
+       LEAGUE TABLE
+  ========================== -->
+
+  <section
+    id="table"
+    class="content-section"
+  >
+
+    <h2>
+      🏆 Champions League League Phase
+    </h2>
+
+    <p
+      id="qualificationInfo"
+      class="qualification-info"
+    >
+      Qualification information will appear here.
+    </p>
+
+    <div class="table-container">
+
+      <table class="league-table">
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Pos
+            </th>
+
+            <th>
+              Team
+            </th>
+
+            <th>
+              P
+            </th>
+
+            <th>
+              W
+            </th>
+
+            <th>
+              D
+            </th>
+
+            <th>
+              L
+            </th>
+
+            <th>
+              GF
+            </th>
+
+            <th>
+              GA
+            </th>
+
+            <th>
+              GD
+            </th>
+
+            <th>
+              Pts
+            </th>
+
+          </tr>
+
+        </thead>
+
+        <tbody id="leagueTable">
+
+          <tr>
+
+            <td colspan="10">
+              No league results yet.
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================
+       LEAGUE FIXTURES
+  ========================== -->
+
+  <section
+    id="leagueFixtures"
+    class="content-section"
+  >
+
+    <h2>
+      📅 League Phase Fixtures
+    </h2>
+
+    <div
+      id="fixtureList"
+      class="fixture-list"
+    >
+
+      <p>
+        No league-phase fixtures available.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================
+       KNOCKOUT STAGE
+  ========================== -->
+
+  <section
+    id="knockout"
+    class="content-section knockout-section"
+  >
+
+    <div class="knockout-header">
+
+      <h2>
+        🌳 Champions League Knockout Stage
+      </h2>
+
+      <p id="knockoutStageLabel">
+        Knockout stage has not started.
+      </p>
+
+    </div>
+
+
+    <!--
+
+      The complete bracket will be generated
+      automatically by champions.js.
+
+      Depending on the number of teams:
+
+      33+ teams
+      Top 32
+      Round of 32
+
+      17-32 teams
+      Top 16
+      Round of 16
+
+      9-16 teams
+      Top 8
+      Quarter-finals
+
+    -->
+
+    <div
+      id="knockoutBracket"
+      class="knockout-bracket"
+    >
+
+      <div class="knockout-placeholder">
+
+        <div class="placeholder-icon">
+          🌳
+        </div>
+
+        <h3>
+          Knockout bracket
+        </h3>
+
+        <p>
+          The Champions League tree will appear
+          here when the league phase is complete.
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================
+       SEASON CHAMPIONS
+  ========================== -->
+
+  <section
+    id="seasonWinners"
+    class="content-section winners-section"
+  >
+
+    <h2>
+      🏆 End of Season
+    </h2>
+
+    <div
+      id="winnerDisplay"
+      class="winner-display"
+    >
+
+      <p>
+        Season results will appear here.
+      </p>
+
+    </div>
+
+  </section>
+
+
+</main>
+
+
+<footer class="site-footer">
+
+  <p>
+    © 2026 DLS Competition
+  </p>
+
+  <p>
+    Champions League Test System
+  </p>
+
+</footer>
+
+
+<script type="module" src="../firebase.js"></script>
+
+<script
+  type="module"
+  src="champions.js"
+></script>
+
+</body>
+
+</html>
