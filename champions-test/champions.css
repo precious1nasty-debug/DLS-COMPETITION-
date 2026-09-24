@@ -1,0 +1,921 @@
+/* =========================================================
+   DLS COMPETITION
+   CHAMPIONS LEAGUE TEST
+   champions.css
+   ========================================================= */
+
+
+/* =========================
+   RESET
+========================= */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+
+/* =========================
+   GENERAL
+========================= */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  background:
+    linear-gradient(
+      180deg,
+      #07111f 0%,
+      #0d1b2f 45%,
+      #f4f6f9 45%,
+      #f4f6f9 100%
+    );
+
+  color: #172033;
+
+  min-height: 100vh;
+}
+
+a {
+  text-decoration: none;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.site-header {
+  background:
+    linear-gradient(
+      135deg,
+      #06101e,
+      #102b4d
+    );
+
+  color: white;
+
+  padding: 28px 16px;
+
+  text-align: center;
+
+  border-bottom:
+    3px solid #d4af37;
+}
+
+.header-inner {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.site-header h1 {
+  font-size: clamp(24px, 6vw, 42px);
+  margin-bottom: 8px;
+}
+
+.site-header p {
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+
+/* =========================
+   NAVIGATION
+========================= */
+
+.main-nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  display: flex;
+
+  justify-content: center;
+
+  gap: 6px;
+
+  flex-wrap: wrap;
+
+  padding: 10px;
+
+  background: #0b1728;
+
+  border-bottom:
+    1px solid rgba(255, 255, 255, 0.12);
+}
+
+.main-nav a {
+  color: white;
+
+  padding: 9px 12px;
+
+  border-radius: 8px;
+
+  font-size: 14px;
+
+  font-weight: 700;
+}
+
+.main-nav a:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+
+/* =========================
+   MAIN
+========================= */
+
+main {
+  width: 100%;
+  max-width: 1200px;
+
+  margin: 0 auto;
+
+  padding-bottom: 50px;
+}
+
+
+/* =========================
+   HERO
+========================= */
+
+.hero-section {
+  padding: 30px 16px;
+}
+
+.hero-card {
+  width: 100%;
+
+  max-width: 900px;
+
+  margin: 0 auto;
+
+  padding: 40px 20px;
+
+  text-align: center;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #102d4f,
+      #174d7d
+    );
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 12px 30px
+    rgba(0, 0, 0, 0.25);
+}
+
+.hero-icon {
+  font-size: 55px;
+
+  margin-bottom: 10px;
+}
+
+.hero-card h2 {
+  font-size: clamp(28px, 7vw, 48px);
+
+  margin-bottom: 10px;
+}
+
+.hero-card p {
+  font-size: 17px;
+
+  line-height: 1.6;
+}
+
+.hero-note {
+  max-width: 650px;
+
+  margin:
+    18px auto 0;
+
+  opacity: 0.82;
+
+  font-size: 14px !important;
+}
+
+
+/* =========================
+   CONTENT SECTIONS
+========================= */
+
+.content-section {
+  background: white;
+
+  margin:
+    16px;
+
+  padding: 22px;
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 5px 18px
+    rgba(0, 0, 0, 0.08);
+}
+
+.content-section > h2 {
+  font-size: 22px;
+
+  margin-bottom: 18px;
+
+  color: #102d4f;
+}
+
+
+/* =========================
+   SEASON DETAILS
+========================= */
+
+.season-details {
+  background: #f5f7fa;
+
+  border-radius: 12px;
+
+  padding: 16px;
+
+  line-height: 1.7;
+}
+
+
+/* =========================
+   TEAMS
+========================= */
+
+.team-list {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(180px, 1fr)
+    );
+
+  gap: 12px;
+}
+
+.team-card {
+  background: #f7f9fc;
+
+  border:
+    1px solid #e1e6ed;
+
+  border-radius: 12px;
+
+  padding: 16px;
+}
+
+.team-card h3 {
+  font-size: 16px;
+
+  margin-bottom: 7px;
+
+  color: #102d4f;
+}
+
+.team-card p {
+  font-size: 14px;
+
+  color: #667085;
+}
+
+
+/* =========================
+   QUALIFICATION INFORMATION
+========================= */
+
+.qualification-info {
+  background: #eef6ff;
+
+  border-left:
+    4px solid #1769aa;
+
+  padding: 12px 14px;
+
+  border-radius: 7px;
+
+  margin-bottom: 15px;
+
+  font-weight: 700;
+
+  line-height: 1.5;
+}
+
+
+/* =========================
+   TABLE
+========================= */
+
+.table-container {
+  width: 100%;
+
+  overflow-x: auto;
+
+  -webkit-overflow-scrolling: touch;
+}
+
+.league-table {
+  width: 100%;
+
+  min-width: 720px;
+
+  border-collapse: collapse;
+
+  background: white;
+}
+
+.league-table th {
+  background: #102d4f;
+
+  color: white;
+
+  padding: 12px 8px;
+
+  font-size: 13px;
+
+  white-space: nowrap;
+}
+
+.league-table td {
+  padding: 11px 8px;
+
+  border-bottom:
+    1px solid #e5e7eb;
+
+  text-align: center;
+
+  font-size: 14px;
+}
+
+.league-table td:nth-child(2) {
+  text-align: left;
+
+  font-weight: 700;
+}
+
+
+/* =========================
+   QUALIFICATION ROW
+========================= */
+
+.qualification-row td {
+  background: #fff4c2;
+
+  color: #7a5a00;
+
+  border-top:
+    2px solid #d4af37;
+
+  border-bottom:
+    2px solid #d4af37;
+
+  font-weight: 800;
+
+  text-align: center !important;
+
+  padding: 12px;
+}
+
+
+/* =========================
+   QUALIFYING TEAM ROWS
+========================= */
+
+.qualifying-team td {
+  background: #f8fbff;
+}
+
+
+/* =========================
+   NON-QUALIFYING TEAM ROWS
+========================= */
+
+.non-qualifying-team td {
+  opacity: 0.78;
+}
+
+
+/* =========================
+   LEAGUE FIXTURES
+========================= */
+
+.fixture-list {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+.fixture-day {
+  background: #f7f9fc;
+
+  border:
+    1px solid #e1e6ed;
+
+  border-radius: 12px;
+
+  padding: 14px;
+}
+
+.fixture-day h3 {
+  color: #102d4f;
+
+  margin-bottom: 10px;
+
+  font-size: 17px;
+}
+
+.fixture-card {
+  background: white;
+
+  border:
+    1px solid #e5e7eb;
+
+  border-radius: 10px;
+
+  padding: 13px;
+
+  margin-top: 8px;
+}
+
+.fixture-teams {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 10px;
+
+  text-align: center;
+
+  flex-wrap: wrap;
+}
+
+.fixture-teams span {
+  color: #667085;
+
+  font-weight: 700;
+}
+
+.fixture-result {
+  text-align: center;
+
+  margin-top: 8px;
+
+  font-weight: 800;
+}
+
+
+/* =========================
+   KNOCKOUT SECTION
+========================= */
+
+.knockout-section {
+  overflow: hidden;
+}
+
+.knockout-header {
+  text-align: center;
+
+  margin-bottom: 20px;
+}
+
+.knockout-header h2 {
+  color: #102d4f;
+
+  margin-bottom: 8px;
+}
+
+.knockout-header p {
+  color: #667085;
+
+  font-size: 14px;
+}
+
+
+/* =========================
+   BRACKET
+========================= */
+
+.knockout-bracket {
+  width: 100%;
+
+  overflow-x: auto;
+
+  -webkit-overflow-scrolling: touch;
+
+  padding: 10px 4px 20px;
+}
+
+
+/*
+  The JavaScript will place the
+  actual knockout columns inside
+  this container.
+*/
+
+.bracket-container {
+  display: grid;
+
+  grid-template-columns:
+    minmax(190px, 1fr)
+    minmax(190px, 1fr)
+    minmax(190px, 1fr)
+    minmax(190px, 1fr)
+    minmax(190px, 1fr);
+
+  gap: 18px;
+
+  min-width: 1000px;
+
+  align-items: stretch;
+}
+
+.bracket-column {
+  display: flex;
+
+  flex-direction: column;
+
+  min-width: 0;
+}
+
+.bracket-title {
+  text-align: center;
+
+  font-size: 14px;
+
+  font-weight: 800;
+
+  color: #102d4f;
+
+  margin-bottom: 12px;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================
+   BRACKET MATCH
+========================= */
+
+.bracket-match {
+  background: white;
+
+  border:
+    1px solid #dce2e9;
+
+  border-radius: 10px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 3px 10px
+    rgba(0, 0, 0, 0.07);
+}
+
+.bracket-team {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 8px;
+
+  min-height: 42px;
+
+  padding:
+    8px 10px;
+
+  font-size: 13px;
+
+  border-bottom:
+    1px solid #e5e7eb;
+}
+
+.bracket-team:last-child {
+  border-bottom: none;
+}
+
+.bracket-team-name {
+  font-weight: 700;
+
+  overflow-wrap: anywhere;
+}
+
+.bracket-score {
+  min-width: 22px;
+
+  text-align: right;
+
+  font-weight: 800;
+}
+
+.bracket-winner {
+  background: #fff7cf;
+
+  font-weight: 800;
+}
+
+.bracket-pending {
+  color: #98a2b3;
+
+  font-style: italic;
+}
+
+
+/* =========================
+   BRACKET COLUMN SPACING
+========================= */
+
+.bracket-r32 {
+  padding-top: 0;
+}
+
+.bracket-r16 {
+  padding-top: 45px;
+}
+
+.bracket-qf {
+  padding-top: 90px;
+}
+
+.bracket-sf {
+  padding-top: 180px;
+}
+
+.bracket-final {
+  padding-top: 300px;
+}
+
+
+/* =========================
+   BRACKET PLACEHOLDER
+========================= */
+
+.knockout-placeholder {
+  max-width: 600px;
+
+  margin: 20px auto;
+
+  padding: 40px 20px;
+
+  text-align: center;
+
+  background: #f7f9fc;
+
+  border:
+    1px dashed #c7ced8;
+
+  border-radius: 14px;
+}
+
+.placeholder-icon {
+  font-size: 48px;
+
+  margin-bottom: 12px;
+}
+
+.knockout-placeholder h3 {
+  color: #102d4f;
+
+  margin-bottom: 8px;
+}
+
+.knockout-placeholder p {
+  color: #667085;
+
+  line-height: 1.6;
+}
+
+
+/* =========================
+   WINNERS
+========================= */
+
+.winners-section {
+  text-align: center;
+}
+
+.winner-display {
+  min-height: 80px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex-direction: column;
+
+  gap: 10px;
+
+  padding: 20px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #fff9dc,
+      #fff1a8
+    );
+
+  border-radius: 14px;
+}
+
+.winner-card {
+  width: 100%;
+
+  max-width: 500px;
+
+  padding: 14px;
+
+  border-radius: 10px;
+
+  background: rgba(255, 255, 255, 0.75);
+
+  font-weight: 800;
+}
+
+.winner-first {
+  font-size: 22px;
+
+  color: #a47b00;
+}
+
+.winner-second {
+  color: #777;
+}
+
+.winner-third {
+  color: #8a5a32;
+}
+
+
+/* =========================
+   FOOTER
+========================= */
+
+.site-footer {
+  background: #07111f;
+
+  color: white;
+
+  text-align: center;
+
+  padding: 25px 16px;
+
+  font-size: 13px;
+
+  line-height: 1.8;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 700px) {
+
+  body {
+    background:
+      linear-gradient(
+        180deg,
+        #07111f 0%,
+        #0d1b2f 320px,
+        #f4f6f9 320px,
+        #f4f6f9 100%
+      );
+  }
+
+  .main-nav {
+    justify-content: flex-start;
+
+    overflow-x: auto;
+
+    flex-wrap: nowrap;
+
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .main-nav a {
+    flex-shrink: 0;
+
+    font-size: 13px;
+
+    padding:
+      8px 10px;
+  }
+
+  .hero-section {
+    padding:
+      20px 12px;
+  }
+
+  .hero-card {
+    padding:
+      30px 16px;
+  }
+
+  .content-section {
+    margin:
+      12px;
+
+    padding:
+      17px;
+  }
+
+  .content-section > h2 {
+    font-size: 20px;
+  }
+
+  .team-list {
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+  .fixture-teams {
+    flex-direction: column;
+
+    gap: 5px;
+  }
+
+  .knockout-bracket {
+    margin-left: -4px;
+
+    margin-right: -4px;
+  }
+}
+
+
+/* =========================
+   SMALL PHONES
+========================= */
+
+@media (max-width: 420px) {
+
+  .site-header {
+    padding:
+      22px 12px;
+  }
+
+  .site-header h1 {
+    font-size: 24px;
+  }
+
+  .hero-card h2 {
+    font-size: 29px;
+  }
+
+  .team-list {
+    grid-template-columns:
+      1fr;
+  }
+
+  .content-section {
+    margin:
+      9px;
+
+    padding:
+      14px;
+  }
+
+}
+
+
+/* =========================
+   ACCESSIBILITY
+========================= */
+
+button,
+a,
+input,
+select {
+  font-family: inherit;
+}
+
+button:focus,
+a:focus,
+input:focus,
+select:focus {
+  outline:
+    3px solid
+    rgba(23, 105, 170, 0.25);
+
+  outline-offset: 2px;
+}
