@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="description"
+    content="DLS Competition Champions League Admin Test"
+  >
+
+  <title>DLS Champions League Admin</title>
+
+  <link
+    rel="stylesheet"
+    href="champions.css"
+  >
+
+</head>
+
+<body>
+
+<header class="site-header">
+
+  <div class="header-inner">
+
+    <h1>⚽ DLS COMPETITION</h1>
+
+    <p>🔐 Champions League Admin Test</p>
+
+  </div>
+
+</header>
+
+
+<main>
+
+
+  <!-- =========================
+       LOGIN
+  ========================== -->
+
+  <section
+    id="adminLogin"
+    class="content-section"
+  >
+
+    <h2>
+      🔐 Admin Login
+    </h2>
+
+    <p>
+      Authorized administrators only.
+    </p>
+
+    <form id="adminLoginForm">
+
+      <input
+        type="email"
+        id="adminEmail"
+        placeholder="Admin Email"
+        autocomplete="email"
+        required
+      >
+
+      <input
+        type="password"
+        id="adminPassword"
+        placeholder="Admin Password"
+        autocomplete="current-password"
+        required
+      >
+
+      <button type="submit">
+        🔑 Login
+      </button>
+
+    </form>
+
+    <p id="adminLoginMessage"></p>
+
+  </section>
+
+
+  <!-- =========================
+       DASHBOARD
+  ========================== -->
+
+  <section
+    id="adminDashboard"
+    class="content-section"
+    style="display:none;"
+  >
+
+    <h2>
+      🏆 Champions League Control
+    </h2>
+
+
+    <!-- =========================
+         TEST DATA
+    ========================== -->
+
+    <section class="admin-section">
+
+      <h2>
+        👥 Teams
+      </h2>
+
+      <p>
+        Minimum 9 teams are required for
+        Champions League format.
+      </p>
+
+      <div
+        id="adminTeamList"
+        class="team-list"
+      >
+
+        <p>
+          No teams added.
+        </p>
+
+      </div>
+
+      <div class="admin-buttons">
+
+        <button id="addTestTeamsButton">
+          ➕ Add Test Teams
+        </button>
+
+        <button id="clearTestTeamsButton">
+          🗑️ Clear Test Teams
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         COMPETITION FORMAT
+    ========================== -->
+
+    <section class="admin-section">
+
+      <h2>
+        ⚙️ Competition Format
+      </h2>
+
+      <label for="competitionFormat">
+        Format
+      </label>
+
+      <select id="competitionFormat">
+
+        <option value="champions">
+          Champions League Format
+        </option>
+
+      </select>
+
+
+      <label for="leagueMatchesPerTeam">
+        League-Phase Matches Per Team
+      </label>
+
+      <select id="leagueMatchesPerTeam">
+
+        <option value="1">1 Match</option>
+        <option value="2">2 Matches</option>
+        <option value="3">3 Matches</option>
+        <option value="4">4 Matches</option>
+        <option value="5">5 Matches</option>
+        <option value="6">6 Matches</option>
+        <option value="7">7 Matches</option>
+        <option value="8">8 Matches</option>
+
+      </select>
+
+
+      <label for="knockoutLegs">
+        Knockout Legs
+      </label>
+
+      <select id="knockoutLegs">
+
+        <option value="1">
+          1 Leg
+        </option>
+
+        <option value="2">
+          2 Legs
+        </option>
+
+      </select>
+
+
+      <div
+        id="qualificationPreview"
+        class="qualification-info"
+      >
+        Add at least 9 teams to see
+        qualification information.
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         SEASON DATES
+    ========================== -->
+
+    <section class="admin-section">
+
+      <h2>
+        📅 Season Dates
+      </h2>
+
+      <label for="seasonStart">
+        Start Date
+      </label>
+
+      <input
+        type="date"
+        id="seasonStart"
+      >
+
+
+      <label for="seasonEnd">
+        End Date
+      </label>
+
+      <input
+        type="date"
+        id="seasonEnd"
+      >
+
+    </section>
+
+
+    <!-- =========================
+         SEASON CONTROLS
+    ========================== -->
+
+    <section class="admin-section">
+
+      <h2>
+        🏁 Season Control
+      </h2>
+
+      <div
+        id="seasonStatus"
+        class="season-details"
+      >
+
+        <p>
+          🟡 Season has not started.
+        </p>
+
+      </div>
+
+      <div class="admin-buttons">
+
+        <button id="startSeasonButton">
+          🏆 Start Season
+        </button>
+
+        <button id="generateLeagueButton">
+          📅 Generate League Fixtures
+        </button>
+
+        <button id="finishLeagueButton">
+          ✅ Finish League Phase
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         LEAGUE FIXTURES
+    ========================== -->
+
+    <section class="admin-section">
+
+      <h2>
+        ⚽ League-Phase Results
+      </h2>
+
+      <div id="adminFixtureList">
+
+        <p>
+          No league fixtures generated.
+        </p>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         KNOCKOUT
+    ========================== -->
+
+    <section class="admin-section">
+
+      <h2>
+        🌳 Knockout Stage
+      </h2>
+
+      <div
+        id="adminKnockoutStatus"
+        class="season-details"
+      >
+
+        <p>
+          Knockout stage has not started.
+        </p>
+
+      </div>
+
+      <div id="adminKnockoutList">
+
+        <p>
+          No knockout fixtures available.
+        </p>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         TEST CONTROLS
+    ========================== -->
+
+    <section class="admin-section">
+
+      <h2>
+        🧪 Test Controls
+      </h2>
+
+      <p>
+        These controls are for testing the
+        Champions League system only.
+      </p>
+
+      <button id="createTestBracketButton">
+        🌳 Create Test Knockout Bracket
+      </button>
+
+      <button id="resetChampionsButton">
+        🔄 Reset Champions Test
+      </button>
+
+    </section>
+
+
+    <!-- =========================
+         LOGOUT
+    ========================== -->
+
+    <section class="admin-section">
+
+      <button id="logoutButton">
+        🚪 Logout
+      </button>
+
+    </section>
+
+  </section>
+
+</main>
+
+
+<footer class="site-footer">
+
+  <p>
+    © 2026 DLS Competition
+  </p>
+
+  <p>
+    Champions League Test System
+  </p>
+
+</footer>
+
+
+<script
+  type="module"
+  src="../firebase.js"
+></script>
+
+<script
+  type="module"
+  src="champions-admin.js"
+></script>
+
+</body>
+
+</html>
