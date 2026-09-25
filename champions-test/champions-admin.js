@@ -849,12 +849,12 @@ function validateMatchesPerTeam(
 
   return {
 
-    valid: true,
+  valid: true,
 
-    message:
-      `${value} matches per team is valid.`
+  message:
+    `${value} matches per team is valid.`
 
-  };
+};
 
 }
 
