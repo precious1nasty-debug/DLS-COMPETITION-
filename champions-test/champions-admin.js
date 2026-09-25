@@ -6,6 +6,28 @@
 
 
 /* =========================
+   FIREBASE AUTH IMPORTS
+========================= */
+
+import {
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+
+/* =========================
+   FIRESTORE IMPORTS
+========================= */
+
+import {
+  doc,
+  getDoc,
+  setDoc
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+/* =========================
    FIREBASE READY
 ========================= */
 
