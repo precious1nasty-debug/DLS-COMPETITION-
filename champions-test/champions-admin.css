@@ -1,0 +1,178 @@
+/* =========================================================
+   DLS CHAMPIONS LEAGUE
+   champions-admin.css
+   PART 6B — ADMIN LOGIN + BASE STYLING
+   ========================================================= */
+
+
+/* =========================
+   RESET
+========================= */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+
+/* =========================
+   BODY
+========================= */
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f9;
+  color: #222;
+  min-height: 100vh;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.admin-header {
+  background: #111827;
+  color: #ffffff;
+  text-align: center;
+  padding: 24px 16px;
+}
+
+.admin-header h1 {
+  font-size: 26px;
+  margin-bottom: 8px;
+}
+
+.admin-header p {
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+
+/* =========================
+   MAIN
+========================= */
+
+main {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+}
+
+
+/* =========================
+   ADMIN SECTION
+========================= */
+
+.admin-section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 22px;
+  margin-bottom: 20px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+}
+
+.admin-section h2 {
+  margin-bottom: 18px;
+}
+
+
+/* =========================
+   LOGIN FORM
+========================= */
+
+#adminLoginForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#adminLoginForm label {
+  font-weight: bold;
+  margin-top: 8px;
+}
+
+#adminLoginForm input {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 16px;
+  outline: none;
+}
+
+#adminLoginForm input:focus {
+  border-color: #2563eb;
+}
+
+
+/* =========================
+   BUTTON
+========================= */
+
+button {
+  border: none;
+  border-radius: 8px;
+  padding: 13px 18px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#adminLoginButton {
+  margin-top: 12px;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+#adminLoginButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
+/* =========================
+   MESSAGE
+========================= */
+
+.message {
+  margin-top: 15px;
+  min-height: 20px;
+  font-size: 14px;
+}
+
+
+/* =========================
+   HIDDEN
+========================= */
+
+.hidden {
+  display: none !important;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 600px) {
+
+  .admin-header {
+    padding: 20px 14px;
+  }
+
+  .admin-header h1 {
+    font-size: 22px;
+  }
+
+  main {
+    padding: 18px 12px 30px;
+  }
+
+  .admin-section {
+    padding: 18px;
+  }
+
+}
