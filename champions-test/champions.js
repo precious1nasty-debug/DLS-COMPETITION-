@@ -1,7 +1,6 @@
 /* =========================================================
    DLS CHAMPIONS LEAGUE
-   champions.js
-   PART 5 — PUBLIC PAGE
+   PUBLIC PAGE
    ========================================================= */
 
 import {
@@ -10,18 +9,17 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 
-/* =========================
-   ELEMENTS
-========================= */
-
 const competitionStatus =
   document.getElementById("competitionStatus");
+
+const qualificationInfo =
+  document.getElementById("qualificationInfo");
 
 const teamList =
   document.getElementById("teamList");
 
-const leagueTableContainer =
-  document.getElementById("leagueTableContainer");
+const leagueTableBody =
+  document.getElementById("leagueTableBody");
 
 const fixtureList =
   document.getElementById("fixtureList");
@@ -36,388 +34,538 @@ const winnerContainer =
   document.getElementById("winnerContainer");
 
 
-/* =========================
-   EMPTY STATE
-========================= */
+function escapeHtml(value) {
 
-function showEmptyState(element, message) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
-  if (!element) {
-    return;
-  }
+
+function empty(element, message) {
+
+  if (!element) return;
 
   element.innerHTML = `
     <div class="empty-message">
-      ${message}
+      ${escapeHtml(message)}
     </div>
   `;
 }
 
 
-/* =========================
-   ERROR STATE
-========================= */
+function getTeamName(team) {
 
-function showErrorState(element, message) {
+  return (
+    team.name ||
+    team.teamName ||
+    team.player ||
+    team.playerName ||
+    "Unknown Team"
+  );
+}
 
-  if (!element) {
-    return;
+
+function getQualifiedCount(teamCount) {
+
+  if (teamCount >= 9 && teamCount <= 16) {
+    return 8;
   }
 
-  element.innerHTML = `
-    <div class="error-message">
-      ${message}
-    </div>
-  `;
+  if (teamCount >= 17 && teamCount <= 32) {
+    return 16;
+  }
+
+  if (teamCount >= 33 && teamCount <= 128) {
+    return 32;
+  }
+
+  return 0;
 }
 
 
-/* =========================
-   WAIT FOR FIREBASE
-========================= */
+function calculateTable(teams, fixtures) {
 
-function waitForFirebase() {
+  const table = {};
 
-  return new Promise((resolve, reject) => {
+  teams.forEach(team => {
 
-    let attempts = 0;
+    const name = getTeamName(team);
 
-    const maxAttempts = 100;
-
-    const timer = setInterval(() => {
-
-      attempts++;
-
-      if (
-        window.championsFirebaseReady === true &&
-        window.championsDb
-      ) {
-
-        clearInterval(timer);
-
-        resolve(window.championsDb);
-
-        return;
-      }
-
-
-      if (attempts >= maxAttempts) {
-
-        clearInterval(timer);
-
-        reject(
-          new Error(
-            "Firebase could not be initialized."
-          )
-        );
-
-      }
-
-    }, 100);
+    table[name] = {
+      team: name,
+      played: 0,
+      wins: 0,
+      draws: 0,
+      losses: 0,
+      gf: 0,
+      ga: 0,
+      gd: 0,
+      points: 0
+    };
 
   });
 
+
+  fixtures
+    .filter(match =>
+      match.phase === "league" &&
+      match.status === "completed" &&
+      match.homeScore !== null &&
+      match.awayScore !== null
+    )
+    .forEach(match => {
+
+      const home = match.home;
+      const away = match.away;
+
+      if (!table[home] || !table[away]) {
+        return;
+      }
+
+      const hs = Number(match.homeScore);
+      const as = Number(match.awayScore);
+
+      table[home].played++;
+      table[away].played++;
+
+      table[home].gf += hs;
+      table[home].ga += as;
+
+      table[away].gf += as;
+      table[away].ga += hs;
+
+      if (hs > as) {
+
+        table[home].wins++;
+        table[home].points += 3;
+        table[away].losses++;
+
+      } else if (hs < as) {
+
+        table[away].wins++;
+        table[away].points += 3;
+        table[home].losses++;
+
+      } else {
+
+        table[home].draws++;
+        table[away].draws++;
+
+        table[home].points++;
+        table[away].points++;
+      }
+
+    });
+
+
+  Object.values(table).forEach(row => {
+    row.gd = row.gf - row.ga;
+  });
+
+
+  return Object.values(table).sort((a, b) => {
+
+    if (b.points !== a.points) {
+      return b.points - a.points;
+    }
+
+    if (b.gd !== a.gd) {
+      return b.gd - a.gd;
+    }
+
+    if (b.gf !== a.gf) {
+      return b.gf - a.gf;
+    }
+
+    return a.team.localeCompare(b.team);
+
+  });
 }
 
 
-/* =========================
-   RENDER TEAMS
-========================= */
-
 function renderTeams(teams) {
 
-  if (!Array.isArray(teams) || teams.length === 0) {
+  if (!teams.length) {
+    empty(teamList, "No Champions League teams.");
+    return;
+  }
 
-    showEmptyState(
-      teamList,
-      "No Champions League teams have been registered yet."
+  teamList.innerHTML = teams.map((team, index) => {
+
+    const name = getTeamName(team);
+
+    return `
+      <div class="team-card">
+        <h3>${index + 1}. ${escapeHtml(name)}</h3>
+        <p>Champions League participant</p>
+      </div>
+    `;
+
+  }).join("");
+}
+
+
+function renderTable(table, qualifiedCount) {
+
+  if (!table.length) {
+    leagueTableBody.innerHTML = `
+      <tr>
+        <td colspan="10">No table data available.</td>
+      </tr>
+    `;
+    return;
+  }
+
+
+  leagueTableBody.innerHTML = table.map((row, index) => {
+
+    const qualified =
+      qualifiedCount > 0 &&
+      index < qualifiedCount;
+
+    return `
+      <tr class="${qualified ? "qualified-row" : ""}">
+        <td>${index + 1}</td>
+        <td class="team-name">
+          ${escapeHtml(row.team)}
+        </td>
+        <td>${row.played}</td>
+        <td>${row.wins}</td>
+        <td>${row.draws}</td>
+        <td>${row.losses}</td>
+        <td>${row.gf}</td>
+        <td>${row.ga}</td>
+        <td>${row.gd}</td>
+        <td><strong>${row.points}</strong></td>
+      </tr>
+    `;
+
+  }).join("");
+}
+
+
+function renderLeagueFixtures(fixtures) {
+
+  const matches =
+    fixtures.filter(match => match.phase === "league");
+
+  if (!matches.length) {
+    empty(fixtureList, "League Phase fixtures have not been generated.");
+    return;
+  }
+
+
+  fixtureList.innerHTML = matches.map((match, index) => {
+
+    let result = "Not played";
+
+    if (
+      match.status === "completed" &&
+      match.homeScore !== null &&
+      match.awayScore !== null
+    ) {
+      result =
+        `${match.homeScore} - ${match.awayScore}`;
+    }
+
+
+    return `
+      <div class="fixture-card">
+        <h3>Match ${index + 1}</h3>
+
+        <p>
+          <strong>${escapeHtml(match.home)}</strong>
+          vs
+          <strong>${escapeHtml(match.away)}</strong>
+        </p>
+
+        <p class="result">${escapeHtml(result)}</p>
+
+        <p>Status: ${escapeHtml(match.status || "scheduled")}</p>
+      </div>
+    `;
+
+  }).join("");
+}
+
+
+function renderKnockout(fixtures) {
+
+  const knockout =
+    fixtures.filter(match => match.phase === "knockout");
+
+  if (!knockout.length) {
+    empty(
+      knockoutContainer,
+      "Knockout Phase has not started."
     );
 
     return;
   }
 
 
-  teamList.innerHTML = "";
+  const rounds = {};
 
+  knockout.forEach(match => {
 
-  teams.forEach((team) => {
+    const round =
+      match.round || "Knockout";
 
-    const card =
-      document.createElement("div");
+    if (!rounds[round]) {
+      rounds[round] = [];
+    }
 
-    card.className =
-      "team-card";
-
-
-    const teamName =
-      document.createElement("h3");
-
-    teamName.textContent =
-      team.name || "Unnamed Team";
-
-
-    const playerName =
-      document.createElement("p");
-
-    playerName.textContent =
-      team.player
-        ? `Player: ${team.player}`
-        : "Player not available";
-
-
-    card.appendChild(teamName);
-
-    card.appendChild(playerName);
-
-    teamList.appendChild(card);
-
+    rounds[round].push(match);
   });
 
+
+  knockoutContainer.innerHTML =
+    Object.entries(rounds).map(([round, matches]) => {
+
+      return `
+        <div class="knockout-round">
+
+          <h3>${escapeHtml(round)}</h3>
+
+          ${matches.map(match => {
+
+            let result = "Not played";
+
+            if (
+              match.status === "completed" &&
+              match.homeScore !== null &&
+              match.awayScore !== null
+            ) {
+              result =
+                `${match.homeScore} - ${match.awayScore}`;
+            }
+
+            return `
+              <div class="knockout-match">
+
+                <h3>
+                  ${escapeHtml(match.home)}
+                  vs
+                  ${escapeHtml(match.away)}
+                </h3>
+
+                <p class="result">
+                  ${escapeHtml(result)}
+                </p>
+
+                <p>
+                  Status:
+                  ${escapeHtml(match.status || "scheduled")}
+                </p>
+
+              </div>
+            `;
+
+          }).join("")}
+
+        </div>
+      `;
+
+    }).join("");
 }
 
 
-/* =========================
-   LOAD CHAMPIONS LEAGUE
-========================= */
+function renderFinal(fixtures) {
 
-async function loadChampionsLeague() {
+  const final =
+    fixtures.find(match =>
+      match.phase === "knockout" &&
+      match.round === "Final"
+    );
+
+  if (!final) {
+
+    empty(
+      finalContainer,
+      "Final has not been generated."
+    );
+
+    return;
+  }
+
+
+  let result = "Not played";
+
+  if (
+    final.status === "completed" &&
+    final.homeScore !== null &&
+    final.awayScore !== null
+  ) {
+    result =
+      `${final.homeScore} - ${final.awayScore}`;
+  }
+
+
+  finalContainer.innerHTML = `
+    <div class="final-match">
+
+      <h3>🏆 Champions League Final</h3>
+
+      <p>
+        <strong>${escapeHtml(final.home)}</strong>
+        vs
+        <strong>${escapeHtml(final.away)}</strong>
+      </p>
+
+      <p class="result">
+        ${escapeHtml(result)}
+      </p>
+
+    </div>
+  `;
+}
+
+
+function renderWinner(data) {
+
+  if (!data.winner) {
+
+    empty(
+      winnerContainer,
+      "Winner will appear here after the final."
+    );
+
+    return;
+  }
+
+
+  winnerContainer.innerHTML = `
+    <div class="winner-card">
+
+      <div class="trophy">🏆</div>
+
+      <h3>
+        ${escapeHtml(data.winner)}
+      </h3>
+
+      <p>
+        DLS Champions League Winner
+      </p>
+
+    </div>
+  `;
+}
+
+
+async function loadChampions() {
 
   try {
 
-    const db =
-      await waitForFirebase();
+    if (!window.championsDb) {
+      throw new Error("Firebase is not ready.");
+    }
 
 
-    /* =========================
-       CHAMPIONS DOCUMENT
-    ========================= */
-
-    const championsRef =
+    const ref =
       doc(
-        db,
+        window.championsDb,
         "championsLeague",
         "main"
       );
 
 
-    const championsSnapshot =
-      await getDoc(championsRef);
+    const snapshot =
+      await getDoc(ref);
 
 
-    /* =========================
-       NO COMPETITION YET
-    ========================= */
-
-    if (!championsSnapshot.exists()) {
+    if (!snapshot.exists()) {
 
       competitionStatus.textContent =
-        "Champions League has not been started yet.";
+        "Champions League has not been configured yet.";
 
-      showEmptyState(
-        teamList,
-        "Teams will appear here when the Champions League is started."
-      );
+      qualificationInfo.textContent =
+        "Waiting for the administrator.";
 
-      showEmptyState(
-        leagueTableContainer,
-        "League table is not available yet."
-      );
-
-      showEmptyState(
-        fixtureList,
-        "League-phase fixtures are not available yet."
-      );
-
-      showEmptyState(
-        knockoutContainer,
-        "Knockout phase has not started."
-      );
-
-      showEmptyState(
-        finalContainer,
-        "The final has not been created."
-      );
-
-      showEmptyState(
-        winnerContainer,
-        "The champion will appear here after the final."
-      );
+      empty(teamList, "No teams available.");
+      empty(fixtureList, "No fixtures available.");
+      empty(knockoutContainer, "Knockout has not started.");
+      empty(finalContainer, "Final has not been generated.");
+      empty(winnerContainer, "No winner yet.");
 
       return;
     }
 
 
-    /* =========================
-       READ DATA
-    ========================= */
-
-    const data =
-      championsSnapshot.data();
+    const data = snapshot.data();
 
 
-    /* =========================
-       STATUS
-    ========================= */
-
-    competitionStatus.textContent =
-      data.status ||
-      "Champions League is active.";
-
-
-    /* =========================
-       TEAMS
-    ========================= */
-
-    renderTeams(
+    const teams =
       Array.isArray(data.teams)
         ? data.teams
-        : []
-    );
+        : [];
 
 
-    /* =========================
-       LEAGUE TABLE
-    ========================= */
-
-    if (
-      Array.isArray(data.tables) &&
-      data.tables.length > 0
-    ) {
-
-      leagueTableContainer.innerHTML =
-        "League table data is available.";
-
-    } else {
-
-      showEmptyState(
-        leagueTableContainer,
-        "League table is not available yet."
-      );
-
-    }
+    const fixtures =
+      Array.isArray(data.fixtures)
+        ? data.fixtures
+        : [];
 
 
-    /* =========================
-       FIXTURES
-    ========================= */
+    const table =
+      calculateTable(teams, fixtures);
 
-    if (
-      Array.isArray(data.fixtures) &&
-      data.fixtures.length > 0
-    ) {
 
-      fixtureList.innerHTML =
-        "League-phase fixtures are available.";
+    const qualifiedCount =
+      getQualifiedCount(teams.length);
+
+
+    if (data.started) {
+
+      competitionStatus.textContent =
+        `Champions League is live with ${teams.length} teams.`;
 
     } else {
 
-      showEmptyState(
-        fixtureList,
-        "League-phase fixtures are not available yet."
-      );
-
+      competitionStatus.textContent =
+        `Champions League is not started. ${teams.length} teams registered.`;
     }
 
 
-    /* =========================
-       KNOCKOUT
-    ========================= */
+    if (qualifiedCount) {
 
-    if (data.knockout) {
-
-      knockoutContainer.innerHTML =
-        "Knockout phase information is available.";
+      qualificationInfo.textContent =
+        `Top ${qualifiedCount} teams qualify for the Knockout Phase.`;
 
     } else {
 
-      showEmptyState(
-        knockoutContainer,
-        "Knockout phase has not started."
-      );
-
+      qualificationInfo.textContent =
+        "Champions League requires between 9 and 128 teams.";
     }
 
 
-    /* =========================
-       FINAL
-    ========================= */
+    renderTeams(teams);
 
-    if (data.final) {
+    renderTable(table, qualifiedCount);
 
-      finalContainer.innerHTML =
-        "Champions League final information is available.";
+    renderLeagueFixtures(fixtures);
 
-    } else {
+    renderKnockout(fixtures);
 
-      showEmptyState(
-        finalContainer,
-        "The final has not been created."
-      );
+    renderFinal(fixtures);
 
-    }
-
-
-    /* =========================
-       WINNER
-    ========================= */
-
-    if (data.champion) {
-
-      winnerContainer.innerHTML = `
-        <div class="winner-card">
-
-          <div class="trophy">
-            🏆
-          </div>
-
-          <h3>
-            ${data.champion.name || "Champion"}
-          </h3>
-
-          <p>
-            ${
-              data.champion.player
-                ? `Player: ${data.champion.player}`
-                : ""
-            }
-          </p>
-
-        </div>
-      `;
-
-    } else {
-
-      showEmptyState(
-        winnerContainer,
-        "The champion will appear here after the final."
-      );
-
-    }
+    renderWinner(data);
 
   } catch (error) {
 
-    console.error(
-      "Champions League loading error:",
-      error
-    );
-
+    console.error(error);
 
     competitionStatus.textContent =
-      "Unable to load the Champions League.";
+      "Unable to load Champions League.";
 
-
-    showErrorState(
-      teamList,
-      "There was a problem loading the competition."
-    );
+    qualificationInfo.textContent =
+      error.message;
 
   }
-
 }
 
 
-/* =========================
-   START
-========================= */
-
-loadChampionsLeague();
+loadChampions();
