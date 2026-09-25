@@ -4580,963 +4580,6 @@ function renderKnockout() {
 
 }
 
-// =========================================================
-// PART 9 — KNOCKOUT RESULTS & ADVANCEMENT
-// =========================================================
-
-
-// =========================================================
-// GET KNOCKOUT TIES
-// =========================================================
-
-function getKnockoutTies() {
-
-  if (
-    !championsData.knockoutRound ||
-    !Array.isArray(
-      championsData.knockoutRound.ties
-    )
-  ) {
-
-    return [];
-
-  }
-
-
-  return championsData.knockoutRound.ties;
-
-}
-
-
-// =========================================================
-// GET MATCH SCORE
-// =========================================================
-
-function getMatchScore(
-  match
-) {
-
-  if (!match) {
-
-    return {
-      home: 0,
-      away: 0
-    };
-
-  }
-
-
-  return {
-
-    home:
-      Number(match.homeScore) || 0,
-
-    away:
-      Number(match.awayScore) || 0
-
-  };
-
-}
-
-
-// =========================================================
-// CHECK WHETHER A MATCH IS COMPLETE
-// =========================================================
-
-function isKnockoutMatchComplete(
-  match
-) {
-
-  if (!match) {
-    return false;
-  }
-
-
-  return (
-    match.completed === true &&
-    Number.isInteger(
-      Number(match.homeScore)
-    ) &&
-    Number.isInteger(
-      Number(match.awayScore)
-    )
-  );
-
-}
-
-
-// =========================================================
-// CHECK WHETHER A TIE IS COMPLETE
-// =========================================================
-
-function isKnockoutTieComplete(
-  tie
-) {
-
-  if (!tie) {
-    return false;
-  }
-
-
-  if (
-    tie.legs === 1
-  ) {
-
-    return isKnockoutMatchComplete(
-      tie.leg1
-    );
-
-  }
-
-
-  return (
-    isKnockoutMatchComplete(
-      tie.leg1
-    ) &&
-    isKnockoutMatchComplete(
-      tie.leg2
-    )
-  );
-
-}
-
-
-// =========================================================
-// GET AGGREGATE SCORE
-// =========================================================
-
-function getAggregateScore(
-  tie
-) {
-
-  const leg1 =
-    getMatchScore(
-      tie.leg1
-    );
-
-
-  const leg2 =
-    tie.legs === 2
-      ? getMatchScore(
-          tie.leg2
-        )
-      : {
-          home: 0,
-          away: 0
-        };
-
-
-  return {
-
-    firstTeam:
-      leg1.home +
-      leg2.away,
-
-    secondTeam:
-      leg1.away +
-      leg2.home
-
-  };
-
-}
-
-
-// =========================================================
-// DETERMINE TIE WINNER
-// =========================================================
-//
-// A one-leg draw or two-leg aggregate draw is NOT
-// automatically decided. The admin must later choose
-// the winner.
-//
-
-function determineTieWinner(
-  tie
-) {
-
-  if (
-    !isKnockoutTieComplete(
-      tie
-    )
-  ) {
-
-    return null;
-
-  }
-
-
-  const aggregate =
-    getAggregateScore(
-      tie
-    );
-
-
-  if (
-    aggregate.firstTeam >
-    aggregate.secondTeam
-  ) {
-
-    return tie.homeTeamId;
-
-  }
-
-
-  if (
-    aggregate.secondTeam >
-    aggregate.firstTeam
-  ) {
-
-    return tie.awayTeamId;
-
-  }
-
-
-  return null;
-
-}
-
-
-// =========================================================
-// GET TEAM FROM TIE
-// =========================================================
-
-function getTieTeam(
-  tie,
-  teamId
-) {
-
-  if (
-    String(teamId) ===
-    String(tie.homeTeamId)
-  ) {
-
-    return {
-      id:
-        tie.homeTeamId,
-
-      name:
-        tie.homeName
-
-    };
-
-  }
-
-
-  if (
-    String(teamId) ===
-    String(tie.awayTeamId)
-  ) {
-
-    return {
-      id:
-        tie.awayTeamId,
-
-      name:
-        tie.awayName
-
-    };
-
-  }
-
-
-  return null;
-
-}
-
-
-// =========================================================
-// SAVE KNOCKOUT RESULT
-// =========================================================
-
-async function saveKnockoutResult(
-  tie,
-  legNumber,
-  homeScore,
-  awayScore
-) {
-
-  const match =
-    legNumber === 2
-      ? tie.leg2
-      : tie.leg1;
-
-
-  if (!match) {
-
-    return;
-
-  }
-
-
-  if (
-    !Number.isInteger(
-      homeScore
-    ) ||
-    !Number.isInteger(
-      awayScore
-    ) ||
-    homeScore < 0 ||
-    awayScore < 0
-  ) {
-
-    alert(
-      "❌ Scores must be whole numbers 0 or higher."
-    );
-
-    return;
-
-  }
-
-
-  match.homeScore =
-    homeScore;
-
-  match.awayScore =
-    awayScore;
-
-  match.completed =
-    true;
-
-  match.status =
-    "completed";
-
-
-  // -------------------------------------------------------
-  // DETERMINE WINNER IF POSSIBLE
-  // -------------------------------------------------------
-
-  if (
-    isKnockoutTieComplete(
-      tie
-    )
-  ) {
-
-    const winner =
-      determineTieWinner(
-        tie
-      );
-
-
-    tie.winner =
-      winner;
-
-  }
-
-
-  await saveChampionsData();
-
-  refreshAllAdminSections();
-
-}
-
-
-// =========================================================
-// CREATE NEXT KNOCKOUT ROUND
-// =========================================================
-
-async function createNextKnockoutRound() {
-
-  const current =
-    championsData.knockoutRound;
-
-
-  if (!current) {
-    return;
-  }
-
-
-  const ties =
-    getKnockoutTies();
-
-
-  if (!ties.length) {
-    return;
-  }
-
-
-  // -------------------------------------------------------
-  // EVERY TIE MUST BE COMPLETE
-  // -------------------------------------------------------
-
-  if (
-    !ties.every(
-      tie =>
-        isKnockoutTieComplete(
-          tie
-        )
-    )
-  ) {
-
-    return;
-
-  }
-
-
-  // -------------------------------------------------------
-  // EVERY TIE MUST HAVE A WINNER
-  // -------------------------------------------------------
-
-  if (
-    !ties.every(
-      tie =>
-        Boolean(
-          tie.winner
-        )
-    )
-  ) {
-
-    return;
-
-  }
-
-
-  const winners =
-    ties.map(
-      tie =>
-        getTieTeam(
-          tie,
-          tie.winner
-        )
-    );
-
-
-  // -------------------------------------------------------
-  // FINAL
-  // -------------------------------------------------------
-
-  if (
-    winners.length === 2
-  ) {
-
-    const finalRound =
-      "Final";
-
-
-    const finalTie =
-      createKnockoutTie(
-        winners[0],
-        winners[1],
-        finalRound,
-        1,
-        current.legs
-      );
-
-
-    championsData.knockoutRound = {
-
-      round:
-        finalRound,
-
-      legs:
-        current.legs,
-
-      teamCount:
-        2,
-
-      ties: [
-        finalTie
-      ]
-
-    };
-
-
-    await saveChampionsData();
-
-    refreshAllAdminSections();
-
-    return;
-
-  }
-
-
-  // -------------------------------------------------------
-  // NEXT ROUND
-  // -------------------------------------------------------
-
-  const nextRound =
-    getNextKnockoutRoundName(
-      winners.length
-    );
-
-
-  const nextTies =
-    [];
-
-
-  for (
-    let i = 0;
-    i < winners.length;
-    i += 2
-  ) {
-
-    nextTies.push(
-      createKnockoutTie(
-        winners[i],
-        winners[i + 1],
-        nextRound,
-        (
-          i / 2
-        ) + 1,
-        current.legs
-      )
-    );
-
-  }
-
-
-  championsData.knockoutRound = {
-
-    round:
-      nextRound,
-
-    legs:
-      current.legs,
-
-    teamCount:
-      winners.length,
-
-    ties:
-      nextTies
-
-  };
-
-
-  await saveChampionsData();
-
-  refreshAllAdminSections();
-
-}
-
-
-// =========================================================
-// CHECK FOR AUTOMATIC ADVANCEMENT
-// =========================================================
-
-async function checkKnockoutAdvancement() {
-
-  const knockout =
-    championsData.knockoutRound;
-
-
-  if (!knockout) {
-    return;
-  }
-
-
-  const ties =
-    getKnockoutTies();
-
-
-  if (!ties.length) {
-    return;
-  }
-
-
-  // Don't advance if an aggregate tie is level.
-  if (
-    ties.some(
-      tie =>
-        isKnockoutTieComplete(
-          tie
-        ) &&
-        !tie.winner
-    )
-  ) {
-
-    return;
-
-  }
-
-
-  if (
-    ties.every(
-      tie =>
-        isKnockoutTieComplete(
-          tie
-        ) &&
-        tie.winner
-    )
-  ) {
-
-    await createNextKnockoutRound();
-
-  }
-
-}
-
-
-// =========================================================
-// RENDER KNOCKOUT RESULTS
-// =========================================================
-
-function renderKnockoutResults() {
-
-  if (!knockoutResultsList) {
-    return;
-  }
-
-
-  const knockout =
-    championsData.knockoutRound;
-
-
-  if (!knockout) {
-
-    knockoutResultsList.innerHTML =
-      "<p>No knockout matches yet.</p>";
-
-    return;
-
-  }
-
-
-  const ties =
-    knockout.ties || [];
-
-
-  knockoutResultsList.innerHTML =
-    "";
-
-
-  ties.forEach(
-    (tie, tieIndex) => {
-
-      const container =
-        document.createElement(
-          "div"
-        );
-
-
-      container.className =
-        "knockout-tie";
-
-
-      const heading =
-        document.createElement(
-          "h3"
-        );
-
-
-      heading.textContent =
-        `Tie ${tieIndex + 1}: ${tie.homeName} vs ${tie.awayName}`;
-
-
-      container.appendChild(
-        heading
-      );
-
-
-      // ---------------------------------------------------
-      // RENDER EACH LEG
-      // ---------------------------------------------------
-
-      const legs =
-        tie.legs === 2
-          ? [tie.leg1, tie.leg2]
-          : [tie.leg1];
-
-
-      legs.forEach(
-        (match, index) => {
-
-          if (!match) {
-            return;
-          }
-
-
-          const card =
-            document.createElement(
-              "div"
-            );
-
-
-          card.className =
-            "knockout-match";
-
-
-          const title =
-            document.createElement(
-              "strong"
-            );
-
-
-          title.textContent =
-            tie.legs === 2
-              ? `Leg ${index + 1}`
-              : "Match";
-
-
-          const home =
-            document.createElement(
-              "span"
-            );
-
-
-          home.textContent =
-            match.homeName;
-
-
-          const homeInput =
-            document.createElement(
-              "input"
-            );
-
-
-          homeInput.type =
-            "number";
-
-          homeInput.min =
-            "0";
-
-          homeInput.step =
-            "1";
-
-          homeInput.inputMode =
-            "numeric";
-
-          homeInput.value =
-            match.homeScore === null ||
-            match.homeScore === undefined
-              ? ""
-              : match.homeScore;
-
-
-          const dash =
-            document.createElement(
-              "span"
-            );
-
-
-          dash.textContent =
-            " - ";
-
-
-          const awayInput =
-            document.createElement(
-              "input"
-            );
-
-
-          awayInput.type =
-            "number";
-
-          awayInput.min =
-            "0";
-
-          awayInput.step =
-            "1";
-
-          awayInput.inputMode =
-            "numeric";
-
-          awayInput.value =
-            match.awayScore === null ||
-            match.awayScore === undefined
-              ? ""
-              : match.awayScore;
-
-
-          const away =
-            document.createElement(
-              "span"
-            );
-
-
-          away.textContent =
-            match.awayName;
-
-
-          const save =
-            document.createElement(
-              "button"
-            );
-
-
-          save.type =
-            "button";
-
-
-          save.textContent =
-            match.completed
-              ? "Update Result"
-              : "Save Result";
-
-
-          save.addEventListener(
-            "click",
-            async () => {
-
-              if (
-                homeInput.value === "" ||
-                awayInput.value === ""
-              ) {
-
-                alert(
-                  "❌ Enter both scores."
-                );
-
-                return;
-
-              }
-
-
-              await saveKnockoutResult(
-                tie,
-                index + 1,
-                Number(
-                  homeInput.value
-                ),
-                Number(
-                  awayInput.value
-                )
-              );
-
-            }
-          );
-
-
-          card.appendChild(
-            title
-          );
-
-          card.appendChild(
-            home
-          );
-
-          card.appendChild(
-            homeInput
-          );
-
-          card.appendChild(
-            dash
-          );
-
-          card.appendChild(
-            awayInput
-          );
-
-          card.appendChild(
-            away
-          );
-
-          card.appendChild(
-            save
-          );
-
-
-          container.appendChild(
-            card
-          );
-
-        }
-      );
-
-
-      // ---------------------------------------------------
-      // AGGREGATE
-      // ---------------------------------------------------
-
-      if (
-        tie.legs === 2
-      ) {
-
-        const aggregate =
-          getAggregateScore(
-            tie
-          );
-
-
-        const aggregateText =
-          document.createElement(
-            "p"
-          );
-
-
-        aggregateText.textContent =
-          `Aggregate: ${tie.homeName} ${aggregate.firstTeam} - ${aggregate.secondTeam} ${tie.awayName}`;
-
-
-        container.appendChild(
-          aggregateText
-        );
-
-      }
-
-
-      // ---------------------------------------------------
-      // WINNER / TIE LEVEL
-      // ---------------------------------------------------
-
-      if (
-        tie.winner
-      ) {
-
-        const winner =
-          getTieTeam(
-            tie,
-            tie.winner
-          );
-
-
-        const winnerText =
-          document.createElement(
-            "p"
-          );
-
-
-        winnerText.textContent =
-          `✅ Advances: ${winner?.name || "Unknown Team"}`;
-
-
-        container.appendChild(
-          winnerText
-        );
-
-      }
-      else if (
-        isKnockoutTieComplete(
-          tie
-        )
-      ) {
-
-        const aggregate =
-          getAggregateScore(
-            tie
-          );
-
-
-        if (
-          aggregate.firstTeam ===
-          aggregate.secondTeam
-        ) {
-
-          const tied =
-            document.createElement(
-              "p"
-            );
-
-
-          tied.textContent =
-            "⚠️ Tie is level. A winner must be selected before the next round can be generated.";
-
-
-          container.appendChild(
-            tied
-          );
-
-        }
-
-      }
-
-
-      knockoutResultsList.appendChild(
-        container
-      );
-
-    }
-  );
-
-}
 
 // =========================================================
 // CHAMPIONS LEAGUE ADMIN
@@ -6301,3 +5344,1679 @@ function renderKnockoutResults() {
 // =========================================================
 
 renderWinner();
+
+// =========================================================
+// CHAMPIONS LEAGUE ADMIN
+// PART 11 — KNOCKOUT TREE / BRACKET
+// =========================================================
+
+
+// =========================================================
+// CREATE TREE MATCH CARD
+// =========================================================
+
+function createKnockoutTreeMatch(tie) {
+
+  const box =
+    document.createElement("div");
+
+  box.className =
+    "knockout-tree-match";
+
+
+  const home =
+    document.createElement("div");
+
+  home.className =
+    "knockout-tree-team";
+
+  home.textContent =
+    tie.homeName || "TBD";
+
+
+  const away =
+    document.createElement("div");
+
+  away.className =
+    "knockout-tree-team";
+
+  away.textContent =
+    tie.awayName || "TBD";
+
+
+  // -------------------------------------------------------
+  // SHOW SCORES
+  // -------------------------------------------------------
+
+  if (tie.leg1) {
+
+    const homeScore =
+      tie.leg1.homeScore;
+
+    const awayScore =
+      tie.leg1.awayScore;
+
+
+    if (
+      homeScore !== null &&
+      awayScore !== null
+    ) {
+
+      home.innerHTML =
+        `${tie.homeName} <strong>${homeScore}</strong>`;
+
+      away.innerHTML =
+        `${tie.awayName} <strong>${awayScore}</strong>`;
+    }
+  }
+
+
+  box.appendChild(home);
+  box.appendChild(away);
+
+
+  // -------------------------------------------------------
+  // 2-LEG AGGREGATE
+  // -------------------------------------------------------
+
+  if (tie.legs === 2) {
+
+    const aggregate =
+      getAggregateScore(tie);
+
+    const aggregateBox =
+      document.createElement("div");
+
+    aggregateBox.className =
+      "knockout-tree-aggregate";
+
+    aggregateBox.textContent =
+      `Agg: ${aggregate.home} - ${aggregate.away}`;
+
+    box.appendChild(
+      aggregateBox
+    );
+  }
+
+
+  // -------------------------------------------------------
+  // WINNER
+  // -------------------------------------------------------
+
+  if (tie.winner) {
+
+    const winnerTeam =
+      findTeamById(
+        tie.winner
+      );
+
+    if (winnerTeam) {
+
+      const winnerLabel =
+        document.createElement("div");
+
+      winnerLabel.className =
+        "knockout-tree-winner";
+
+      winnerLabel.textContent =
+        `✓ ${getTeamName(winnerTeam)}`;
+
+      box.appendChild(
+        winnerLabel
+      );
+    }
+  }
+
+
+  return box;
+}
+
+
+// =========================================================
+// RENDER ONE KNOCKOUT ROUND
+// =========================================================
+
+function renderKnockoutTreeRound(
+  roundName,
+  ties
+) {
+
+  const column =
+    document.createElement("div");
+
+  column.className =
+    "knockout-tree-round";
+
+
+  const title =
+    document.createElement("h3");
+
+  title.textContent =
+    roundName;
+
+
+  column.appendChild(
+    title
+  );
+
+
+  const matches =
+    document.createElement("div");
+
+  matches.className =
+    "knockout-tree-matches";
+
+
+  ties.forEach(
+    tie => {
+
+      matches.appendChild(
+        createKnockoutTreeMatch(
+          tie
+        )
+      );
+
+    }
+  );
+
+
+  column.appendChild(
+    matches
+  );
+
+
+  return column;
+}
+
+
+// =========================================================
+// BUILD CHAMPIONS LEAGUE TREE
+// =========================================================
+
+function renderKnockoutTree() {
+
+  if (!knockoutTree) {
+    return;
+  }
+
+  knockoutTree.innerHTML = "";
+
+
+  const current =
+    championsData.knockoutRound;
+
+
+  if (!current) {
+
+    knockoutTree.innerHTML =
+      `
+        <div class="knockout-tree-empty">
+          Knockout tree will appear
+          after the league phase is complete.
+        </div>
+      `;
+
+    return;
+  }
+
+
+  // -------------------------------------------------------
+  // MAIN TREE
+  // -------------------------------------------------------
+
+  const tree =
+    document.createElement("div");
+
+  tree.className =
+    "knockout-tree";
+
+
+  // -------------------------------------------------------
+  // CURRENT ROUND
+  // -------------------------------------------------------
+
+  tree.appendChild(
+    renderKnockoutTreeRound(
+      current.round,
+      current.ties
+    )
+  );
+
+
+  // -------------------------------------------------------
+  // SHOW PREVIOUS ROUND INFORMATION
+  // -------------------------------------------------------
+
+  /*
+    The active knockoutRound contains
+    the current stage only.
+
+    Therefore, when a new round is
+    generated, the current stage is
+    displayed cleanly rather than
+    inventing old match data.
+  */
+
+
+  knockoutTree.appendChild(
+    tree
+  );
+}
+
+
+// =========================================================
+// UPDATE KNOCKOUT RENDER FUNCTION
+// =========================================================
+
+function renderKnockout() {
+
+  if (!knockoutTree) {
+    return;
+  }
+
+
+  const current =
+    championsData.knockoutRound;
+
+
+  if (!current) {
+
+    knockoutTree.innerHTML =
+      `
+        <div class="knockout-tree-empty">
+          No knockout phase generated yet.
+        </div>
+      `;
+
+    return;
+  }
+
+
+  renderKnockoutTree();
+}
+
+
+// =========================================================
+// UPDATE WINNER WHEN FINAL IS COMPLETED
+// =========================================================
+
+async function handleFinalCompletion() {
+
+  const current =
+    championsData.knockoutRound;
+
+
+  if (!current) {
+    return;
+  }
+
+
+  if (
+    current.round !== "Final"
+  ) {
+    return;
+  }
+
+
+  const finalTie =
+    current.ties[0];
+
+
+  if (
+    !finalTie ||
+    !finalTie.winner
+  ) {
+    return;
+  }
+
+
+  championsData.winner =
+    finalTie.winner;
+
+
+  await saveChampionsData();
+
+
+  renderKnockout();
+  renderKnockoutResults();
+  renderWinner();
+  updateCompetitionStatus();
+}
+
+
+// =========================================================
+// FINAL SAFETY CHECK
+// =========================================================
+
+if (
+  championsData &&
+  championsData.winner
+) {
+
+  renderWinner();
+
+}
+
+/* =========================================================
+   CHAMPIONS LEAGUE ADMIN
+   PART 12 — KNOCKOUT TREE / MOBILE RESPONSIVE CSS
+   ========================================================= */
+
+
+/* =========================================================
+   KNOCKOUT TREE CONTAINER
+   ========================================================= */
+
+#knockoutTree {
+  width: 100%;
+  margin-top: 20px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+
+/* =========================================================
+   TREE
+   ========================================================= */
+
+.knockout-tree {
+  display: flex;
+  gap: 28px;
+  min-width: max-content;
+  padding: 15px 5px 25px;
+}
+
+
+/* =========================================================
+   ROUND COLUMN
+   ========================================================= */
+
+.knockout-tree-round {
+  width: 230px;
+  flex: 0 0 230px;
+}
+
+
+.knockout-tree-round h3 {
+  margin: 0 0 14px;
+  padding: 10px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   MATCHES
+   ========================================================= */
+
+.knockout-tree-matches {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+
+/* =========================================================
+   MATCH CARD
+   ========================================================= */
+
+.knockout-tree-match {
+  position: relative;
+  width: 100%;
+  padding: 0;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+
+/* =========================================================
+   TEAM ROW
+   ========================================================= */
+
+.knockout-tree-team {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 42px;
+  padding: 9px 11px;
+  font-size: 13px;
+  line-height: 1.3;
+  border-bottom: 1px solid #eeeeee;
+}
+
+
+.knockout-tree-team:last-of-type {
+  border-bottom: none;
+}
+
+
+.knockout-tree-team strong {
+  margin-left: auto;
+  font-size: 15px;
+}
+
+
+/* =========================================================
+   AGGREGATE
+   ========================================================= */
+
+.knockout-tree-aggregate {
+  padding: 7px 10px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  border-top: 1px solid #eeeeee;
+}
+
+
+/* =========================================================
+   ADVANCING TEAM
+   ========================================================= */
+
+.knockout-tree-winner {
+  padding: 7px 10px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  border-top: 1px solid #eeeeee;
+}
+
+
+/* =========================================================
+   EMPTY TREE
+   ========================================================= */
+
+.knockout-tree-empty {
+  width: 100%;
+  padding: 20px;
+  text-align: center;
+  border: 1px dashed #cccccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   KNOCKOUT RESULT TIES
+   ========================================================= */
+
+.knockout-tie {
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 1px solid #dddddd;
+  border-radius: 10px;
+}
+
+
+.knockout-tie h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+
+
+/* =========================================================
+   KNOCKOUT MATCH
+   ========================================================= */
+
+.knockout-match {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #e1e1e1;
+  border-radius: 8px;
+}
+
+
+.knockout-match-title {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+
+.knockout-match-teams {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   SCORE INPUTS
+   ========================================================= */
+
+.knockout-score-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+
+.knockout-score-row input {
+  width: 65px;
+  min-height: 42px;
+  padding: 8px;
+  border: 1px solid #cccccc;
+  border-radius: 6px;
+  font-size: 16px;
+  text-align: center;
+}
+
+
+.knockout-score-row button {
+  min-height: 42px;
+  padding: 8px 13px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   AGGREGATE RESULT
+   ========================================================= */
+
+.knockout-aggregate {
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 7px;
+  font-size: 13px;
+}
+
+
+.knockout-aggregate div {
+  margin-top: 4px;
+}
+
+
+/* =========================================================
+   TIED MESSAGE
+   ========================================================= */
+
+.knockout-tied-message {
+  margin: 12px 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   WINNER BUTTONS
+   ========================================================= */
+
+.knockout-winner-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+
+.knockout-winner-buttons button {
+  min-height: 42px;
+  padding: 9px 13px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   TIE WINNER
+   ========================================================= */
+
+.knockout-tie-winner {
+  margin-top: 10px;
+  padding: 9px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   WINNER CARD
+   ========================================================= */
+
+.winner-card {
+  margin-top: 20px;
+  padding: 25px 15px;
+  text-align: center;
+  border: 2px solid #d8b24c;
+  border-radius: 12px;
+}
+
+
+.winner-icon {
+  font-size: 42px;
+  margin-bottom: 8px;
+}
+
+
+.winner-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+
+.winner-team {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+  #knockoutTree {
+    margin-top: 15px;
+  }
+
+
+  .knockout-tree {
+    gap: 18px;
+    padding: 10px 3px 20px;
+  }
+
+
+  .knockout-tree-round {
+    width: 205px;
+    flex-basis: 205px;
+  }
+
+
+  .knockout-tree-round h3 {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+
+  .knockout-tree-match {
+    border-radius: 7px;
+  }
+
+
+  .knockout-tree-team {
+    min-height: 40px;
+    padding: 8px;
+    font-size: 12px;
+  }
+
+
+  .knockout-tree-aggregate {
+    font-size: 11px;
+  }
+
+
+  .knockout-tree-winner {
+    font-size: 11px;
+  }
+
+
+  .knockout-match-teams {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+
+  .knockout-score-row {
+    width: 100%;
+  }
+
+
+  .knockout-score-row input {
+    width: 58px;
+  }
+
+
+  .knockout-score-row button {
+    flex: 1;
+  }
+
+
+  .knockout-winner-buttons {
+    flex-direction: column;
+  }
+
+
+  .knockout-winner-buttons button {
+    width: 100%;
+  }
+
+
+  .winner-team {
+    font-size: 20px;
+  }
+
+}
+
+// =========================================================
+// CHAMPIONS LEAGUE ADMIN
+// PART 13 — FINAL FLOW / STATUS / REFRESH FIXES
+// =========================================================
+
+
+// =========================================================
+// REFRESH EVERYTHING AFTER CHAMPIONS DATA CHANGES
+// =========================================================
+
+async function refreshChampionsAdmin() {
+
+  await loadChampionsData();
+  await loadApprovedTeams();
+
+  loadSettingsIntoForm();
+
+  renderApprovedTeams();
+  renderFixtures();
+  renderLeagueResults();
+  renderLeagueTable();
+
+  renderKnockout();
+  renderKnockoutResults();
+  renderWinner();
+
+  updateCompetitionStatus();
+}
+
+
+// =========================================================
+// UPDATE START BUTTON STATE
+// =========================================================
+
+function updateStartButtonState() {
+
+  if (!startCompetitionButton) {
+    return;
+  }
+
+  const validation =
+    canStartCompetition();
+
+  startCompetitionButton.disabled =
+    !validation.valid;
+}
+
+
+// =========================================================
+// IMPROVED COMPETITION STATUS
+// =========================================================
+
+function updateCompetitionStatus() {
+
+  if (!competitionStatus) {
+    return;
+  }
+
+  let statusText =
+    "Not Started";
+
+
+  // -------------------------------------------------------
+  // COMPLETE
+  // -------------------------------------------------------
+
+  if (championsData.winner) {
+
+    const winnerTeam =
+      findTeamById(
+        championsData.winner
+      );
+
+    const winnerName =
+      winnerTeam
+        ? getTeamName(winnerTeam)
+        : "Unknown Team";
+
+    statusText =
+      `🏆 Competition Complete — ${winnerName}`;
+
+  }
+
+  // -------------------------------------------------------
+  // KNOCKOUT ACTIVE
+  // -------------------------------------------------------
+
+  else if (
+    championsData.knockoutRound
+  ) {
+
+    statusText =
+      `Knockout Phase Active — ${
+        championsData.knockoutRound.round
+      }`;
+
+  }
+
+  // -------------------------------------------------------
+  // LEAGUE COMPLETE
+  // -------------------------------------------------------
+
+  else if (
+    championsData.fixtures.length > 0 &&
+    isLeaguePhaseComplete()
+  ) {
+
+    statusText =
+      "League Phase Complete — Knockout Ready";
+
+  }
+
+  // -------------------------------------------------------
+  // LEAGUE ACTIVE
+  // -------------------------------------------------------
+
+  else if (
+    championsData.started
+  ) {
+
+    statusText =
+      "League Phase Active";
+
+  }
+
+
+  competitionStatus.textContent =
+    statusText;
+
+  updateStartButtonState();
+}
+
+
+// =========================================================
+// SAFE SAVE SETTINGS
+// =========================================================
+
+async function saveChampionsSettingsOnly() {
+
+  const startDate =
+    seasonStartDate?.value || null;
+
+  const endDate =
+    seasonEndDate?.value || null;
+
+  const matches =
+    Number(
+      matchesPerTeam?.value
+    );
+
+
+  if (!startDate || !endDate) {
+
+    alert(
+      "❌ Please select the season start and end dates."
+    );
+
+    return false;
+  }
+
+
+  if (
+    Number.isNaN(matches)
+  ) {
+
+    alert(
+      "❌ Please select matches per team."
+    );
+
+    return false;
+  }
+
+
+  const validation =
+    validateFixtureSettings();
+
+  if (!validation.valid) {
+
+    alert(
+      `❌ ${validation.message}`
+    );
+
+    return false;
+  }
+
+
+  championsData.seasonStartDate =
+    startDate;
+
+  championsData.seasonEndDate =
+    endDate;
+
+  championsData.matchesPerTeam =
+    matches;
+
+
+  await saveChampionsData();
+
+  loadSettingsIntoForm();
+
+  updateCompetitionStatus();
+
+  return true;
+}
+
+
+// =========================================================
+// PROTECT AGAINST CHANGING SETTINGS
+// AFTER FIXTURES EXIST
+// =========================================================
+
+function canChangeFixtureSettings() {
+
+  return (
+    championsData.fixtures.length === 0 &&
+    !championsData.started &&
+    !championsData.knockoutRound
+  );
+}
+
+
+// =========================================================
+// DISABLE SETTINGS AFTER FIXTURES ARE GENERATED
+// =========================================================
+
+function updateSettingsControls() {
+
+  const locked =
+    !canChangeFixtureSettings();
+
+
+  if (seasonStartDate) {
+    seasonStartDate.disabled =
+      locked;
+  }
+
+
+  if (seasonEndDate) {
+    seasonEndDate.disabled =
+      locked;
+  }
+
+
+  if (matchesPerTeam) {
+    matchesPerTeam.disabled =
+      locked;
+  }
+}
+
+
+// =========================================================
+// WRAP ADMIN REFRESH
+// =========================================================
+
+const originalRefreshAllAdminSections =
+  refreshAllAdminSections;
+
+
+refreshAllAdminSections =
+  async function () {
+
+    await originalRefreshAllAdminSections();
+
+    updateSettingsControls();
+    updateStartButtonState();
+    updateCompetitionStatus();
+
+  };
+
+
+// =========================================================
+// UPDATE CONTROLS AFTER PAGE LOAD
+// =========================================================
+
+updateSettingsControls();
+updateStartButtonState();
+updateCompetitionStatus();
+
+
+// =========================================================
+// FINAL INITIAL RENDER
+// =========================================================
+
+if (
+  championsData
+) {
+
+  renderApprovedTeams();
+  renderFixtures();
+  renderLeagueResults();
+  renderLeagueTable();
+  renderKnockout();
+  renderKnockoutResults();
+  renderWinner();
+  updateCompetitionStatus();
+
+}
+
+// =========================================================
+// CHAMPIONS LEAGUE ADMIN
+// PART 14 — FULL KNOCKOUT BRACKET HISTORY
+// =========================================================
+
+
+// =========================================================
+// ENSURE HISTORY EXISTS
+// =========================================================
+
+function ensureKnockoutHistory() {
+
+  if (
+    !Array.isArray(
+      championsData.knockoutHistory
+    )
+  ) {
+
+    championsData.knockoutHistory = [];
+
+  }
+
+}
+
+
+// =========================================================
+// SAVE CURRENT ROUND INTO HISTORY
+// =========================================================
+
+function saveCurrentKnockoutRoundToHistory() {
+
+  const current =
+    championsData.knockoutRound;
+
+  if (!current) {
+    return;
+  }
+
+  ensureKnockoutHistory();
+
+
+  const existingIndex =
+    championsData.knockoutHistory.findIndex(
+      round =>
+        round.round === current.round
+    );
+
+
+  const snapshot =
+    JSON.parse(
+      JSON.stringify(current)
+    );
+
+
+  if (existingIndex >= 0) {
+
+    championsData.knockoutHistory[
+      existingIndex
+    ] = snapshot;
+
+  } else {
+
+    championsData.knockoutHistory.push(
+      snapshot
+    );
+
+  }
+
+}
+
+
+// =========================================================
+// GET ALL KNOCKOUT ROUNDS
+// =========================================================
+
+function getKnockoutRounds() {
+
+  ensureKnockoutHistory();
+
+
+  const rounds =
+    [
+      ...championsData.knockoutHistory
+    ];
+
+
+  const current =
+    championsData.knockoutRound;
+
+
+  if (
+    current &&
+    !rounds.some(
+      round =>
+        round.round === current.round
+    )
+  ) {
+
+    rounds.push(
+      JSON.parse(
+        JSON.stringify(current)
+      )
+    );
+
+  }
+
+
+  const order = {
+    "Round of 32": 1,
+    "Round of 16": 2,
+    "Quarter-finals": 3,
+    "Semi-finals": 4,
+    "Final": 5
+  };
+
+
+  rounds.sort(
+    (a, b) =>
+      (order[a.round] || 99) -
+      (order[b.round] || 99)
+  );
+
+
+  return rounds;
+}
+
+
+// =========================================================
+// CREATE NEXT ROUND — HISTORY VERSION
+// =========================================================
+
+async function createNextKnockoutRound(
+  winners
+) {
+
+  const current =
+    championsData.knockoutRound;
+
+
+  if (!current) {
+    return;
+  }
+
+
+  // -------------------------------------------------------
+  // SAVE COMPLETED ROUND
+  // -------------------------------------------------------
+
+  saveCurrentKnockoutRoundToHistory();
+
+
+  // -------------------------------------------------------
+  // FINAL
+  // -------------------------------------------------------
+
+  if (
+    current.round === "Final"
+  ) {
+
+    if (
+      winners.length === 1
+    ) {
+
+      championsData.winner =
+        winners[0];
+
+      await saveChampionsData();
+
+      renderKnockout();
+      renderKnockoutResults();
+      renderWinner();
+      updateCompetitionStatus();
+
+    }
+
+    return;
+  }
+
+
+  // -------------------------------------------------------
+  // VALIDATE WINNERS
+  // -------------------------------------------------------
+
+  if (
+    winners.length < 2 ||
+    winners.length % 2 !== 0
+  ) {
+
+    console.error(
+      "Invalid knockout winner count:",
+      winners.length
+    );
+
+    return;
+  }
+
+
+  const nextRound =
+    getNextKnockoutRoundName(
+      winners.length
+    );
+
+
+  const shuffled =
+    shuffleQualifiedTeams(
+      winners
+    );
+
+
+  const ties = [];
+
+
+  for (
+    let i = 0;
+    i < shuffled.length;
+    i += 2
+  ) {
+
+    const homeTeam =
+      findTeamById(
+        shuffled[i]
+      );
+
+    const awayTeam =
+      findTeamById(
+        shuffled[i + 1]
+      );
+
+
+    if (
+      !homeTeam ||
+      !awayTeam
+    ) {
+      continue;
+    }
+
+
+    const tie =
+      createKnockoutTie(
+        nextRound,
+        Math.floor(i / 2),
+        homeTeam,
+        awayTeam,
+        current.legs
+      );
+
+
+    ties.push(
+      tie
+    );
+
+  }
+
+
+  championsData.knockoutRound = {
+    round: nextRound,
+    legs: current.legs,
+    teamCount: winners.length,
+    ties: ties
+  };
+
+
+  await saveChampionsData();
+
+
+  renderKnockout();
+  renderKnockoutResults();
+  renderWinner();
+  updateCompetitionStatus();
+}
+
+
+// =========================================================
+// FULL TREE RENDER
+// =========================================================
+
+function renderKnockoutTree() {
+
+  if (!knockoutTree) {
+    return;
+  }
+
+
+  knockoutTree.innerHTML = "";
+
+
+  const rounds =
+    getKnockoutRounds();
+
+
+  if (
+    rounds.length === 0
+  ) {
+
+    knockoutTree.innerHTML =
+      `
+        <div class="knockout-tree-empty">
+          Knockout tree will appear
+          after the league phase is complete.
+        </div>
+      `;
+
+    return;
+  }
+
+
+  const tree =
+    document.createElement("div");
+
+  tree.className =
+    "knockout-tree";
+
+
+  rounds.forEach(
+    round => {
+
+      const column =
+        document.createElement(
+          "div"
+        );
+
+      column.className =
+        "knockout-tree-round";
+
+
+      const title =
+        document.createElement(
+          "h3"
+        );
+
+      title.textContent =
+        round.round;
+
+
+      column.appendChild(
+        title
+      );
+
+
+      const matches =
+        document.createElement(
+          "div"
+        );
+
+      matches.className =
+        "knockout-tree-matches";
+
+
+      round.ties.forEach(
+        tie => {
+
+          matches.appendChild(
+            createKnockoutTreeMatch(
+              tie
+            )
+          );
+
+        }
+      );
+
+
+      column.appendChild(
+        matches
+      );
+
+
+      tree.appendChild(
+        column
+      );
+
+    }
+  );
+
+
+  knockoutTree.appendChild(
+    tree
+  );
+}
+
+
+// =========================================================
+// START KNOCKOUT — RESET HISTORY
+// =========================================================
+
+async function generateKnockout() {
+
+  if (
+    !isLeaguePhaseComplete()
+  ) {
+
+    alert(
+      "❌ The league phase must be completed first."
+    );
+
+    return;
+  }
+
+
+  const qualifiedTeams =
+    getQualifiedTeams();
+
+
+  if (
+    !qualifiedTeams ||
+    qualifiedTeams.length < 8
+  ) {
+
+    alert(
+      "❌ Not enough qualified teams for the knockout phase."
+    );
+
+    return;
+  }
+
+
+  const legs =
+    Number(
+      knockoutLegs?.value
+    );
+
+
+  if (
+    legs !== 1 &&
+    legs !== 2
+  ) {
+
+    alert(
+      "❌ Select 1 or 2 knockout legs."
+    );
+
+    return;
+  }
+
+
+  const shuffled =
+    shuffleQualifiedTeams(
+      qualifiedTeams.map(
+        team =>
+          getTeamId(team)
+      )
+    );
+
+
+  const round =
+    getInitialKnockoutRoundName(
+      shuffled.length
+    );
+
+
+  const ties = [];
+
+
+  for (
+    let i = 0;
+    i < shuffled.length;
+    i += 2
+  ) {
+
+    const homeTeam =
+      findTeamById(
+        shuffled[i]
+      );
+
+    const awayTeam =
+      findTeamById(
+        shuffled[i + 1]
+      );
+
+
+    if (
+      !homeTeam ||
+      !awayTeam
+    ) {
+      continue;
+    }
+
+
+    ties.push(
+      createKnockoutTie(
+        round,
+        Math.floor(i / 2),
+        homeTeam,
+        awayTeam,
+        legs
+      )
+    );
+
+  }
+
+
+  championsData.knockoutLegs =
+    legs;
+
+
+  championsData.knockoutHistory =
+    [];
+
+
+  championsData.knockoutRound = {
+    round: round,
+    legs: legs,
+    teamCount: shuffled.length,
+    ties: ties
+  };
+
+
+  championsData.winner =
+    null;
+
+
+  await saveChampionsData();
+
+
+  renderKnockout();
+  renderKnockoutResults();
+  renderWinner();
+  updateCompetitionStatus();
+
+
+  if (knockoutMessage) {
+
+    knockoutMessage.textContent =
+      `${round} generated with a random draw.`;
+
+  }
+}
+
+
+// =========================================================
+// INITIALIZE HISTORY AFTER FIRESTORE LOAD
+// =========================================================
+
+ensureKnockoutHistory();
+
+renderKnockoutTree();
+
+// =========================================================
+// CHAMPIONS LEAGUE ADMIN
+// PART 15 — DATA MODEL SAFETY
+// =========================================================
+
+function normalizeChampionsData() {
+
+  if (!championsData) {
+    championsData = {};
+  }
+
+  if (
+    !Array.isArray(
+      championsData.teams
+    )
+  ) {
+    championsData.teams = [];
+  }
+
+  if (
+    !Array.isArray(
+      championsData.fixtures
+    )
+  ) {
+    championsData.fixtures = [];
+  }
+
+  if (
+    !Array.isArray(
+      championsData.knockoutHistory
+    )
+  ) {
+    championsData.knockoutHistory = [];
+  }
+
+  if (
+    typeof championsData.started !==
+    "boolean"
+  ) {
+    championsData.started = false;
+  }
+
+  if (
+    !championsData.matchesPerTeam
+  ) {
+    championsData.matchesPerTeam = 1;
+  }
+
+  if (
+    !championsData.knockoutLegs
+  ) {
+    championsData.knockoutLegs = 1;
+  }
+
+}
+
+
+// =========================================================
+// NORMALIZE CURRENT DATA
+// =========================================================
+
+normalizeChampionsData();
+
+
+// =========================================================
+// ENSURE HISTORY EXISTS
+// =========================================================
+
+ensureKnockoutHistory();
+
+
+// =========================================================
+// FINAL UI REFRESH
+// =========================================================
+
+renderApprovedTeams();
+renderFixtures();
+renderLeagueResults();
+renderLeagueTable();
+renderKnockout();
+renderKnockoutResults();
+renderKnockoutTree();
+renderWinner();
+updateCompetitionStatus();
