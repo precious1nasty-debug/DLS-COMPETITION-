@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="description"
+    content="DLS Champions League Admin"
+  >
+
+  <title>
+    Champions League Admin
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="champions-admin.css"
+  >
+
+</head>
+
+<body>
+
+  <header class="admin-header">
+
+    <h1>🏆 Champions League Admin</h1>
+
+    <p>
+      DLS Champions League Management
+    </p>
+
+  </header>
+
+
+  <main>
+
+    <!-- =========================
+         LOGIN
+    ========================== -->
+
+    <section
+      id="adminLogin"
+      class="admin-section"
+    >
+
+      <h2>Admin Login</h2>
+
+      <form id="adminLoginForm">
+
+        <label for="adminEmail">
+          Email
+        </label>
+
+        <input
+          type="email"
+          id="adminEmail"
+          autocomplete="email"
+          required
+        >
+
+
+        <label for="adminPassword">
+          Password
+        </label>
+
+        <input
+          type="password"
+          id="adminPassword"
+          autocomplete="current-password"
+          required
+        >
+
+
+        <button
+          type="submit"
+          id="adminLoginButton"
+        >
+          Login
+        </button>
+
+      </form>
+
+
+      <div
+        id="adminLoginMessage"
+        class="message"
+      ></div>
+
+    </section>
+
+
+    <!-- =========================
+         DASHBOARD
+    ========================== -->
+
+    <section
+      id="adminDashboard"
+      class="admin-section hidden"
+    >
+
+      <h2>
+        Champions League Dashboard
+      </h2>
+
+      <p id="adminWelcome">
+        Welcome, Admin
+      </p>
+
+    </section>
+
+  </main>
+
+
+  <script
+    type="module"
+    src="champions-firebase.js"
+  ></script>
+
+  <script
+    type="module"
+    src="champions-admin.js"
+  ></script>
+
+</body>
+
+</html>
