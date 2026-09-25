@@ -1,7 +1,7 @@
 /* =========================================================
    DLS CHAMPIONS LEAGUE
    champions-admin.css
-   PART 6B — ADMIN LOGIN + BASE STYLING
+   PART 7B — ADMIN DASHBOARD STYLING
    ========================================================= */
 
 
@@ -109,7 +109,7 @@ main {
 
 
 /* =========================
-   BUTTON
+   BUTTON BASE
 ========================= */
 
 button {
@@ -120,6 +120,11 @@ button {
   font-weight: bold;
   cursor: pointer;
 }
+
+
+/* =========================
+   LOGIN BUTTON
+========================= */
 
 #adminLoginButton {
   margin-top: 12px;
@@ -141,6 +146,76 @@ button {
   margin-top: 15px;
   min-height: 20px;
   font-size: 14px;
+}
+
+
+/* =========================
+   DASHBOARD CARD
+========================= */
+
+.dashboard-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 18px;
+  margin-top: 16px;
+}
+
+.dashboard-card h3 {
+  font-size: 17px;
+  margin-bottom: 8px;
+}
+
+.dashboard-card p {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+
+/* =========================
+   DASHBOARD GRID
+========================= */
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.dashboard-grid .dashboard-card {
+  margin-top: 0;
+}
+
+
+/* =========================
+   DASHBOARD MENU
+========================= */
+
+.dashboard-menu {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.dashboard-menu button {
+  width: 100%;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.dashboard-menu button:hover {
+  opacity: 0.9;
+}
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+#adminLogoutButton {
+  background: #dc2626;
 }
 
 
@@ -173,6 +248,18 @@ button {
 
   .admin-section {
     padding: 18px;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-menu {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-card p {
+    font-size: 19px;
   }
 
 }
