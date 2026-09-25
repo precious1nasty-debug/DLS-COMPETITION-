@@ -50,7 +50,9 @@
       class="admin-section"
     >
 
-      <h2>Admin Login</h2>
+      <h2>
+        Admin Login
+      </h2>
 
       <form id="adminLoginForm">
 
@@ -113,15 +115,165 @@
         Welcome, Admin
       </p>
 
+
+      <!-- =========================
+           COMPETITION STATUS
+      ========================== -->
+
+      <div class="dashboard-card">
+
+        <h3>
+          Competition Status
+        </h3>
+
+        <p id="championsStatus">
+          Selection Open
+        </p>
+
+      </div>
+
+
+      <!-- =========================
+           SUMMARY
+      ========================== -->
+
+      <div class="dashboard-grid">
+
+        <div class="dashboard-card">
+
+          <h3>
+            Selected Teams
+          </h3>
+
+          <p id="selectedTeamsCount">
+            0
+          </p>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+          <h3>
+            Groups
+          </h3>
+
+          <p id="groupsCount">
+            0
+          </p>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+          <h3>
+            Fixtures
+          </h3>
+
+          <p id="fixturesCount">
+            0
+          </p>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+          <h3>
+            Champion
+          </h3>
+
+          <p id="championName">
+            Not decided
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- =========================
+           DASHBOARD MENU
+      ========================== -->
+
+      <div class="dashboard-menu">
+
+        <button
+          type="button"
+          id="teamSelectionButton"
+        >
+          Team Selection
+        </button>
+
+
+        <button
+          type="button"
+          id="groupManagementButton"
+        >
+          Groups
+        </button>
+
+
+        <button
+          type="button"
+          id="fixtureManagementButton"
+        >
+          Fixtures & Results
+        </button>
+
+
+        <button
+          type="button"
+          id="knockoutManagementButton"
+        >
+          Knockout Stage
+        </button>
+
+
+        <button
+          type="button"
+          id="finalManagementButton"
+        >
+          Final
+        </button>
+
+
+        <button
+          type="button"
+          id="settingsButton"
+        >
+          Competition Settings
+        </button>
+
+
+        <button
+          type="button"
+          id="adminLogoutButton"
+        >
+          Logout
+        </button>
+
+      </div>
+
     </section>
 
   </main>
 
 
+  <!-- =========================
+       FIREBASE
+  ========================== -->
+
   <script
     type="module"
     src="champions-firebase.js"
   ></script>
+
+
+  <!-- =========================
+       CHAMPIONS ADMIN
+  ========================== -->
 
   <script
     type="module"
