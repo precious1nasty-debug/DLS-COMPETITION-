@@ -1,24 +1,9 @@
-/* =========================================================
-   DLS CHAMPIONS LEAGUE
-   champions.css
-   PART 3 — PUBLIC WEBSITE DESIGN
-   ========================================================= */
-
-
-/* =========================
-   RESET
-========================= */
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
-
-
-/* =========================
-   BODY
-========================= */
 
 body {
   font-family: Arial, sans-serif;
@@ -27,78 +12,57 @@ body {
   min-height: 100vh;
 }
 
-
-/* =========================
-   HEADER
-========================= */
-
 .champions-header {
   background: #111827;
-  color: #ffffff;
+  color: white;
   text-align: center;
-  padding: 25px 16px;
+  padding: 25px 15px;
 }
 
 .champions-header h1 {
-  font-size: 26px;
+  font-size: 27px;
   margin-bottom: 8px;
 }
 
 .champions-header p {
-  font-size: 14px;
-  opacity: 0.85;
+  opacity: .85;
 }
-
-
-/* =========================
-   NAVIGATION
-========================= */
 
 .champions-nav {
   background: #1f2937;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
+  gap: 7px;
   padding: 12px;
 }
 
 .champions-nav a {
-  color: #ffffff;
+  color: white;
   text-decoration: none;
-  font-size: 14px;
-  font-weight: bold;
   padding: 9px 12px;
   border-radius: 7px;
+  font-size: 14px;
+  font-weight: bold;
 }
 
 .champions-nav a:hover {
   background: #374151;
 }
 
-
-/* =========================
-   MAIN
-========================= */
-
 main {
   width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
+  max-width: 1050px;
+  margin: auto;
   padding: 20px 14px 40px;
 }
 
-
-/* =========================
-   SECTIONS
-========================= */
-
 .champions-section {
-  background: #ffffff;
+  background: white;
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 3px 12px rgba(0,0,0,.08);
 }
 
 .champions-section h2 {
@@ -106,25 +70,20 @@ main {
   font-size: 22px;
 }
 
-
-/* =========================
-   STATUS
-========================= */
-
-#competitionStatus {
+.status-box,
+.qualification-box {
+  border-radius: 9px;
+  padding: 14px;
+  margin-top: 10px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 14px;
+}
+
+.qualification-box {
   font-weight: bold;
 }
 
-
-/* =========================
-   TEAM LIST
-========================= */
-
-#teamList {
+.team-list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
@@ -138,21 +97,15 @@ main {
 }
 
 .team-card h3 {
-  font-size: 17px;
   margin-bottom: 6px;
 }
 
 .team-card p {
+  color: #64748b;
   font-size: 14px;
-  color: #555;
 }
 
-
-/* =========================
-   LEAGUE TABLE
-========================= */
-
-.league-table-wrapper {
+.table-wrapper {
   width: 100%;
   overflow-x: auto;
 }
@@ -160,20 +113,20 @@ main {
 .league-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 650px;
+  min-width: 700px;
 }
 
 .league-table th,
 .league-table td {
   border: 1px solid #dbe1e8;
-  padding: 10px 8px;
+  padding: 9px 7px;
   text-align: center;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .league-table th {
   background: #111827;
-  color: #ffffff;
+  color: white;
 }
 
 .league-table td.team-name {
@@ -181,10 +134,9 @@ main {
   font-weight: bold;
 }
 
-
-/* =========================
-   FIXTURES
-========================= */
+.qualified-row {
+  background: #ecfdf5;
+}
 
 .fixture-list {
   display: flex;
@@ -192,158 +144,99 @@ main {
   gap: 10px;
 }
 
-.fixture-card {
+.fixture-card,
+.knockout-match,
+.final-match {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
   padding: 14px;
 }
 
-.fixture-card h3 {
-  margin-bottom: 8px;
-  font-size: 16px;
+.fixture-card h3,
+.knockout-match h3 {
+  margin-bottom: 7px;
 }
 
-.fixture-card p {
-  font-size: 14px;
-  margin-top: 4px;
+.fixture-card p,
+.knockout-match p,
+.final-match p {
+  margin-top: 5px;
 }
 
-
-/* =========================
-   KNOCKOUT
-========================= */
+.result {
+  font-size: 18px;
+  font-weight: bold;
+}
 
 .knockout-round {
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 
 .knockout-round h3 {
   margin-bottom: 10px;
+  font-size: 20px;
 }
 
 .knockout-match {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 14px;
   margin-bottom: 10px;
 }
 
-.knockout-match p {
-  margin-top: 5px;
-}
-
-
-/* =========================
-   FINAL
-========================= */
-
-.final-container {
-  text-align: center;
-}
-
 .final-match {
-  background: #f8fafc;
-  border: 2px solid #dbe1e8;
-  border-radius: 12px;
-  padding: 20px;
-}
-
-.final-match h3 {
-  margin-bottom: 12px;
-}
-
-.final-match p {
-  margin-top: 7px;
-}
-
-
-/* =========================
-   WINNER
-========================= */
-
-.winner-section {
   text-align: center;
+  border: 2px solid #111827;
+  padding: 22px;
 }
 
 .winner-card {
+  text-align: center;
   background: #f8fafc;
-  border: 2px solid #dbe1e8;
+  border: 2px solid #111827;
   border-radius: 14px;
-  padding: 25px 18px;
+  padding: 25px;
 }
 
 .winner-card .trophy {
-  font-size: 50px;
+  font-size: 55px;
   margin-bottom: 10px;
 }
 
 .winner-card h3 {
-  font-size: 24px;
-  margin-bottom: 8px;
+  font-size: 26px;
 }
-
-.winner-card p {
-  margin-top: 6px;
-}
-
-
-/* =========================
-   EMPTY / MESSAGE STATES
-========================= */
 
 .empty-message {
-  background: #f8fafc;
-  border: 1px dashed #cbd5e1;
-  border-radius: 8px;
   padding: 15px;
   text-align: center;
   color: #64748b;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
 }
 
 .error-message {
+  padding: 15px;
+  color: #b91c1c;
   background: #fef2f2;
   border: 1px solid #fecaca;
   border-radius: 8px;
-  padding: 15px;
-  color: #b91c1c;
 }
-
-
-/* =========================
-   FOOTER
-========================= */
 
 .champions-footer {
   background: #111827;
-  color: #ffffff;
+  color: white;
   text-align: center;
-  padding: 20px 15px;
-  font-size: 14px;
+  padding: 20px;
 }
 
-
-/* =========================
-   MOBILE
-========================= */
-
 @media (max-width: 600px) {
-
-  .champions-header {
-    padding: 20px 12px;
-  }
 
   .champions-header h1 {
     font-size: 22px;
   }
 
-  .champions-nav {
-    gap: 5px;
-  }
-
   .champions-nav a {
-    font-size: 13px;
+    font-size: 12px;
     padding: 8px 9px;
   }
 
@@ -355,18 +248,11 @@ main {
     padding: 16px;
   }
 
-  .champions-section h2 {
-    font-size: 20px;
-  }
-
-  #teamList {
+  .team-list {
     grid-template-columns: 1fr;
   }
 
-  .league-table th,
-  .league-table td {
-    font-size: 13px;
-    padding: 8px 6px;
+  .league-table {
+    min-width: 680px;
   }
-
 }
