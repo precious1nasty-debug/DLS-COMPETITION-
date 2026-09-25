@@ -1,24 +1,8 @@
-/* =========================================================
-   DLS CHAMPIONS LEAGUE
-   champions-admin.css
-   PART 10 — ADMIN DASHBOARD
-   ========================================================= */
-
-
-/* =========================
-   RESET
-========================= */
-
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
-
-
-/* =========================
-   BODY
-========================= */
 
 body {
   font-family: Arial, sans-serif;
@@ -27,347 +11,203 @@ body {
   min-height: 100vh;
 }
 
-
-/* =========================
-   HEADER
-========================= */
-
 .admin-header {
   background: #111827;
-  color: #ffffff;
+  color: white;
   text-align: center;
-  padding: 24px 16px;
+  padding: 24px 15px;
 }
 
 .admin-header h1 {
   font-size: 26px;
-  margin-bottom: 8px;
+  margin-bottom: 7px;
 }
 
 .admin-header p {
-  font-size: 14px;
-  opacity: 0.85;
+  opacity: .85;
 }
-
-
-/* =========================
-   MAIN
-========================= */
 
 main {
   width: 100%;
   max-width: 950px;
-  margin: 0 auto;
-  padding: 24px 16px 40px;
+  margin: auto;
+  padding: 22px 14px 40px;
 }
 
-
-/* =========================
-   SECTIONS
-========================= */
-
 .admin-section {
-  background: #ffffff;
+  background: white;
   border-radius: 12px;
-  padding: 22px;
+  padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 3px 12px rgba(0,0,0,.08);
 }
 
 .admin-section h2 {
-  margin-bottom: 18px;
+  margin-bottom: 15px;
 }
 
-
-/* =========================
-   LOGIN
-========================= */
-
-#adminLoginForm {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-#adminLoginForm label {
+label {
+  display: block;
   font-weight: bold;
-  margin-top: 8px;
+  margin-top: 12px;
+  margin-bottom: 7px;
 }
 
-#adminLoginForm input {
+input,
+select {
   width: 100%;
+  max-width: 400px;
   padding: 13px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   font-size: 16px;
-  outline: none;
+  background: white;
 }
-
-#adminLoginForm input:focus {
-  border-color: #2563eb;
-}
-
-
-/* =========================
-   GENERAL BUTTON
-========================= */
 
 button {
   border: none;
   border-radius: 8px;
-  padding: 13px 18px;
-  font-size: 16px;
+  padding: 13px 16px;
+  margin-top: 12px;
+  font-size: 15px;
   font-weight: bold;
   cursor: pointer;
+  background: #2563eb;
+  color: white;
 }
 
 button:disabled {
-  opacity: 0.6;
+  opacity: .5;
   cursor: not-allowed;
 }
 
-
-/* =========================
-   LOGIN BUTTON
-========================= */
-
-#adminLoginButton {
-  margin-top: 12px;
-  background: #2563eb;
-  color: #ffffff;
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
 }
 
+#generateFixturesButton {
+  background: #7c3aed;
+}
 
-/* =========================
-   MESSAGES
-========================= */
+#startCompetitionButton {
+  background: #16a34a;
+}
+
+#generateKnockoutButton {
+  background: #ea580c;
+}
+
+#adminLogoutButton {
+  background: #dc2626;
+}
 
 .message {
-  margin-top: 14px;
   min-height: 20px;
-  font-size: 14px;
-}
-
-
-/* =========================
-   DASHBOARD CARDS
-========================= */
-
-.dashboard-card {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 18px;
-  margin-top: 16px;
-}
-
-.dashboard-card h3 {
-  font-size: 16px;
-  margin-bottom: 8px;
-}
-
-.dashboard-card p {
-  font-size: 20px;
-  font-weight: bold;
-}
-
-
-/* =========================
-   DASHBOARD GRID
-========================= */
-
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-  margin-top: 16px;
-}
-
-.dashboard-grid .dashboard-card {
-  margin-top: 0;
-}
-
-
-/* =========================
-   SUBSECTIONS
-========================= */
-
-.admin-subsection {
-  margin-top: 24px;
-  padding: 20px;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  background: #ffffff;
-}
-
-.admin-subsection h2 {
-  font-size: 20px;
-  margin-bottom: 12px;
-}
-
-.admin-subsection p {
+  margin-top: 10px;
   line-height: 1.5;
-  margin-bottom: 12px;
 }
-
-
-/* =========================
-   MATCHES PER TEAM
-========================= */
-
-#competitionSettingsSection label {
-  display: block;
-  font-weight: bold;
-  margin-top: 16px;
-  margin-bottom: 8px;
-}
-
-
-/* =========================
-   MATCHES SELECT
-========================= */
-
-#matchesPerTeam {
-  width: 100%;
-  max-width: 320px;
-  padding: 13px 14px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #222;
-  font-size: 16px;
-  outline: none;
-  cursor: pointer;
-}
-
-#matchesPerTeam:focus {
-  border-color: #2563eb;
-}
-
-
-/* =========================
-   SAVE SETTINGS
-========================= */
-
-#saveSettingsButton {
-  background: #2563eb;
-  color: #ffffff;
-  margin-top: 8px;
-}
-
-
-/* =========================
-   TEAM LIST
-========================= */
 
 .team-list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 10px;
   margin-top: 15px;
 }
 
 .team-card {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  padding: 13px;
+}
+
+.team-card strong {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.match-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.match-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 10px;
   padding: 15px;
 }
 
-.team-card h3 {
-  font-size: 17px;
-  margin-bottom: 6px;
+.match-card h3 {
+  margin-bottom: 8px;
 }
 
-.team-card p {
-  font-size: 14px;
-  color: #555;
+.score-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-
-/* =========================
-   START COMPETITION
-========================= */
-
-#startCompetitionButton {
-  background: #16a34a;
-  color: #ffffff;
-  margin-top: 8px;
+.score-row input {
+  width: 80px;
+  max-width: 80px;
 }
 
-#startCompetitionButton:disabled {
-  background: #94a3b8;
+.status-live {
+  padding: 12px;
+  border-radius: 8px;
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
 }
 
-
-/* =========================
-   DASHBOARD ACTIONS
-========================= */
-
-.dashboard-actions {
-  margin-top: 24px;
-  text-align: right;
+.status-warning {
+  padding: 12px;
+  border-radius: 8px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
 }
-
-#adminLogoutButton {
-  background: #dc2626;
-  color: #ffffff;
-}
-
-
-/* =========================
-   HIDDEN
-========================= */
 
 .hidden {
   display: none !important;
 }
 
-
-/* =========================
-   MOBILE
-========================= */
+.dashboard-actions {
+  text-align: right;
+}
 
 @media (max-width: 600px) {
-
-  .admin-header {
-    padding: 20px 14px;
-  }
 
   .admin-header h1 {
     font-size: 22px;
   }
 
   main {
-    padding: 18px 12px 30px;
+    padding: 16px 10px 30px;
   }
 
   .admin-section {
-    padding: 18px;
-  }
-
-  .admin-subsection {
     padding: 16px;
-  }
-
-  .dashboard-grid {
-    grid-template-columns: 1fr;
   }
 
   .team-list {
     grid-template-columns: 1fr;
   }
 
-  .dashboard-card p {
-    font-size: 19px;
+  .button-row {
+    flex-direction: column;
   }
 
-  #matchesPerTeam {
-    max-width: 100%;
+  .button-row button {
+    width: 100%;
   }
 
   .dashboard-actions {
     text-align: center;
   }
-
 }
