@@ -1,7 +1,7 @@
 /* =========================================================
    DLS CHAMPIONS LEAGUE
    champions-admin.js
-   PART 7G — RANDOM TEAM SELECTION
+   PART 8 — ADMIN LOGIN + APPROVED TEAM LOADING
    ========================================================= */
 
 import {
@@ -16,170 +16,149 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 
-/* =========================
-   ADMIN ACCOUNT
-========================= */
+/* =========================================================
+   ADMIN CONFIGURATION
+   ========================================================= */
 
 const ADMIN_EMAIL =
   "obakimoprecious07@gmail.com";
 
 
-/* =========================
-   TEAM DATA
-========================= */
+/* =========================================================
+   GLOBAL DATA
+   ========================================================= */
 
 let approvedTeams = [];
 
-let selectedChampionsTeams = [];
+
+/* =========================================================
+   ELEMENTS
+   ========================================================= */
+
+const adminLogin =
+  document.getElementById("adminLogin");
+
+const adminDashboard =
+  document.getElementById("adminDashboard");
+
+const adminLoginForm =
+  document.getElementById("adminLoginForm");
+
+const adminEmail =
+  document.getElementById("adminEmail");
+
+const adminPassword =
+  document.getElementById("adminPassword");
+
+const adminLoginButton =
+  document.getElementById("adminLoginButton");
+
+const adminLoginMessage =
+  document.getElementById("adminLoginMessage");
+
+const adminWelcome =
+  document.getElementById("adminWelcome");
+
+const eligibleTeamsCount =
+  document.getElementById("eligibleTeamsCount");
+
+const eligibleTeamsList =
+  document.getElementById("eligibleTeamsList");
+
+const teamsMessage =
+  document.getElementById("teamsMessage");
+
+const adminLogoutButton =
+  document.getElementById("adminLogoutButton");
+
+const startCompetitionButton =
+  document.getElementById("startCompetitionButton");
 
 
-/* =========================
+/* =========================================================
    WAIT FOR FIREBASE
-========================= */
+   ========================================================= */
 
 function waitForFirebase() {
 
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
 
-    if (
-      window.championsFirebaseReady &&
-      window.championsAuth &&
-      window.championsDb
-    ) {
+    let attempts = 0;
 
-      resolve({
-        auth: window.championsAuth,
-        db: window.championsDb
-      });
+    const maxAttempts = 100;
 
-      return;
-    }
+    const timer = setInterval(() => {
+
+      attempts++;
+
+      if (
+        window.championsFirebaseReady === true &&
+        window.championsAuth &&
+        window.championsDb
+      ) {
+
+        clearInterval(timer);
+
+        resolve({
+          auth: window.championsAuth,
+          db: window.championsDb
+        });
+
+        return;
+      }
 
 
-    const checkFirebase =
-      setInterval(() => {
+      if (attempts >= maxAttempts) {
 
-        if (
-          window.championsFirebaseReady &&
-          window.championsAuth &&
-          window.championsDb
-        ) {
+        clearInterval(timer);
 
-          clearInterval(checkFirebase);
+        reject(
+          new Error(
+            "Firebase could not be initialized."
+          )
+        );
 
-          resolve({
-            auth: window.championsAuth,
-            db: window.championsDb
-          });
+      }
 
-        }
-
-      }, 50);
+    }, 100);
 
   });
 
 }
 
 
-/* =========================
-   PAGE ELEMENTS
-========================= */
-
-const loginSection =
-  document.getElementById("adminLogin");
-
-const dashboardSection =
-  document.getElementById("adminDashboard");
-
-const loginForm =
-  document.getElementById("adminLoginForm");
-
-const emailInput =
-  document.getElementById("adminEmail");
-
-const passwordInput =
-  document.getElementById("adminPassword");
-
-const loginButton =
-  document.getElementById("adminLoginButton");
-
-const loginMessage =
-  document.getElementById("adminLoginMessage");
-
-const teamSelectionMessage =
-  document.getElementById(
-    "teamSelectionMessage"
-  );
-
-const availableTeamsList =
-  document.getElementById(
-    "availableTeamsList"
-  );
-
-const randomSelectionButton =
-  document.getElementById(
-    "randomSelectionButton"
-  );
-
-const selectedTeamsList =
-  document.getElementById(
-    "selectedTeamsList"
-  );
-
-
-/* =========================
+/* =========================================================
    LOGIN MESSAGE
-========================= */
+   ========================================================= */
 
 function showLoginMessage(message) {
 
-  loginMessage.textContent =
-    message;
+  if (!adminLoginMessage) {
+    return;
+  }
+
+  adminLoginMessage.textContent = message;
 
 }
 
 
-/* =========================
-   SHOW LOGIN
-========================= */
-
-function showLogin() {
-
-  loginSection.classList.remove(
-    "hidden"
-  );
-
-  dashboardSection.classList.add(
-    "hidden"
-  );
-
-}
-
-
-/* =========================
+/* =========================================================
    SHOW DASHBOARD
-========================= */
+   ========================================================= */
 
 function showDashboard(user) {
 
-  loginSection.classList.add(
-    "hidden"
-  );
+  if (adminLogin) {
+    adminLogin.classList.add("hidden");
+  }
 
-  dashboardSection.classList.remove(
-    "hidden"
-  );
+  if (adminDashboard) {
+    adminDashboard.classList.remove("hidden");
+  }
 
+  if (adminWelcome) {
 
-  const welcome =
-    document.getElementById(
-      "adminWelcome"
-    );
-
-
-  if (welcome) {
-
-    welcome.textContent =
+    adminWelcome.textContent =
       `Welcome, ${user.email}`;
 
   }
@@ -187,32 +166,90 @@ function showDashboard(user) {
 }
 
 
-/* =========================
-   TEAM MESSAGE
-========================= */
+/* =========================================================
+   SHOW LOGIN
+   ========================================================= */
 
-function showTeamMessage(message) {
+function showLogin() {
 
-  if (teamSelectionMessage) {
+  if (adminDashboard) {
+    adminDashboard.classList.add("hidden");
+  }
 
-    teamSelectionMessage.textContent =
-      message;
-
+  if (adminLogin) {
+    adminLogin.classList.remove("hidden");
   }
 
 }
 
 
-/* =========================
+/* =========================================================
+   RENDER APPROVED TEAMS
+   ========================================================= */
+
+function renderApprovedTeams() {
+
+  if (!eligibleTeamsList) {
+    return;
+  }
+
+
+  eligibleTeamsList.innerHTML = "";
+
+
+  if (approvedTeams.length === 0) {
+
+    eligibleTeamsList.innerHTML = `
+      <div class="empty-message">
+        No approved teams are currently available.
+      </div>
+    `;
+
+    return;
+  }
+
+
+  approvedTeams.forEach((team, index) => {
+
+    const card =
+      document.createElement("div");
+
+    card.className =
+      "team-card";
+
+
+    const teamName =
+      document.createElement("h3");
+
+    teamName.textContent =
+      `${index + 1}. ${team.name}`;
+
+
+    const playerName =
+      document.createElement("p");
+
+    playerName.textContent =
+      team.player
+        ? `Player: ${team.player}`
+        : "Player: Not available";
+
+
+    card.appendChild(teamName);
+
+    card.appendChild(playerName);
+
+    eligibleTeamsList.appendChild(card);
+
+  });
+
+}
+
+
+/* =========================================================
    LOAD APPROVED TEAMS
-========================= */
+   ========================================================= */
 
 async function loadApprovedTeams() {
-
-  showTeamMessage(
-    "Loading approved teams..."
-  );
-
 
   try {
 
@@ -220,6 +257,26 @@ async function loadApprovedTeams() {
       db
     } = await waitForFirebase();
 
+
+    if (teamsMessage) {
+
+      teamsMessage.textContent =
+        "Loading approved teams...";
+
+    }
+
+
+    /*
+      IMPORTANT:
+
+      The existing DLS League stores its teams in:
+
+      competition/main
+
+      We only READ this document here.
+
+      We do NOT modify it.
+    */
 
     const competitionRef =
       doc(
@@ -230,25 +287,30 @@ async function loadApprovedTeams() {
 
 
     const competitionSnapshot =
-      await getDoc(
-        competitionRef
-      );
+      await getDoc(competitionRef);
 
 
-    if (
-      !competitionSnapshot.exists()
-    ) {
+    if (!competitionSnapshot.exists()) {
 
       approvedTeams = [];
 
-      renderAvailableTeams();
 
-      showTeamMessage(
-        "No current league competition data was found."
-      );
+      if (eligibleTeamsCount) {
+        eligibleTeamsCount.textContent = "0";
+      }
+
+
+      if (teamsMessage) {
+
+        teamsMessage.textContent =
+          "The current DLS League competition data could not be found.";
+
+      }
+
+
+      renderApprovedTeams();
 
       return;
-
     }
 
 
@@ -257,12 +319,18 @@ async function loadApprovedTeams() {
 
 
     const teams =
-      Array.isArray(
-        competitionData.teams
-      )
+      Array.isArray(competitionData.teams)
         ? competitionData.teams
         : [];
 
+
+    /*
+      Every team stored in the working League's
+      approved teams list is eligible.
+
+      No random selection.
+      No manual selection.
+    */
 
     approvedTeams =
       teams
@@ -292,25 +360,52 @@ async function loadApprovedTeams() {
         });
 
 
-    renderAvailableTeams();
+    if (eligibleTeamsCount) {
 
-
-    if (
-      approvedTeams.length === 0
-    ) {
-
-      showTeamMessage(
-        "There are no approved teams available yet."
-      );
-
-      return;
+      eligibleTeamsCount.textContent =
+        approvedTeams.length;
 
     }
 
 
-    showTeamMessage(
-      `${approvedTeams.length} approved team(s) available.`
-    );
+    if (teamsMessage) {
+
+      if (approvedTeams.length === 0) {
+
+        teamsMessage.textContent =
+          "There are currently no approved teams.";
+
+      } else {
+
+        teamsMessage.textContent =
+          `${approvedTeams.length} approved team${
+            approvedTeams.length === 1
+              ? ""
+              : "s"
+          } are eligible for the Champions League.`;
+
+      }
+
+    }
+
+
+    renderApprovedTeams();
+
+
+    /*
+      Starting the competition is not enabled
+      by this part yet.
+
+      We will add the safety checks and
+      fixture-generation system in later parts.
+    */
+
+    if (startCompetitionButton) {
+
+      startCompetitionButton.disabled =
+        true;
+
+    }
 
   } catch (error) {
 
@@ -322,446 +417,189 @@ async function loadApprovedTeams() {
 
     approvedTeams = [];
 
-    renderAvailableTeams();
+
+    if (eligibleTeamsCount) {
+      eligibleTeamsCount.textContent = "0";
+    }
 
 
-    showTeamMessage(
-      "Unable to load approved teams."
-    );
+    if (teamsMessage) {
 
-  }
-
-}
-
-
-/* =========================
-   RENDER AVAILABLE TEAMS
-========================= */
-
-function renderAvailableTeams() {
-
-  if (!availableTeamsList) {
-    return;
-  }
-
-
-  availableTeamsList.innerHTML =
-    "";
-
-
-  if (
-    approvedTeams.length === 0
-  ) {
-
-    const emptyMessage =
-      document.createElement("p");
-
-    emptyMessage.textContent =
-      "No approved teams found.";
-
-    availableTeamsList.appendChild(
-      emptyMessage
-    );
-
-    return;
-
-  }
-
-
-  approvedTeams.forEach(
-    (team, index) => {
-
-      const teamCard =
-        document.createElement("div");
-
-
-      teamCard.className =
-        "team-selection-card";
-
-
-      const checkbox =
-        document.createElement("input");
-
-
-      checkbox.type =
-        "checkbox";
-
-      checkbox.id =
-        `championsTeam_${index}`;
-
-      checkbox.value =
-        team.name;
-
-      checkbox.dataset.index =
-        index;
-
-
-      const label =
-        document.createElement("label");
-
-
-      label.htmlFor =
-        checkbox.id;
-
-
-      label.textContent =
-        team.player
-          ? `${team.name} — ${team.player}`
-          : team.name;
-
-
-      teamCard.appendChild(
-        checkbox
-      );
-
-      teamCard.appendChild(
-        label
-      );
-
-
-      availableTeamsList.appendChild(
-        teamCard
-      );
+      teamsMessage.textContent =
+        "Unable to load the approved teams.";
 
     }
-  );
+
+
+    renderApprovedTeams();
+
+  }
 
 }
 
 
-/* =========================
-   RENDER SELECTED TEAMS
-========================= */
+/* =========================================================
+   ADMIN LOGIN
+   ========================================================= */
 
-function renderSelectedTeams() {
+async function handleAdminLogin(event) {
 
-  if (!selectedTeamsList) {
-    return;
-  }
-
-
-  selectedTeamsList.innerHTML =
-    "";
+  event.preventDefault();
 
 
   if (
-    selectedChampionsTeams.length === 0
+    !adminEmail ||
+    !adminPassword ||
+    !adminLoginButton
   ) {
+    return;
+  }
 
-    const emptyMessage =
-      document.createElement("p");
 
-    emptyMessage.textContent =
-      "No Champions League teams selected.";
+  const email =
+    adminEmail.value.trim();
 
-    selectedTeamsList.appendChild(
-      emptyMessage
+  const password =
+    adminPassword.value;
+
+
+  if (!email || !password) {
+
+    showLoginMessage(
+      "Please enter your email and password."
     );
 
     return;
-
   }
-
-
-  selectedChampionsTeams.forEach(
-    (team, index) => {
-
-      const teamCard =
-        document.createElement("div");
-
-
-      teamCard.className =
-        "selected-team-card";
-
-
-      const number =
-        document.createElement("strong");
-
-
-      number.textContent =
-        `${index + 1}. `;
-
-
-      const teamName =
-        document.createElement("strong");
-
-
-      teamName.textContent =
-        team.name;
-
-
-      teamCard.appendChild(
-        number
-      );
-
-      teamCard.appendChild(
-        teamName
-      );
-
-
-      if (team.player) {
-
-        const playerName =
-          document.createElement("span");
-
-
-        playerName.textContent =
-          ` — ${team.player}`;
-
-
-        teamCard.appendChild(
-          playerName
-        );
-
-      }
-
-
-      selectedTeamsList.appendChild(
-        teamCard
-      );
-
-    }
-  );
-
-}
-
-
-/* =========================
-   RANDOMIZE ARRAY
-========================= */
-
-function shuffleTeams(teams) {
-
-  const shuffled =
-    [...teams];
-
-
-  for (
-    let i = shuffled.length - 1;
-    i > 0;
-    i--
-  ) {
-
-    const randomIndex =
-      Math.floor(
-        Math.random() * (i + 1)
-      );
-
-
-    [
-      shuffled[i],
-      shuffled[randomIndex]
-    ] = [
-      shuffled[randomIndex],
-      shuffled[i]
-    ];
-
-  }
-
-
-  return shuffled;
-
-}
-
-
-/* =========================
-   RANDOM TEAM SELECTION
-========================= */
-
-function performRandomSelection() {
-
-  if (
-    approvedTeams.length === 0
-  ) {
-
-    showTeamMessage(
-      "There are no approved teams to select."
-    );
-
-    return;
-
-  }
-
-
-  const shuffledTeams =
-    shuffleTeams(
-      approvedTeams
-    );
 
 
   /*
-     TEMPORARY BEHAVIOUR:
-     For now, random selection uses
-     ALL approved teams.
-
-     The number of Champions League
-     teams will be controlled by the
-     competition settings in a later part.
+    Only the existing DLS admin account
+    is permitted to use this dashboard.
   */
 
-  selectedChampionsTeams =
-    shuffledTeams;
+  if (
+    email.toLowerCase() !==
+    ADMIN_EMAIL.toLowerCase()
+  ) {
+
+    showLoginMessage(
+      "This account is not authorized to access the Champions League Admin."
+    );
+
+    return;
+  }
 
 
-  renderSelectedTeams();
+  adminLoginButton.disabled = true;
 
-
-  showTeamMessage(
-    `${selectedChampionsTeams.length} team(s) randomly selected.`
+  showLoginMessage(
+    "Logging in..."
   );
 
-}
+
+  try {
+
+    const {
+      auth
+    } = await waitForFirebase();
 
 
-/* =========================
-   RANDOM SELECTION BUTTON
-========================= */
-
-if (randomSelectionButton) {
-
-  randomSelectionButton.addEventListener(
-    "click",
-    performRandomSelection
-  );
-
-}
-
-
-/* =========================
-   ADMIN LOGIN
-========================= */
-
-loginForm.addEventListener(
-  "submit",
-  async (event) => {
-
-    event.preventDefault();
-
-
-    const email =
-      emailInput.value.trim();
-
-    const password =
-      passwordInput.value;
-
-
-    if (!email || !password) {
-
-      showLoginMessage(
-        "Please enter your email and password."
+    const credential =
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
       );
-
-      return;
-
-    }
 
 
     if (
-      email.toLowerCase() !==
+      credential.user.email.toLowerCase() !==
       ADMIN_EMAIL.toLowerCase()
     ) {
 
+      await signOut(auth);
+
       showLoginMessage(
-        "Access denied. Admin account required."
+        "This account is not authorized."
       );
 
       return;
-
     }
-
-
-    loginButton.disabled =
-      true;
 
 
     showLoginMessage(
-      "Signing in..."
+      "Login successful."
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Admin login error:",
+      error
     );
 
 
-    try {
+    showLoginMessage(
+      "Login failed. Please check your email and password."
+    );
 
-      const {
-        auth
-      } = await waitForFirebase();
+  } finally {
 
-
-      const result =
-        await signInWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
-
-
-      const user =
-        result.user;
-
-
-      if (
-        !user.email ||
-        user.email.toLowerCase() !==
-        ADMIN_EMAIL.toLowerCase()
-      ) {
-
-        await signOut(auth);
-
-        showLoginMessage(
-          "Access denied."
-        );
-
-        return;
-
-      }
-
-
-      showLoginMessage("");
-
-      showDashboard(user);
-
-
-      await loadApprovedTeams();
-
-
-      if (randomSelectionButton) {
-
-        randomSelectionButton.disabled =
-          approvedTeams.length === 0;
-
-      }
-
-
-      renderSelectedTeams();
-
-    } catch (error) {
-
-      console.error(
-        "Champions admin login error:",
-        error
-      );
-
-
-      showLoginMessage(
-        "Login failed. Please check your email and password."
-      );
-
-    } finally {
-
-      loginButton.disabled =
-        false;
-
-    }
+    adminLoginButton.disabled = false;
 
   }
-);
+
+}
 
 
-/* =========================
+/* =========================================================
+   ADMIN LOGOUT
+   ========================================================= */
+
+async function handleAdminLogout() {
+
+  try {
+
+    const {
+      auth
+    } = await waitForFirebase();
+
+
+    await signOut(auth);
+
+    approvedTeams = [];
+
+    showLogin();
+
+    showLoginMessage(
+      "You have been logged out."
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Logout error:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================================
    AUTH STATE
-========================= */
+   ========================================================= */
 
-waitForFirebase().then(
-  ({ auth }) => {
+async function initializeAdmin() {
+
+  try {
+
+    const {
+      auth
+    } = await waitForFirebase();
+
 
     onAuthStateChanged(
       auth,
@@ -772,9 +610,13 @@ waitForFirebase().then(
           showLogin();
 
           return;
-
         }
 
+
+        /*
+          Verify the signed-in account before
+          showing the dashboard.
+        */
 
         if (
           !user.email ||
@@ -787,32 +629,63 @@ waitForFirebase().then(
           showLogin();
 
           showLoginMessage(
-            "Access denied. Admin account required."
+            "This account is not authorized."
           );
 
           return;
-
         }
 
 
         showDashboard(user);
 
-
         await loadApprovedTeams();
-
-
-        if (randomSelectionButton) {
-
-          randomSelectionButton.disabled =
-            approvedTeams.length === 0;
-
-        }
-
-
-        renderSelectedTeams();
 
       }
     );
 
+  } catch (error) {
+
+    console.error(
+      "Admin initialization error:",
+      error
+    );
+
+
+    showLoginMessage(
+      "Firebase could not be initialized."
+    );
+
   }
-);
+
+}
+
+
+/* =========================================================
+   EVENT LISTENERS
+   ========================================================= */
+
+if (adminLoginForm) {
+
+  adminLoginForm.addEventListener(
+    "submit",
+    handleAdminLogin
+  );
+
+}
+
+
+if (adminLogoutButton) {
+
+  adminLogoutButton.addEventListener(
+    "click",
+    handleAdminLogout
+  );
+
+}
+
+
+/* =========================================================
+   START ADMIN
+   ========================================================= */
+
+initializeAdmin();
