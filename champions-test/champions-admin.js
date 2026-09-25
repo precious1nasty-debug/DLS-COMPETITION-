@@ -2,7 +2,12 @@
    DLS COMPETITION
    CHAMPIONS LEAGUE TEST ADMIN
    champions-admin.js
-   PART 1 — AUTHENTICATION + DATA FOUNDATION
+   COMPLETE REBUILD — PART 1 OF 10
+
+   AUTHENTICATION
+   FIREBASE DATA
+   GLOBAL STATE
+   INITIALIZATION
    ========================================================= */
 
 import {
@@ -34,6 +39,9 @@ const TEST_DOCUMENT =
 const MAX_LEAGUE_MATCHES =
   8;
 
+const MIN_TEAMS =
+  9;
+
 
 /* =========================================================
    GLOBAL DATA
@@ -43,27 +51,58 @@ let db = null;
 
 let auth = null;
 
-let competition = {
-  teams: [],
 
-  fixtures: [],
+/* =========================================================
+   DEFAULT COMPETITION
+   ========================================================= */
 
-  season: {
-    started: false,
-    format: "champions",
-    leagueMatchesPerTeam: 1,
-    knockoutLegs: 1,
-    startDate: "",
-    endDate: ""
-  },
+function createDefaultCompetition() {
 
-  knockout: {
-    started: false,
-    stage: "",
-    qualificationSize: 0,
-    bracket: []
-  }
-};
+  return {
+
+    teams: [],
+
+    fixtures: [],
+
+    season: {
+
+      started: false,
+
+      format: "champions",
+
+      leagueMatchesPerTeam: 1,
+
+      knockoutLegs: 1,
+
+      startDate: "",
+
+      endDate: ""
+
+    },
+
+    knockout: {
+
+      started: false,
+
+      stage: "",
+
+      qualificationSize: 0,
+
+      bracket: []
+
+    }
+
+  };
+
+}
+
+
+/* =========================================================
+   GLOBAL COMPETITION STATE
+   ========================================================= */
+
+let competition =
+  createDefaultCompetition();
 
 
 /* =========================================================
@@ -126,6 +165,7 @@ function watchAuthentication() {
         return;
       }
 
+
       if (
         user.email?.toLowerCase() !==
         ADMIN_EMAIL.toLowerCase()
@@ -143,6 +183,7 @@ function watchAuthentication() {
         return;
       }
 
+
       showDashboard();
 
       await loadCompetition();
@@ -156,7 +197,7 @@ function watchAuthentication() {
 
 
 /* =========================================================
-   LOGIN
+   LOGIN SETUP
    ========================================================= */
 
 function setupLogin() {
@@ -170,40 +211,55 @@ function setupLogin() {
     return;
   }
 
+
   form.addEventListener(
     "submit",
     async event => {
 
       event.preventDefault();
 
+
       const email =
         document.getElementById(
           "adminEmail"
-        ).value.trim();
+        )?.value.trim() || "";
+
 
       const password =
         document.getElementById(
           "adminPassword"
-        ).value;
+        )?.value || "";
+
 
       const message =
         document.getElementById(
           "adminLoginMessage"
         );
 
+
       if (
         email.toLowerCase() !==
         ADMIN_EMAIL.toLowerCase()
       ) {
 
-        message.textContent =
-          "Unauthorized admin email.";
+        if (message) {
+
+          message.textContent =
+            "Unauthorized admin email.";
+
+        }
 
         return;
       }
 
-      message.textContent =
-        "Logging in...";
+
+      if (message) {
+
+        message.textContent =
+          "Logging in...";
+
+      }
+
 
       try {
 
@@ -213,7 +269,11 @@ function setupLogin() {
           password
         );
 
-        message.textContent = "";
+        if (message) {
+
+          message.textContent = "";
+
+        }
 
       } catch (error) {
 
@@ -222,8 +282,12 @@ function setupLogin() {
           error
         );
 
-        message.textContent =
-          "Login failed. Check your email and password.";
+        if (message) {
+
+          message.textContent =
+            "Login failed. Check your email and password.";
+
+        }
 
       }
 
@@ -328,11 +392,21 @@ function setupButtons() {
       updateQualificationPreview
     );
 
+
+  document
+    .getElementById(
+      "knockoutLegs"
+    )
+    ?.addEventListener(
+      "change",
+      updateQualificationPreview
+    );
+
 }
 
 
 /* =========================================================
-   SHOW / HIDE UI
+   SHOW LOGIN
    ========================================================= */
 
 function showLogin() {
@@ -347,16 +421,27 @@ function showLogin() {
       "adminDashboard"
     );
 
+
   if (login) {
+
     login.style.display = "";
+
   }
 
+
   if (dashboard) {
-    dashboard.style.display = "none";
+
+    dashboard.style.display =
+      "none";
+
   }
 
 }
 
+
+/* =========================================================
+   SHOW DASHBOARD
+   ========================================================= */
 
 function showDashboard() {
 
@@ -370,15 +455,31 @@ function showDashboard() {
       "adminDashboard"
     );
 
+
   if (login) {
-    login.style.display = "none";
+
+    login.style.display =
+      "none";
+
   }
 
+
   if (dashboard) {
-    dashboard.style.display = "";
+
+    dashboard.style.display =
+      "";
+
   }
 
 }
+
+/* =========================================================
+   PART 2 OF 10
+   DATA LOADING
+   DATA SAVING
+   DASHBOARD RENDERING
+   FORM STATE
+   ========================================================= */
 
 
 /* =========================================================
@@ -399,34 +500,19 @@ async function loadCompetition() {
     const snapshot =
       await getDoc(reference);
 
+
     if (!snapshot.exists()) {
 
-      competition = {
-        teams: [],
-        fixtures: [],
-
-        season: {
-          started: false,
-          format: "champions",
-          leagueMatchesPerTeam: 1,
-          knockoutLegs: 1,
-          startDate: "",
-          endDate: ""
-        },
-
-        knockout: {
-          started: false,
-          stage: "",
-          qualificationSize: 0,
-          bracket: []
-        }
-      };
+      competition =
+        createDefaultCompetition();
 
       return;
     }
 
+
     const data =
-      snapshot.data();
+      snapshot.data() || {};
+
 
     competition = {
 
@@ -450,14 +536,16 @@ async function loadCompetition() {
           "champions",
 
         leagueMatchesPerTeam:
-          Number(
-            data.season?.leagueMatchesPerTeam
-          ) || 1,
+          clampNumber(
+            data.season?.leagueMatchesPerTeam,
+            1,
+            MAX_LEAGUE_MATCHES
+          ),
 
         knockoutLegs:
-          Number(
-            data.season?.knockoutLegs
-          ) || 1,
+          Number(data.season?.knockoutLegs) === 2
+            ? 2
+            : 1,
 
         startDate:
           data.season?.startDate || "",
@@ -491,10 +579,13 @@ async function loadCompetition() {
 
     };
 
+
+    normalizeLoadedData();
+
   } catch (error) {
 
     console.error(
-      "Load error:",
+      "Champions data load error:",
       error
     );
 
@@ -509,10 +600,115 @@ async function loadCompetition() {
 
 
 /* =========================================================
+   NORMALIZE LOADED DATA
+   ========================================================= */
+
+function normalizeLoadedData() {
+
+  competition.teams =
+    competition.teams
+      .filter(team => team && team.id)
+      .map(team => ({
+        id: String(team.id),
+        name:
+          team.name ||
+          "Unnamed Team",
+        playerName:
+          team.playerName ||
+          ""
+      }));
+
+
+  competition.fixtures =
+    competition.fixtures
+      .filter(fixture => fixture && fixture.id)
+      .map(fixture => ({
+
+        ...fixture,
+
+        homeScore:
+          fixture.homeScore === undefined
+            ? null
+            : fixture.homeScore,
+
+        awayScore:
+          fixture.awayScore === undefined
+            ? null
+            : fixture.awayScore
+
+      }));
+
+
+  competition.knockout.bracket =
+    competition.knockout.bracket
+      .filter(tie => tie && tie.id)
+      .map(tie => {
+
+        const normalized = {
+
+          ...tie,
+
+          homeTeam:
+            tie.homeTeam || "TBD",
+
+          awayTeam:
+            tie.awayTeam || "TBD",
+
+          homeId:
+            tie.homeId || null,
+
+          awayId:
+            tie.awayId || null,
+
+          winner:
+            tie.winner || null,
+
+          winnerId:
+            tie.winnerId || null
+
+        };
+
+
+        if (
+          Array.isArray(tie.legs)
+        ) {
+
+          normalized.legs =
+            tie.legs.map(leg => ({
+              homeScore:
+                leg.homeScore === undefined
+                  ? null
+                  : leg.homeScore,
+              awayScore:
+                leg.awayScore === undefined
+                  ? null
+                  : leg.awayScore
+            }));
+
+        }
+
+
+        return normalized;
+
+      });
+
+}
+
+
+/* =========================================================
    SAVE COMPETITION
    ========================================================= */
 
 async function saveCompetition() {
+
+  if (!db) {
+
+    throw new Error(
+      "Firestore is not initialized."
+    );
+
+  }
+
 
   const reference =
     doc(
@@ -520,6 +716,7 @@ async function saveCompetition() {
       TEST_COLLECTION,
       TEST_DOCUMENT
     );
+
 
   await setDoc(
     reference,
@@ -546,6 +743,8 @@ function renderDashboard() {
   updateQualificationPreview();
 
   setFormValues();
+
+  updateControlState();
 
 }
 
@@ -576,6 +775,7 @@ function setFormValues() {
       "seasonEnd"
     );
 
+
   if (matches) {
 
     matches.value =
@@ -585,6 +785,7 @@ function setFormValues() {
       );
 
   }
+
 
   if (legs) {
 
@@ -596,123 +797,113 @@ function setFormValues() {
 
   }
 
+
   if (start) {
+
     start.value =
       competition.season.startDate;
+
   }
+
 
   if (end) {
+
     end.value =
       competition.season.endDate;
+
   }
 
 }
 
 
 /* =========================================================
-   TEAM DISPLAY
+   UPDATE CONTROL STATE
    ========================================================= */
 
-function renderAdminTeams() {
+function updateControlState() {
 
-  const container =
+  const started =
+    competition.season.started;
+
+
+  const generate =
     document.getElementById(
-      "adminTeamList"
+      "generateLeagueButton"
     );
 
-  if (!container) {
-    return;
-  }
-
-  if (!competition.teams.length) {
-
-    container.innerHTML = `
-      <p>
-        No teams added.
-      </p>
-    `;
-
-    return;
-  }
-
-  container.innerHTML =
-    competition.teams
-      .map(
-        (team, index) => `
-          <div class="team-card">
-
-            <h3>
-              ${escapeHTML(
-                team.name ||
-                `Team ${index + 1}`
-              )}
-            </h3>
-
-            ${
-              team.playerName
-                ? `
-                  <p>
-                    ${escapeHTML(
-                      team.playerName
-                    )}
-                  </p>
-                `
-                : ""
-            }
-
-          </div>
-        `
-      )
-      .join("");
-
-}
-
-
-/* =========================================================
-   SEASON STATUS
-   ========================================================= */
-
-function renderSeasonStatus() {
-
-  const container =
+  const start =
     document.getElementById(
-      "seasonStatus"
+      "startSeasonButton"
     );
 
-  if (!container) {
-    return;
+  const matches =
+    document.getElementById(
+      "leagueMatchesPerTeam"
+    );
+
+  const legs =
+    document.getElementById(
+      "knockoutLegs"
+    );
+
+  const startDate =
+    document.getElementById(
+      "seasonStart"
+    );
+
+  const endDate =
+    document.getElementById(
+      "seasonEnd"
+    );
+
+
+  if (generate) {
+
+    generate.disabled =
+      started ||
+      hasLeagueFixtures();
+
   }
 
-  if (!competition.season.started) {
 
-    container.innerHTML = `
-      <p>
-        🟡 Season has not started.
-      </p>
-    `;
+  if (start) {
 
-    return;
+    start.disabled =
+      started;
+
   }
 
-  container.innerHTML = `
-    <p>
-      🟢 Champions League season is active.
-    </p>
 
-    <p>
-      League matches per team:
-      <strong>
-        ${competition.season.leagueMatchesPerTeam}
-      </strong>
-    </p>
+  if (matches) {
 
-    <p>
-      Knockout legs:
-      <strong>
-        ${competition.season.knockoutLegs}
-      </strong>
-    </p>
-  `;
+    matches.disabled =
+      started;
+
+  }
+
+
+  if (legs) {
+
+    legs.disabled =
+      started;
+
+  }
+
+
+  if (startDate) {
+
+    startDate.disabled =
+      started;
+
+  }
+
+
+  if (endDate) {
+
+    endDate.disabled =
+      started;
+
+  }
 
 }
 
@@ -732,10 +923,12 @@ function updateQualificationPreview() {
     return;
   }
 
+
   const total =
     competition.teams.length;
 
-  if (total < 9) {
+
+  if (total < MIN_TEAMS) {
 
     element.textContent =
       "At least 9 teams are required.";
@@ -743,91 +936,195 @@ function updateQualificationPreview() {
     return;
   }
 
-  let qualified = 0;
 
-  if (total >= 33) {
-    qualified = 32;
-  } else if (total >= 17) {
-    qualified = 16;
-  } else {
-    qualified = 8;
-  }
+  const qualificationSize =
+    getQualificationSize(
+      total
+    );
 
-  let stage = "";
 
-  if (qualified === 32) {
-    stage = "Round of 32";
-  } else if (qualified === 16) {
-    stage = "Round of 16";
-  } else {
-    stage = "Quarter-finals";
-  }
+  const stage =
+    getFirstKnockoutStage(
+      qualificationSize
+    );
+
 
   element.textContent =
     `${total} teams registered → ` +
-    `top ${qualified} qualify → ${stage}.`;
+    `top ${qualificationSize} qualify → ` +
+    `${stage}.`;
 
 }
 
 
 /* =========================================================
-   UTILITY
+   TEAM NAME LOOKUP
    ========================================================= */
 
-function showMessage(
-  elementId,
-  message
+function getTeamName(teamId) {
+
+  const team =
+    competition.teams.find(
+      item =>
+        item.id === teamId
+    );
+
+  return (
+    team?.name ||
+    "Unknown Team"
+  );
+
+}
+
+
+/* =========================================================
+   TEAM LOOKUP
+   ========================================================= */
+
+function getTeam(teamId) {
+
+  return competition.teams.find(
+    team =>
+      team.id === teamId
+  ) || null;
+
+}
+
+
+/* =========================================================
+   HAS LEAGUE FIXTURES
+   ========================================================= */
+
+function hasLeagueFixtures() {
+
+  return competition.fixtures.some(
+    fixture =>
+      fixture.type === "league"
+  );
+
+}
+
+
+/* =========================================================
+   UTILITY — NUMBER CLAMP
+   ========================================================= */
+
+function clampNumber(
+  value,
+  minimum,
+  maximum
 ) {
 
-  const element =
+  const number =
+    Number(value);
+
+
+  if (!Number.isFinite(number)) {
+
+    return minimum;
+
+  }
+
+
+  return Math.min(
+    maximum,
+    Math.max(
+      minimum,
+      number
+    )
+  );
+
+}
+
+/* =========================================================
+   PART 3 OF 10
+   TEAM MANAGEMENT
+   REMOVE TEAM
+   SEASON START
+   ========================================================= */
+
+
+/* =========================================================
+   RENDER ADMIN TEAMS
+   ========================================================= */
+
+function renderAdminTeams() {
+
+  const container =
     document.getElementById(
-      elementId
+      "adminTeamList"
     );
 
-  if (element) {
-    element.textContent =
-      message;
+  if (!container) {
+    return;
   }
 
-}
 
+  if (!competition.teams.length) {
 
-function escapeHTML(value) {
+    container.innerHTML = `
+      <p>
+        No teams added.
+      </p>
+    `;
 
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-
-}
-
-
-/* =========================================================
-   LOGOUT
-   ========================================================= */
-
-async function logoutAdmin() {
-
-  try {
-
-    await signOut(auth);
-
-  } catch (error) {
-
-    console.error(
-      "Logout error:",
-      error
-    );
-
+    return;
   }
 
-}
 
-/* =========================================================
-   PART 2 — TEST TEAMS + SEASON START + LEAGUE FIXTURES
-   ========================================================= */
+  container.innerHTML =
+    competition.teams
+      .map(
+        (team, index) => `
+
+          <div
+            class="team-card"
+            data-team-id="${escapeHTML(team.id)}"
+          >
+
+            <div>
+
+              <h3>
+                ${escapeHTML(
+                  team.name ||
+                  `Team ${index + 1}`
+                )}
+              </h3>
+
+              ${
+                team.playerName
+                  ? `
+                    <p>
+                      ${escapeHTML(
+                        team.playerName
+                      )}
+                    </p>
+                  `
+                  : ""
+              }
+
+            </div>
+
+            ${
+              !competition.season.started
+                ? `
+                  <button
+                    type="button"
+                    onclick="window.removeChampionsTeam('${escapeHTML(team.id)}')"
+                  >
+                    🗑 Remove
+                  </button>
+                `
+                : ""
+            }
+
+          </div>
+
+        `
+      )
+      .join("");
+
+}
 
 
 /* =========================================================
@@ -845,23 +1142,27 @@ async function addTestTeams() {
     return;
   }
 
+
   if (competition.teams.length > 0) {
 
-    const confirmAdd =
+    const confirmed =
       confirm(
-        "Test teams already exist. Add another set?"
+        "Test teams already exist. Add another set of 36 teams?"
       );
 
-    if (!confirmAdd) {
+    if (!confirmed) {
       return;
     }
 
   }
 
+
   const startIndex =
     competition.teams.length + 1;
 
+
   const testTeams = [];
+
 
   for (
     let i = 0;
@@ -871,6 +1172,7 @@ async function addTestTeams() {
 
     const number =
       startIndex + i;
+
 
     testTeams.push({
 
@@ -887,14 +1189,17 @@ async function addTestTeams() {
 
   }
 
+
   competition.teams =
     competition.teams.concat(
       testTeams
     );
 
+
   await saveCompetition();
 
   renderDashboard();
+
 
   alert(
     `${testTeams.length} test teams added.`
@@ -904,7 +1209,91 @@ async function addTestTeams() {
 
 
 /* =========================================================
-   CLEAR TEST TEAMS
+   REMOVE TEAM
+   ========================================================= */
+
+async function removeTeam(teamId) {
+
+  if (competition.season.started) {
+
+    alert(
+      "Teams cannot be removed after the season starts."
+    );
+
+    return;
+  }
+
+
+  const team =
+    getTeam(teamId);
+
+
+  if (!team) {
+    return;
+  }
+
+
+  const confirmed =
+    confirm(
+      `Remove "${team.name}" from the Champions League test?`
+    );
+
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  competition.teams =
+    competition.teams.filter(
+      item =>
+        item.id !== teamId
+    );
+
+
+  /*
+    Fixtures must be regenerated after
+    a team is removed.
+  */
+
+  competition.fixtures = [];
+
+
+  competition.knockout = {
+
+    started: false,
+
+    stage: "",
+
+    qualificationSize: 0,
+
+    bracket: []
+
+  };
+
+
+  await saveCompetition();
+
+  renderDashboard();
+
+
+  alert(
+    `${team.name} was removed. Generate the league fixtures again.`
+  );
+
+}
+
+
+/* =========================================================
+   EXPOSE REMOVE TEAM
+   ========================================================= */
+
+window.removeChampionsTeam =
+  removeTeam;
+
+
+/* =========================================================
+   CLEAR ALL TEST TEAMS
    ========================================================= */
 
 async function clearTestTeams() {
@@ -918,14 +1307,17 @@ async function clearTestTeams() {
     return;
   }
 
+
   const confirmed =
     confirm(
-      "Clear all Champions League test teams?"
+      "Clear all Champions League test teams and fixtures?"
     );
+
 
   if (!confirmed) {
     return;
   }
+
 
   competition.teams = [];
 
@@ -942,6 +1334,7 @@ async function clearTestTeams() {
     bracket: []
 
   };
+
 
   await saveCompetition();
 
@@ -965,10 +1358,12 @@ async function startSeason() {
     return;
   }
 
+
   const totalTeams =
     competition.teams.length;
 
-  if (totalTeams < 9) {
+
+  if (totalTeams < MIN_TEAMS) {
 
     alert(
       "At least 9 teams are required."
@@ -976,6 +1371,22 @@ async function startSeason() {
 
     return;
   }
+
+
+  /*
+    Fixtures MUST exist before the
+    season can start.
+  */
+
+  if (!hasLeagueFixtures()) {
+
+    alert(
+      "Generate the league fixtures before starting the season."
+    );
+
+    return;
+  }
+
 
   const matchesInput =
     document.getElementById(
@@ -997,36 +1408,33 @@ async function startSeason() {
       "seasonEnd"
     );
 
+
   const matches =
-    Number(
-      matchesInput?.value
-    ) || 1;
+    clampNumber(
+      matchesInput?.value,
+      1,
+      MAX_LEAGUE_MATCHES
+    );
+
 
   const legs =
     Number(
       legsInput?.value
-    ) || 1;
+    ) === 2
+      ? 2
+      : 1;
 
-  if (
-    matches < 1 ||
-    matches > 8
-  ) {
-
-    alert(
-      "League matches per team must be between 1 and 8."
-    );
-
-    return;
-  }
 
   const confirmed =
     confirm(
-      `Start the Champions League season with ${matches} league-phase match${matches === 1 ? "" : "es"} per team and ${legs} knockout leg${legs === 1 ? "" : "s"}?`
+      `Start the Champions League season with ${matches} league match${matches === 1 ? "" : "es"} per team and ${legs} knockout leg${legs === 1 ? "" : "s"}?`
     );
+
 
   if (!confirmed) {
     return;
   }
+
 
   competition.season = {
 
@@ -1048,6 +1456,7 @@ async function startSeason() {
 
   };
 
+
   competition.knockout = {
 
     started: false,
@@ -1060,15 +1469,162 @@ async function startSeason() {
 
   };
 
+
   await saveCompetition();
 
   renderDashboard();
 
+
   alert(
-    "Champions League season started."
+    "Champions League season started. Teams and settings are now locked."
   );
 
 }
+
+
+/* =========================================================
+   RENDER SEASON STATUS
+   ========================================================= */
+
+function renderSeasonStatus() {
+
+  const container =
+    document.getElementById(
+      "seasonStatus"
+    );
+
+  if (!container) {
+    return;
+  }
+
+
+  const leagueFixtures =
+    competition.fixtures.filter(
+      fixture =>
+        fixture.type === "league"
+    );
+
+
+  const completed =
+    leagueFixtures.filter(
+      fixture =>
+        isValidScore(
+          fixture.homeScore
+        ) &&
+        isValidScore(
+          fixture.awayScore
+        )
+    ).length;
+
+
+  if (!competition.season.started) {
+
+    container.innerHTML = `
+
+      <p>
+        🟡 Season has not started.
+      </p>
+
+      <p>
+        ${competition.teams.length}
+        teams registered.
+      </p>
+
+      <p>
+        ${
+          leagueFixtures.length
+            ? `${leagueFixtures.length} league fixtures generated.`
+            : "League fixtures have not been generated."
+        }
+      </p>
+
+    `;
+
+    return;
+  }
+
+
+  if (competition.knockout.started) {
+
+    container.innerHTML = `
+
+      <p>
+        🟢 Knockout stage is active.
+      </p>
+
+      <p>
+        League fixtures completed:
+        <strong>
+          ${completed}/${leagueFixtures.length}
+        </strong>
+      </p>
+
+      <p>
+        Current stage:
+        <strong>
+          ${escapeHTML(
+            competition.knockout.stage
+          )}
+        </strong>
+      </p>
+
+    `;
+
+    return;
+  }
+
+
+  container.innerHTML = `
+
+    <p>
+      🟢 Champions League season is active.
+    </p>
+
+    <p>
+      League matches completed:
+      <strong>
+        ${completed}/${leagueFixtures.length}
+      </strong>
+    </p>
+
+    <p>
+      League matches per team:
+      <strong>
+        ${competition.season.leagueMatchesPerTeam}
+      </strong>
+    </p>
+
+    <p>
+      Knockout legs:
+      <strong>
+        ${competition.season.knockoutLegs}
+      </strong>
+    </p>
+
+  `;
+
+}
+
+
+/* =========================================================
+   VALID SCORE
+   ========================================================= */
+
+function isValidScore(value) {
+
+  return (
+    Number.isInteger(
+      Number(value)
+    ) &&
+    Number(value) >= 0
+  );
+
+}
+
+/* =========================================================
+   PART 4 OF 10
+   RANDOM LEAGUE FIXTURE GENERATOR
+   ========================================================= */
 
 
 /* =========================================================
@@ -1077,17 +1633,23 @@ async function startSeason() {
 
 async function generateLeagueFixtures() {
 
-  if (!competition.season.started) {
+  /*
+    Fixtures are generated BEFORE
+    the season starts.
+  */
+
+  if (competition.season.started) {
 
     alert(
-      "Start the season first."
+      "The season has already started. League fixtures can no longer be generated."
     );
 
     return;
   }
 
+
   if (
-    competition.teams.length < 9
+    competition.teams.length < MIN_TEAMS
   ) {
 
     alert(
@@ -1097,46 +1659,33 @@ async function generateLeagueFixtures() {
     return;
   }
 
-  if (
-    competition.fixtures.length
-  ) {
 
-    const existingLeagueFixtures =
-      competition.fixtures.filter(
-        fixture =>
-          fixture.type === "league"
-      );
+  if (hasLeagueFixtures()) {
 
-    if (
-      existingLeagueFixtures.length
-    ) {
+    alert(
+      "League fixtures have already been generated. Remove a team or reset the test before generating a new fixture list."
+    );
 
-      alert(
-        "League fixtures have already been generated."
-      );
-
-      return;
-    }
-
+    return;
   }
 
+
   const matchesPerTeam =
-    Math.min(
-      8,
-      Math.max(
-        1,
-        Number(
-          competition.season
-            .leagueMatchesPerTeam
-        ) || 1
-      )
+    clampNumber(
+      document.getElementById(
+        "leagueMatchesPerTeam"
+      )?.value,
+      1,
+      MAX_LEAGUE_MATCHES
     );
+
 
   const fixtures =
     createLeagueFixtures(
       competition.teams,
       matchesPerTeam
     );
+
 
   if (!fixtures.length) {
 
@@ -1147,22 +1696,81 @@ async function generateLeagueFixtures() {
     return;
   }
 
+
+  competition.season
+    .leagueMatchesPerTeam =
+      matchesPerTeam;
+
+
   competition.fixtures =
     fixtures;
+
+
+  competition.knockout = {
+
+    started: false,
+
+    stage: "",
+
+    qualificationSize: 0,
+
+    bracket: []
+
+  };
+
 
   await saveCompetition();
 
   renderDashboard();
 
+
   alert(
-    `${fixtures.length} league fixtures generated.`
+    `${fixtures.length} random league fixtures generated. Review them, then click Start Season.`
   );
 
 }
 
 
 /* =========================================================
-   CREATE LEAGUE FIXTURES
+   RANDOMIZE ARRAY
+   ========================================================= */
+
+function shuffleArray(array) {
+
+  const result =
+    [...array];
+
+
+  for (
+    let i = result.length - 1;
+    i > 0;
+    i--
+  ) {
+
+    const j =
+      Math.floor(
+        Math.random() * (i + 1)
+      );
+
+
+    [
+      result[i],
+      result[j]
+    ] = [
+      result[j],
+      result[i]
+    ];
+
+  }
+
+
+  return result;
+
+}
+
+
+/* =========================================================
+   CREATE RANDOM LEAGUE FIXTURES
    ========================================================= */
 
 function createLeagueFixtures(
@@ -1172,84 +1780,108 @@ function createLeagueFixtures(
 
   const fixtures = [];
 
-  const total =
-    teams.length;
 
-  const playedAgainst = {};
+  if (
+    !Array.isArray(teams) ||
+    teams.length < 2
+  ) {
 
-  teams.forEach(team => {
+    return fixtures;
 
-    playedAgainst[team.id] = [];
+  }
 
-  });
+
+  const requestedRounds =
+    clampNumber(
+      matchesPerTeam,
+      1,
+      MAX_LEAGUE_MATCHES
+    );
 
 
   /*
-    The generator walks through the teams
-    and gives each team the requested
-    number of different opponents.
+    Randomize the initial team order.
 
-    It does not create duplicate
-    team-vs-team fixtures.
+    The circle method then creates
+    valid pairings without duplicates.
   */
 
-  for (
-    let i = 0;
-    i < total;
-    i++
+  let rotation =
+    shuffleArray(
+      teams
+    );
+
+
+  /*
+    For an odd number of teams,
+    add a bye.
+  */
+
+  if (
+    rotation.length % 2 !== 0
   ) {
 
-    const home =
-      teams[i];
+    rotation.push(null);
+
+  }
+
+
+  const total =
+    rotation.length;
+
+
+  for (
+    let round = 0;
+    round < requestedRounds;
+    round++
+  ) {
 
     for (
-      let step = 1;
-      step <= total;
-      step++
+      let i = 0;
+      i < total / 2;
+      i++
     ) {
 
-      if (
-        playedAgainst[home.id].length >=
-        matchesPerTeam
-      ) {
-        break;
-      }
+      const first =
+        rotation[i];
 
-      const opponentIndex =
-        (i + step) % total;
+      const second =
+        rotation[
+          total - 1 - i
+        ];
 
-      const away =
-        teams[opponentIndex];
-
-      if (!away) {
-        continue;
-      }
 
       if (
-        home.id === away.id
+        !first ||
+        !second
       ) {
+
         continue;
+
       }
+
+
+      let home =
+        first;
+
+      let away =
+        second;
+
+
+      /*
+        Randomly reverse home/away.
+      */
 
       if (
-        playedAgainst[home.id]
-          .includes(away.id)
+        Math.random() < 0.5
       ) {
-        continue;
+
+        home = second;
+
+        away = first;
+
       }
 
-      if (
-        playedAgainst[away.id]
-          .includes(home.id)
-      ) {
-        continue;
-      }
-
-      playedAgainst[home.id]
-        .push(away.id);
-
-      playedAgainst[away.id]
-        .push(home.id);
 
       fixtures.push({
 
@@ -1261,6 +1893,9 @@ function createLeagueFixtures(
 
         round:
           "league",
+
+        matchday:
+          round + 1,
 
         homeId:
           home.id,
@@ -1278,112 +1913,30 @@ function createLeagueFixtures(
 
     }
 
-  }
+
+    /*
+      Circle-method rotation.
+
+      Keep the first team fixed.
+      Rotate all remaining teams.
+    */
+
+    const fixed =
+      rotation[0];
+
+    const rotating =
+      rotation.slice(1);
 
 
-  /*
-    The first pass above may leave a team
-    short when the requested match count
-    is high.
+    rotating.unshift(
+      rotating.pop()
+    );
 
-    This second pass fills any remaining
-    valid pairings.
-  */
 
-  let changed = true;
-
-  while (changed) {
-
-    changed = false;
-
-    for (
-      let i = 0;
-      i < total;
-      i++
-    ) {
-
-      const home =
-        teams[i];
-
-      if (
-        playedAgainst[home.id].length >=
-        matchesPerTeam
-      ) {
-        continue;
-      }
-
-      for (
-        let j = 0;
-        j < total;
-        j++
-      ) {
-
-        if (i === j) {
-          continue;
-        }
-
-        const away =
-          teams[j];
-
-        if (
-          playedAgainst[home.id]
-            .includes(away.id)
-        ) {
-          continue;
-        }
-
-        if (
-          playedAgainst[away.id]
-            .includes(home.id)
-        ) {
-          continue;
-        }
-
-        if (
-          playedAgainst[away.id].length >=
-          matchesPerTeam
-        ) {
-          continue;
-        }
-
-        playedAgainst[home.id]
-          .push(away.id);
-
-        playedAgainst[away.id]
-          .push(home.id);
-
-        fixtures.push({
-
-          id:
-            `league-${fixtures.length + 1}`,
-
-          type:
-            "league",
-
-          round:
-            "league",
-
-          homeId:
-            home.id,
-
-          awayId:
-            away.id,
-
-          homeScore:
-            null,
-
-          awayScore:
-            null
-
-        });
-
-        changed = true;
-
-        break;
-
-      }
-
-    }
+    rotation = [
+      fixed,
+      ...rotating
+    ];
 
   }
 
@@ -1394,360 +1947,447 @@ function createLeagueFixtures(
 
 
 /* =========================================================
-   FINISH LEAGUE PHASE
+   CALCULATE EXPECTED LEAGUE MATCHES
    ========================================================= */
 
-async function finishLeaguePhase() {
+function getExpectedLeagueMatchCount() {
 
-  if (!competition.season.started) {
+  const teams =
+    competition.teams.length;
 
-    alert(
-      "The season has not started."
+
+  const rounds =
+    competition.season
+      .leagueMatchesPerTeam;
+
+
+  /*
+    With an even number of teams,
+    every team plays once per round.
+
+    With an odd number, one team has
+    a bye each round.
+  */
+
+  return Math.floor(
+    teams * rounds / 2
+  );
+
+}
+
+/* =========================================================
+   PART 5 OF 10
+   ADMIN LEAGUE FIXTURES
+   RESULT ENTRY
+   AUTOMATIC LEAGUE COMPLETION
+   ========================================================= */
+
+
+/* =========================================================
+   RENDER ADMIN FIXTURES
+   ========================================================= */
+
+function renderAdminFixtures() {
+
+  const container =
+    document.getElementById(
+      "adminFixtureList"
     );
 
+  if (!container) {
     return;
   }
 
-  if (
-    competition.teams.length < 9
-  ) {
 
-    alert(
-      "At least 9 teams are required."
-    );
-
-    return;
-  }
-
-  const leagueFixtures =
+  const fixtures =
     competition.fixtures.filter(
       fixture =>
         fixture.type === "league"
     );
 
-  if (!leagueFixtures.length) {
+
+  if (!fixtures.length) {
+
+    container.innerHTML = `
+      <p>
+        No league fixtures generated.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  container.innerHTML =
+    fixtures
+      .map(
+        (fixture, index) => {
+
+          const home =
+            getTeamName(
+              fixture.homeId
+            );
+
+          const away =
+            getTeamName(
+              fixture.awayId
+            );
+
+
+          const homeScore =
+            fixture.homeScore ?? "";
+
+          const awayScore =
+            fixture.awayScore ?? "";
+
+
+          const completed =
+            isValidScore(
+              fixture.homeScore
+            ) &&
+            isValidScore(
+              fixture.awayScore
+            );
+
+
+          return `
+
+            <div
+              class="fixture-card"
+              data-fixture="${escapeHTML(
+                fixture.id
+              )}"
+            >
+
+              <h3>
+                Matchday
+                ${fixture.matchday || 1}
+              </h3>
+
+              <div class="fixture-teams">
+
+                <strong>
+                  ${escapeHTML(home)}
+                </strong>
+
+                <input
+                  type="number"
+                  min="0"
+                  id="league-home-${index}"
+                  value="${homeScore}"
+                  placeholder="0"
+                  ${competition.knockout.started ? "disabled" : ""}
+                >
+
+                <span>
+                  -
+                </span>
+
+                <input
+                  type="number"
+                  min="0"
+                  id="league-away-${index}"
+                  value="${awayScore}"
+                  placeholder="0"
+                  ${competition.knockout.started ? "disabled" : ""}
+                >
+
+                <strong>
+                  ${escapeHTML(away)}
+                </strong>
+
+              </div>
+
+              <button
+                type="button"
+                onclick="window.saveChampionsLeagueResult(${index})"
+                ${competition.knockout.started ? "disabled" : ""}
+              >
+                💾
+                ${completed ? "Update Result" : "Save Result"}
+              </button>
+
+            </div>
+
+          `;
+
+        }
+      )
+      .join("");
+
+}
+
+
+/* =========================================================
+   SAVE LEAGUE RESULT
+   ========================================================= */
+
+async function saveLeagueResult(
+  index
+) {
+
+  if (
+    competition.knockout.started
+  ) {
 
     alert(
-      "Generate league fixtures first."
+      "The league phase is already complete."
     );
 
     return;
   }
 
-  const incomplete =
-    leagueFixtures.some(
+
+  const fixtures =
+    competition.fixtures.filter(
       fixture =>
-        fixture.homeScore === null ||
-        fixture.homeScore === undefined ||
-        fixture.awayScore === null ||
-        fixture.awayScore === undefined
+        fixture.type === "league"
     );
 
-  if (incomplete) {
+
+  const fixture =
+    fixtures[index];
+
+
+  if (!fixture) {
+    return;
+  }
+
+
+  const homeInput =
+    document.getElementById(
+      `league-home-${index}`
+    );
+
+  const awayInput =
+    document.getElementById(
+      `league-away-${index}`
+    );
+
+
+  const homeScore =
+    Number(
+      homeInput?.value
+    );
+
+  const awayScore =
+    Number(
+      awayInput?.value
+    );
+
+
+  if (
+    !Number.isInteger(homeScore) ||
+    homeScore < 0 ||
+    !Number.isInteger(awayScore) ||
+    awayScore < 0
+  ) {
 
     alert(
-      "All league-phase matches must have results before the knockout stage can start."
+      "Enter valid whole-number scores."
     );
 
     return;
   }
 
-  const confirmed =
-    confirm(
-      "Finish the league phase and create the fixed knockout bracket?"
+
+  const original =
+    competition.fixtures.find(
+      item =>
+        item.id === fixture.id
     );
 
-  if (!confirmed) {
+
+  if (!original) {
     return;
   }
 
-  createKnockoutFromStandings();
+
+  original.homeScore =
+    homeScore;
+
+  original.awayScore =
+    awayScore;
+
 
   await saveCompetition();
 
   renderDashboard();
 
-  alert(
-    "League phase completed and knockout bracket created."
-  );
 
-}
+  /*
+    Automatic league completion.
+  */
 
+  if (
+    areAllLeagueMatchesComplete()
+  ) {
 
-/* =========================================================
-   CREATE KNOCKOUT FROM STANDINGS
-   ========================================================= */
+    await automaticallyStartKnockout();
 
-function createKnockoutFromStandings() {
-
-  const standings =
-    calculateStandings();
-
-  const total =
-    standings.length;
-
-  let qualificationSize = 0;
-
-  if (total >= 33) {
-
-    qualificationSize = 32;
-
-  } else if (total >= 17) {
-
-    qualificationSize = 16;
-
-  } else if (total >= 9) {
-
-    qualificationSize = 8;
-
-  }
-
-  if (!qualificationSize) {
     return;
   }
 
-  const qualified =
-    standings.slice(
-      0,
-      qualificationSize
-    );
 
-  const bracket =
-    buildInitialKnockoutBracket(
-      qualified,
-      qualificationSize
-    );
-
-  competition.knockout = {
-
-    started: true,
-
-    stage:
-      getFirstKnockoutStage(
-        qualificationSize
-      ),
-
-    qualificationSize,
-
-    bracket
-
-  };
-
-}
-
-
-/* =========================================================
-   FIRST KNOCKOUT STAGE
-   ========================================================= */
-
-function getFirstKnockoutStage(
-  qualificationSize
-) {
-
-  if (qualificationSize === 32) {
-    return "Round of 32";
-  }
-
-  if (qualificationSize === 16) {
-    return "Round of 16";
-  }
-
-  return "Quarter-finals";
-
-}
-
-
-/* =========================================================
-   INITIAL KNOCKOUT BRACKET
-   ========================================================= */
-
-function buildInitialKnockoutBracket(
-  teams,
-  qualificationSize
-) {
-
-  const bracket = [];
-
-  let round = "";
-
-  if (qualificationSize === 32) {
-
-    round = "round32";
-
-  } else if (qualificationSize === 16) {
-
-    round = "round16";
-
-  } else {
-
-    round = "quarterFinal";
-
-  }
-
-  for (
-    let i = 0;
-    i < teams.length;
-    i += 2
-  ) {
-
-    bracket.push({
-
-      id:
-        `${round}-${i / 2 + 1}`,
-
-      round,
-
-      number:
-        i / 2 + 1,
-
-      homeTeam:
-        teams[i]?.name || "TBD",
-
-      awayTeam:
-        teams[i + 1]?.name || "TBD",
-
-      homeId:
-        teams[i]?.id || null,
-
-      awayId:
-        teams[i + 1]?.id || null,
-
-      homeScore:
-        null,
-
-      awayScore:
-        null,
-
-      winner:
-        null
-
-    });
-
-  }
-
-  addFutureBracketRounds(
-    bracket,
-    round
+  alert(
+    "League result saved."
   );
 
-  return bracket;
-
 }
 
 
 /* =========================================================
-   ADD FUTURE BRACKET ROUNDS
+   EXPOSE LEAGUE RESULT
    ========================================================= */
 
-function addFutureBracketRounds(
-  bracket,
-  firstRound
-) {
+window.saveChampionsLeagueResult =
+  saveLeagueResult;
 
-  const rounds = [];
 
-  if (firstRound === "round32") {
+/* =========================================================
+   CHECK ALL LEAGUE MATCHES
+   ========================================================= */
 
-    rounds.push(
-      "round16",
-      "quarterFinal",
-      "semiFinal",
-      "final"
+function areAllLeagueMatchesComplete() {
+
+  const fixtures =
+    competition.fixtures.filter(
+      fixture =>
+        fixture.type === "league"
     );
 
-  } else if (firstRound === "round16") {
 
-    rounds.push(
-      "quarterFinal",
-      "semiFinal",
-      "final"
-    );
-
-  } else {
-
-    rounds.push(
-      "semiFinal",
-      "final"
-    );
-
+  if (!fixtures.length) {
+    return false;
   }
 
-  let previousCount =
-    bracket.filter(
-      tie =>
-        tie.round === firstRound
-    ).length;
 
-  let previousRound =
-    firstRound;
-
-  rounds.forEach(round => {
-
-    const count =
-      Math.floor(
-        previousCount / 2
-      );
-
-    for (
-      let i = 0;
-      i < count;
-      i++
-    ) {
-
-      bracket.push({
-
-        id:
-          `${round}-${i + 1}`,
-
-        round,
-
-        number:
-          i + 1,
-
-        homeTeam:
-          "TBD",
-
-        awayTeam:
-          "TBD",
-
-        homeId:
-          null,
-
-        awayId:
-          null,
-
-        homeScore:
-          null,
-
-        awayScore:
-          null,
-
-        winner:
-          null,
-
-        sourceHome:
-          `${previousRound}-${i * 2 + 1}`,
-
-        sourceAway:
-          `${previousRound}-${i * 2 + 2}`
-
-      });
-
-    }
-
-    previousRound =
-      round;
-
-    previousCount =
-      count;
-
-  });
+  return fixtures.every(
+    fixture =>
+      isValidScore(
+        fixture.homeScore
+      ) &&
+      isValidScore(
+        fixture.awayScore
+      )
+  );
 
 }
 
 
 /* =========================================================
-   STANDINGS CALCULATOR
+   AUTOMATICALLY START KNOCKOUT
+   ========================================================= */
+
+async function automaticallyStartKnockout() {
+
+  if (
+    competition.knockout.started
+  ) {
+    return;
+  }
+
+
+  const qualificationSize =
+    getQualificationSize(
+      competition.teams.length
+    );
+
+
+  if (!qualificationSize) {
+
+    alert(
+      "The league is complete, but there are not enough teams for a knockout stage."
+    );
+
+    return;
+  }
+
+
+  createKnockoutFromStandings();
+
+
+  await saveCompetition();
+
+  renderDashboard();
+
+
+  alert(
+    "All league matches are complete. The knockout stage has now started automatically."
+  );
+
+}
+
+
+/* =========================================================
+   LEGACY FINISH BUTTON
+   ========================================================= */
+
+async function finishLeaguePhase() {
+
+  if (
+    competition.knockout.started
+  ) {
+
+    alert(
+      "The knockout stage has already started."
+    );
+
+    return;
+  }
+
+
+  if (
+    !competition.season.started
+  ) {
+
+    alert(
+      "Start the season first."
+    );
+
+    return;
+  }
+
+
+  if (
+    !hasLeagueFixtures()
+  ) {
+
+    alert(
+      "No league fixtures have been generated."
+    );
+
+    return;
+  }
+
+
+  if (
+    !areAllLeagueMatchesComplete()
+  ) {
+
+    alert(
+      "All league matches must have results first."
+    );
+
+    return;
+  }
+
+
+  await automaticallyStartKnockout();
+
+}
+
+/* =========================================================
+   PART 6 OF 10
+   STANDINGS
+   QUALIFICATION
+   RANDOM KNOCKOUT DRAW
+   FIXED BRACKET
+   ========================================================= */
+
+
+/* =========================================================
+   CALCULATE STANDINGS
    ========================================================= */
 
 function calculateStandings() {
@@ -1783,105 +2423,136 @@ function calculateStandings() {
       })
     );
 
+
   const lookup = {};
 
-  standings.forEach(team => {
 
-    lookup[team.id] =
-      team;
+  standings.forEach(
+    team => {
 
-  });
+      lookup[team.id] =
+        team;
+
+    }
+  );
+
 
   competition.fixtures
     .filter(
       fixture =>
         fixture.type === "league"
     )
-    .forEach(fixture => {
+    .forEach(
+      fixture => {
 
-      const home =
-        lookup[fixture.homeId];
+        const home =
+          lookup[
+            fixture.homeId
+          ];
 
-      const away =
-        lookup[fixture.awayId];
+        const away =
+          lookup[
+            fixture.awayId
+          ];
 
-      if (!home || !away) {
-        return;
+
+        if (!home || !away) {
+          return;
+        }
+
+
+        if (
+          !isValidScore(
+            fixture.homeScore
+          ) ||
+          !isValidScore(
+            fixture.awayScore
+          )
+        ) {
+
+          return;
+
+        }
+
+
+        const homeScore =
+          Number(
+            fixture.homeScore
+          );
+
+        const awayScore =
+          Number(
+            fixture.awayScore
+          );
+
+
+        home.played++;
+
+        away.played++;
+
+
+        home.goalsFor +=
+          homeScore;
+
+        home.goalsAgainst +=
+          awayScore;
+
+
+        away.goalsFor +=
+          awayScore;
+
+        away.goalsAgainst +=
+          homeScore;
+
+
+        if (
+          homeScore >
+          awayScore
+        ) {
+
+          home.wins++;
+
+          away.losses++;
+
+          home.points += 3;
+
+        } else if (
+          awayScore >
+          homeScore
+        ) {
+
+          away.wins++;
+
+          home.losses++;
+
+          away.points += 3;
+
+        } else {
+
+          home.draws++;
+
+          away.draws++;
+
+          home.points++;
+
+          away.points++;
+
+        }
+
       }
+    );
 
-      const homeScore =
-        Number(
-          fixture.homeScore
-        );
 
-      const awayScore =
-        Number(
-          fixture.awayScore
-        );
+  standings.forEach(
+    team => {
 
-      if (
-        !Number.isFinite(homeScore) ||
-        !Number.isFinite(awayScore)
-      ) {
-        return;
-      }
+      team.goalDifference =
+        team.goalsFor -
+        team.goalsAgainst;
 
-      home.played++;
-      away.played++;
+    }
+  );
 
-      home.goalsFor +=
-        homeScore;
-
-      home.goalsAgainst +=
-        awayScore;
-
-      away.goalsFor +=
-        awayScore;
-
-      away.goalsAgainst +=
-        homeScore;
-
-      if (
-        homeScore > awayScore
-      ) {
-
-        home.wins++;
-
-        home.points += 3;
-
-        away.losses++;
-
-      } else if (
-        awayScore > homeScore
-      ) {
-
-        away.wins++;
-
-        away.points += 3;
-
-        home.losses++;
-
-      } else {
-
-        home.draws++;
-
-        away.draws++;
-
-        home.points++;
-
-        away.points++;
-
-      }
-
-    });
-
-  standings.forEach(team => {
-
-    team.goalDifference =
-      team.goalsFor -
-      team.goalsAgainst;
-
-  });
 
   standings.sort(
     (a, b) => {
@@ -1898,6 +2569,7 @@ function calculateStandings() {
 
       }
 
+
       if (
         b.goalDifference !==
         a.goalDifference
@@ -1910,224 +2582,448 @@ function calculateStandings() {
 
       }
 
-      return (
-        b.goalsFor -
+
+      if (
+        b.goalsFor !==
         a.goalsFor
+      ) {
+
+        return (
+          b.goalsFor -
+          a.goalsFor
+        );
+
+      }
+
+
+      return a.name.localeCompare(
+        b.name
       );
 
     }
   );
 
+
   return standings;
 
 }
 
-/* =========================================================
-   PART 3 — ADMIN RESULT ENTRY + KNOCKOUT MANAGEMENT
-   ========================================================= */
-
 
 /* =========================================================
-   RENDER LEAGUE FIXTURES
+   GET QUALIFICATION SIZE
    ========================================================= */
 
-function renderAdminFixtures() {
+function getQualificationSize(
+  total
+) {
 
-  const container =
-    document.getElementById(
-      "adminFixtureList"
-    );
+  if (total >= 33) {
 
-  if (!container) {
-    return;
+    return 32;
+
   }
 
-  const fixtures =
-    competition.fixtures.filter(
-      fixture =>
-        fixture.type === "league"
-    );
 
-  if (!fixtures.length) {
+  if (total >= 17) {
 
-    container.innerHTML = `
-      <p>
-        No league fixtures generated.
-      </p>
-    `;
+    return 16;
 
-    return;
   }
 
-  container.innerHTML =
-    fixtures.map(
-      (fixture, index) => {
 
-        const home =
-          getTeamName(
-            fixture.homeId
-          );
+  if (total >= 9) {
 
-        const away =
-          getTeamName(
-            fixture.awayId
-          );
+    return 8;
 
-        const homeScore =
-          fixture.homeScore ??
-          "";
+  }
 
-        const awayScore =
-          fixture.awayScore ??
-          "";
 
-        return `
-          <div
-            class="fixture-card"
-            data-fixture="${escapeHTML(
-              fixture.id
-            )}"
-          >
-
-            <div class="fixture-teams">
-
-              <strong>
-                ${escapeHTML(home)}
-              </strong>
-
-              <input
-                type="number"
-                min="0"
-                id="league-home-${index}"
-                value="${homeScore}"
-                placeholder="0"
-              >
-
-              <span>
-                -
-              </span>
-
-              <input
-                type="number"
-                min="0"
-                id="league-away-${index}"
-                value="${awayScore}"
-                placeholder="0"
-              >
-
-              <strong>
-                ${escapeHTML(away)}
-              </strong>
-
-            </div>
-
-            <button
-              onclick="window.saveChampionsLeagueResult(${index})"
-            >
-              💾 Save Result
-            </button>
-
-          </div>
-        `;
-
-      }
-    ).join("");
+  return 0;
 
 }
 
 
 /* =========================================================
-   SAVE LEAGUE RESULT
+   FIRST KNOCKOUT STAGE
    ========================================================= */
 
-async function saveLeagueResult(
-  index
+function getFirstKnockoutStage(
+  qualificationSize
 ) {
 
-  const fixtures =
-    competition.fixtures.filter(
-      fixture =>
-        fixture.type === "league"
-    );
-
-  const fixture =
-    fixtures[index];
-
-  if (!fixture) {
-    return;
-  }
-
-  const homeInput =
-    document.getElementById(
-      `league-home-${index}`
-    );
-
-  const awayInput =
-    document.getElementById(
-      `league-away-${index}`
-    );
-
-  const homeScore =
-    Number(
-      homeInput?.value
-    );
-
-  const awayScore =
-    Number(
-      awayInput?.value
-    );
-
   if (
-    !Number.isInteger(homeScore) ||
-    homeScore < 0 ||
-    !Number.isInteger(awayScore) ||
-    awayScore < 0
+    qualificationSize === 32
   ) {
 
-    alert(
-      "Enter valid whole-number scores."
-    );
+    return "Round of 32";
 
-    return;
   }
 
-  const original =
-    competition.fixtures.find(
-      item =>
-        item.id === fixture.id
-    );
 
-  if (!original) {
-    return;
+  if (
+    qualificationSize === 16
+  ) {
+
+    return "Round of 16";
+
   }
 
-  original.homeScore =
-    homeScore;
 
-  original.awayScore =
-    awayScore;
+  if (
+    qualificationSize === 8
+  ) {
 
-  await saveCompetition();
+    return "Quarter-finals";
 
-  renderAdminFixtures();
+  }
 
-  alert(
-    "League result saved."
+
+  return "";
+
+}
+
+
+/* =========================================================
+   CREATE KNOCKOUT FROM STANDINGS
+   ========================================================= */
+
+function createKnockoutFromStandings() {
+
+  const standings =
+    calculateStandings();
+
+
+  const qualificationSize =
+    getQualificationSize(
+      standings.length
+    );
+
+
+  if (!qualificationSize) {
+    return false;
+  }
+
+
+  const qualified =
+    standings.slice(
+      0,
+      qualificationSize
+    );
+
+
+  /*
+    IMPORTANT:
+    League position decides who
+    qualifies.
+
+    League position does NOT decide
+    the knockout pairing.
+
+    Qualified teams are shuffled
+    before the bracket is created.
+  */
+
+  const randomQualified =
+    shuffleArray(
+      qualified
+    );
+
+
+  const bracket =
+    buildInitialKnockoutBracket(
+      randomQualified,
+      qualificationSize
+    );
+
+
+  competition.knockout = {
+
+    started: true,
+
+    stage:
+      getFirstKnockoutStage(
+        qualificationSize
+      ),
+
+    qualificationSize,
+
+    bracket
+
+  };
+
+
+  return true;
+
+}
+
+
+/* =========================================================
+   BUILD INITIAL KNOCKOUT BRACKET
+   ========================================================= */
+
+function buildInitialKnockoutBracket(
+  teams,
+  qualificationSize
+) {
+
+  const bracket = [];
+
+
+  let round = "";
+
+
+  if (
+    qualificationSize === 32
+  ) {
+
+    round = "round32";
+
+  } else if (
+    qualificationSize === 16
+  ) {
+
+    round = "round16";
+
+  } else {
+
+    round = "quarterFinal";
+
+  }
+
+
+  for (
+    let i = 0;
+    i < teams.length;
+    i += 2
+  ) {
+
+    const home =
+      teams[i];
+
+    const away =
+      teams[i + 1];
+
+
+    const tie = {
+
+      id:
+        `${round}-${i / 2 + 1}`,
+
+      round,
+
+      number:
+        i / 2 + 1,
+
+      homeTeam:
+        home?.name ||
+        "TBD",
+
+      awayTeam:
+        away?.name ||
+        "TBD",
+
+      homeId:
+        home?.id ||
+        null,
+
+      awayId:
+        away?.id ||
+        null,
+
+      homeScore:
+        null,
+
+      awayScore:
+        null,
+
+      winner:
+        null,
+
+      winnerId:
+        null,
+
+      legs:
+        null,
+
+      sourceHome:
+        null,
+
+      sourceAway:
+        null
+
+    };
+
+
+    ensureTieLegs(
+      tie
+    );
+
+
+    bracket.push(
+      tie
+    );
+
+  }
+
+
+  addFutureBracketRounds(
+    bracket,
+    round
+  );
+
+
+  return bracket;
+
+}
+
+
+/* =========================================================
+   ADD FUTURE BRACKET ROUNDS
+   ========================================================= */
+
+function addFutureBracketRounds(
+  bracket,
+  firstRound
+) {
+
+  const rounds = [];
+
+
+  if (
+    firstRound === "round32"
+  ) {
+
+    rounds.push(
+      "round16",
+      "quarterFinal",
+      "semiFinal",
+      "final"
+    );
+
+  } else if (
+    firstRound === "round16"
+  ) {
+
+    rounds.push(
+      "quarterFinal",
+      "semiFinal",
+      "final"
+    );
+
+  } else {
+
+    rounds.push(
+      "semiFinal",
+      "final"
+    );
+
+  }
+
+
+  let previousCount =
+    bracket.filter(
+      tie =>
+        tie.round === firstRound
+    ).length;
+
+
+  let previousRound =
+    firstRound;
+
+
+  rounds.forEach(
+    round => {
+
+      const count =
+        Math.floor(
+          previousCount / 2
+        );
+
+
+      for (
+        let i = 0;
+        i < count;
+        i++
+      ) {
+
+        const tie = {
+
+          id:
+            `${round}-${i + 1}`,
+
+          round,
+
+          number:
+            i + 1,
+
+          homeTeam:
+            "TBD",
+
+          awayTeam:
+            "TBD",
+
+          homeId:
+            null,
+
+          awayId:
+            null,
+
+          homeScore:
+            null,
+
+          awayScore:
+            null,
+
+          winner:
+            null,
+
+          winnerId:
+            null,
+
+          legs:
+            null,
+
+          sourceHome:
+            `${previousRound}-${i * 2 + 1}`,
+
+          sourceAway:
+            `${previousRound}-${i * 2 + 2}`
+
+        };
+
+
+        ensureTieLegs(
+          tie
+        );
+
+
+        bracket.push(
+          tie
+        );
+
+      }
+
+
+      previousRound =
+        round;
+
+      previousCount =
+        count;
+
+    }
   );
 
 }
 
-
 /* =========================================================
-   EXPOSE LEAGUE RESULT FUNCTION
+   PART 7 OF 10
+   KNOCKOUT DISPLAY
+   ONE-LEG / TWO-LEG RESULT ENTRY
    ========================================================= */
 
-window.saveChampionsLeagueResult =
-  saveLeagueResult;
-
 
 /* =========================================================
-   RENDER KNOCKOUT
+   RENDER ADMIN KNOCKOUT
    ========================================================= */
 
 function renderAdminKnockout() {
@@ -2142,9 +3038,11 @@ function renderAdminKnockout() {
       "adminKnockoutList"
     );
 
+
   if (!status || !container) {
     return;
   }
+
 
   if (
     !competition.knockout.started
@@ -2156,16 +3054,20 @@ function renderAdminKnockout() {
       </p>
     `;
 
+
     container.innerHTML = `
       <p>
         No knockout fixtures available.
       </p>
     `;
 
+
     return;
   }
 
+
   status.innerHTML = `
+
     <p>
       🟢 Knockout stage active.
     </p>
@@ -2173,22 +3075,45 @@ function renderAdminKnockout() {
     <p>
       Qualification:
       <strong>
-        Top ${competition.knockout.qualificationSize}
+        Top
+        ${competition.knockout.qualificationSize}
       </strong>
     </p>
 
     <p>
-      First stage:
+      Current stage:
       <strong>
         ${escapeHTML(
           competition.knockout.stage
         )}
       </strong>
     </p>
+
+    <p>
+      Knockout legs:
+      <strong>
+        ${competition.season.knockoutLegs}
+      </strong>
+      <span>
+        (Final is always one leg)
+      </span>
+    </p>
+
   `;
 
+
   const bracket =
-    competition.knockout.bracket || [];
+    competition.knockout.bracket ||
+    [];
+
+
+  /*
+    Show only ties whose teams are known,
+    plus completed ties.
+
+    Future TBD ties remain visible but
+    cannot receive results.
+  */
 
   container.innerHTML =
     bracket
@@ -2205,7 +3130,7 @@ function renderAdminKnockout() {
 
 
 /* =========================================================
-   ADMIN TIE
+   RENDER ADMIN TIE
    ========================================================= */
 
 function renderAdminTie(
@@ -2213,20 +3138,133 @@ function renderAdminTie(
   index
 ) {
 
-  const homeScore =
-    tie.homeScore ??
-    "";
+  ensureTieLegs(
+    tie
+  );
 
-  const awayScore =
-    tie.awayScore ??
-    "";
 
-  const winner =
-    tie.winner ||
-    "";
+  const legs =
+    getTieLegCount(
+      tie
+    );
+
+
+  const ready =
+    isTieReady(
+      tie
+    );
+
+
+  const completed =
+    Boolean(
+      tie.winner
+    );
+
+
+  let legsHTML = "";
+
+
+  for (
+    let legIndex = 0;
+    legIndex < legs;
+    legIndex++
+  ) {
+
+    const leg =
+      tie.legs[
+        legIndex
+      ];
+
+
+    legsHTML += `
+
+      <div class="fixture-card">
+
+        ${
+          legs === 2
+            ? `
+              <h4>
+                Leg ${legIndex + 1}
+              </h4>
+            `
+            : ""
+        }
+
+        <div class="fixture-teams">
+
+          <strong>
+            ${escapeHTML(
+              tie.homeTeam
+            )}
+          </strong>
+
+          <input
+            type="number"
+            min="0"
+            id="ko-home-${index}-${legIndex}"
+            value="${
+              leg.homeScore ?? ""
+            }"
+            placeholder="0"
+            ${
+              !ready ||
+              completed
+                ? "disabled"
+                : ""
+            }
+          >
+
+          <span>
+            -
+          </span>
+
+          <input
+            type="number"
+            min="0"
+            id="ko-away-${index}-${legIndex}"
+            value="${
+              leg.awayScore ?? ""
+            }"
+            placeholder="0"
+            ${
+              !ready ||
+              completed
+                ? "disabled"
+                : ""
+            }
+          >
+
+          <strong>
+            ${escapeHTML(
+              tie.awayTeam
+            )}
+          </strong>
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+
+  const aggregate =
+    legs === 2
+      ? getAggregateScore(
+          tie
+        )
+      : null;
+
 
   return `
-    <div class="fixture-card">
+
+    <div
+      class="fixture-card"
+      data-knockout-id="${escapeHTML(
+        tie.id
+      )}"
+    >
 
       <h3>
         ${escapeHTML(
@@ -2237,64 +3275,93 @@ function renderAdminTie(
         ${tie.number}
       </h3>
 
-      <div class="fixture-teams">
-
-        <strong>
-          ${escapeHTML(
-            tie.homeTeam ||
-            "TBD"
-          )}
-        </strong>
-
-        <input
-          type="number"
-          min="0"
-          id="ko-home-${index}"
-          value="${homeScore}"
-          placeholder="0"
-        >
-
-        <span>
-          -
-        </span>
-
-        <input
-          type="number"
-          min="0"
-          id="ko-away-${index}"
-          value="${awayScore}"
-          placeholder="0"
-        >
-
-        <strong>
-          ${escapeHTML(
-            tie.awayTeam ||
-            "TBD"
-          )}
-        </strong>
-
-      </div>
 
       ${
-        winner
+        !ready
           ? `
             <p>
-              🏆 Winner:
+              ⏳ Waiting for both teams to qualify.
+            </p>
+          `
+          : ""
+      }
+
+
+      ${legsHTML}
+
+
+      ${
+        aggregate
+          ? `
+            <p>
+              Aggregate:
               <strong>
-                ${escapeHTML(winner)}
+                ${escapeHTML(
+                  tie.homeTeam
+                )}
+                ${aggregate.home}
+                -
+                ${aggregate.away}
+                ${escapeHTML(
+                  tie.awayTeam
+                )}
               </strong>
             </p>
           `
           : ""
       }
 
-      <button
-        onclick="window.saveChampionsKnockoutResult(${index})"
-      >
-        💾 Save Knockout Result
-      </button>
+
+      ${
+        tie.winner
+          ? `
+            <p>
+              🏆 Winner:
+              <strong>
+                ${escapeHTML(
+                  tie.winner
+                )}
+              </strong>
+            </p>
+          `
+          : ""
+      }
+
+
+      ${
+        ready && !completed
+          ? `
+            <button
+              type="button"
+              onclick="window.saveChampionsKnockoutResult(${index})"
+            >
+              💾 Save Knockout Result
+            </button>
+          `
+          : ""
+      }
+
+
+      ${
+        ready &&
+        legs === 2 &&
+        !completed &&
+        hasAggregateTie(
+          tie
+        )
+          ? `
+            <button
+              type="button"
+              onclick="window.resolveChampionsKnockoutTie(${index})"
+            >
+              ⚖️ Resolve Aggregate Tie
+            </button>
+          `
+          : ""
+      }
 
     </div>
+
   `;
 
 }
@@ -2327,10 +3394,182 @@ function getStageName(
 
   };
 
+
   return (
     names[round] ||
     "Knockout"
   );
+
+}
+
+
+/* =========================================================
+   GET TIE LEG COUNT
+   ========================================================= */
+
+function getTieLegCount(
+  tie
+) {
+
+  if (!tie) {
+    return 1;
+  }
+
+
+  if (
+    tie.round === "final"
+  ) {
+
+    return 1;
+
+  }
+
+
+  return (
+    competition.season.knockoutLegs === 2
+      ? 2
+      : 1
+  );
+
+}
+
+
+/* =========================================================
+   ENSURE LEG STRUCTURE
+   ========================================================= */
+
+function ensureTieLegs(
+  tie
+) {
+
+  const count =
+    getTieLegCount(
+      tie
+    );
+
+
+  if (
+    !Array.isArray(tie.legs) ||
+    tie.legs.length !== count
+  ) {
+
+    tie.legs =
+      Array.from(
+        {
+          length: count
+        },
+        () => ({
+
+          homeScore:
+            null,
+
+          awayScore:
+            null
+
+        })
+      );
+
+  }
+
+
+  /*
+    Keep the old one-leg fields synchronized
+    for compatibility.
+  */
+
+  if (count === 1) {
+
+    tie.homeScore =
+      tie.legs[0].homeScore;
+
+    tie.awayScore =
+      tie.legs[0].awayScore;
+
+  }
+
+}
+
+
+/* =========================================================
+   TIE READY
+   ========================================================= */
+
+function isTieReady(
+  tie
+) {
+
+  return (
+    Boolean(
+      tie.homeId
+    ) &&
+    Boolean(
+      tie.awayId
+    ) &&
+    tie.homeTeam !== "TBD" &&
+    tie.awayTeam !== "TBD"
+  );
+
+}
+
+
+/* =========================================================
+   GET AGGREGATE
+   ========================================================= */
+
+function getAggregateScore(
+  tie
+) {
+
+  ensureTieLegs(
+    tie
+  );
+
+
+  let home =
+    0;
+
+  let away =
+    0;
+
+
+  tie.legs.forEach(
+    leg => {
+
+      if (
+        isValidScore(
+          leg.homeScore
+        )
+      ) {
+
+        home +=
+          Number(
+            leg.homeScore
+          );
+
+      }
+
+
+      if (
+        isValidScore(
+          leg.awayScore
+        )
+      ) {
+
+        away +=
+          Number(
+            leg.awayScore
+          );
+
+      }
+
+    }
+  );
+
+
+  return {
+    home,
+    away
+  };
 
 }
 
@@ -2344,20 +3583,23 @@ async function saveKnockoutResult(
 ) {
 
   const bracket =
-    competition.knockout.bracket || [];
+    competition.knockout.bracket ||
+    [];
+
 
   const tie =
     bracket[index];
+
 
   if (!tie) {
     return;
   }
 
+
   if (
-    !tie.homeTeam ||
-    tie.homeTeam === "TBD" ||
-    !tie.awayTeam ||
-    tie.awayTeam === "TBD"
+    !isTieReady(
+      tie
+    )
   ) {
 
     alert(
@@ -2367,77 +3609,212 @@ async function saveKnockoutResult(
     return;
   }
 
-  const homeInput =
-    document.getElementById(
-      `ko-home-${index}`
+
+  ensureTieLegs(
+    tie
+  );
+
+
+  const legs =
+    getTieLegCount(
+      tie
     );
 
-  const awayInput =
-    document.getElementById(
-      `ko-away-${index}`
-    );
 
-  const homeScore =
-    Number(
-      homeInput?.value
-    );
-
-  const awayScore =
-    Number(
-      awayInput?.value
-    );
-
-  if (
-    !Number.isInteger(homeScore) ||
-    homeScore < 0 ||
-    !Number.isInteger(awayScore) ||
-    awayScore < 0
+  for (
+    let legIndex = 0;
+    legIndex < legs;
+    legIndex++
   ) {
 
-    alert(
-      "Enter valid whole-number scores."
-    );
+    const homeInput =
+      document.getElementById(
+        `ko-home-${index}-${legIndex}`
+      );
 
-    return;
+    const awayInput =
+      document.getElementById(
+        `ko-away-${index}-${legIndex}`
+      );
+
+
+    const homeScore =
+      Number(
+        homeInput?.value
+      );
+
+    const awayScore =
+      Number(
+        awayInput?.value
+      );
+
+
+    if (
+      !Number.isInteger(
+        homeScore
+      ) ||
+      homeScore < 0 ||
+      !Number.isInteger(
+        awayScore
+      ) ||
+      awayScore < 0
+    ) {
+
+      alert(
+        `Enter valid scores for Leg ${legIndex + 1}.`
+      );
+
+      return;
+    }
+
+
+    tie.legs[
+      legIndex
+    ].homeScore =
+      homeScore;
+
+
+    tie.legs[
+      legIndex
+    ].awayScore =
+      awayScore;
+
   }
+
 
   if (
-    homeScore === awayScore
+    legs === 1
   ) {
 
-    alert(
-      "A tied knockout match requires a winner. For this test version, enter a result that produces a winner."
-    );
+    tie.homeScore =
+      tie.legs[0].homeScore;
 
-    return;
+    tie.awayScore =
+      tie.legs[0].awayScore;
+
+
+    if (
+      tie.homeScore ===
+      tie.awayScore
+    ) {
+
+      alert(
+        "A tied knockout match requires a winner. Enter a result with a winner."
+      );
+
+      return;
+    }
+
+
+    if (
+      tie.homeScore >
+      tie.awayScore
+    ) {
+
+      tie.winner =
+        tie.homeTeam;
+
+      tie.winnerId =
+        tie.homeId;
+
+    } else {
+
+      tie.winner =
+        tie.awayTeam;
+
+      tie.winnerId =
+        tie.awayId;
+
+    }
+
+  } else {
+
+    const aggregate =
+      getAggregateScore(
+        tie
+      );
+
+
+    if (
+      aggregate.home ===
+      aggregate.away
+    ) {
+
+      tie.winner = null;
+
+      tie.winnerId = null;
+
+      await saveCompetition();
+
+      renderDashboard();
+
+
+      alert(
+        "The aggregate score is tied. Use Resolve Aggregate Tie to select the winner."
+      );
+
+      return;
+    }
+
+
+    if (
+      aggregate.home >
+      aggregate.away
+    ) {
+
+      tie.winner =
+        tie.homeTeam;
+
+      tie.winnerId =
+        tie.homeId;
+
+    } else {
+
+      tie.winner =
+        tie.awayTeam;
+
+      tie.winnerId =
+        tie.awayId;
+
+    }
+
   }
 
-  tie.homeScore =
-    homeScore;
-
-  tie.awayScore =
-    awayScore;
-
-  tie.winner =
-    homeScore > awayScore
-      ? tie.homeTeam
-      : tie.awayTeam;
 
   advanceAdminWinner(
     tie
   );
 
+
   updateKnockoutStage();
+
 
   await saveCompetition();
 
-  renderAdminKnockout();
+  renderDashboard();
+
 
   alert(
     "Knockout result saved and winner advanced."
   );
 
 }
+
+
+/* =========================================================
+   EXPOSE KNOCKOUT RESULT
+   ========================================================= */
+
+window.saveChampionsKnockoutResult =
+  saveKnockoutResult;
+
+/* =========================================================
+   PART 8 OF 10
+   WINNER ADVANCEMENT
+   TIE RESOLUTION
+   STAGE MANAGEMENT
+   CHAMPION DETECTION
+   ========================================================= */
 
 
 /* =========================================================
@@ -2448,23 +3825,38 @@ function advanceAdminWinner(
   completedTie
 ) {
 
-  if (!completedTie.winner) {
+  if (
+    !completedTie.winnerId
+  ) {
+
     return;
+
   }
+
 
   const nextRound =
     getNextAdminRound(
       completedTie.round
     );
 
+
+  /*
+    No next round means this was
+    the final.
+  */
+
   if (!nextRound) {
+
     return;
+
   }
+
 
   const nextNumber =
     Math.ceil(
       completedTie.number / 2
     );
+
 
   const nextTie =
     competition.knockout.bracket
@@ -2474,23 +3866,49 @@ function advanceAdminWinner(
           tie.number === nextNumber
       );
 
+
   if (!nextTie) {
     return;
   }
 
-  if (
-    completedTie.number % 2 === 1
-  ) {
+
+  const isFirstSlot =
+    completedTie.number % 2 === 1;
+
+
+  if (isFirstSlot) {
+
+    /*
+      Do not overwrite a different
+      winner if this slot has already
+      been correctly populated.
+    */
 
     nextTie.homeTeam =
       completedTie.winner;
+
+    nextTie.homeId =
+      completedTie.winnerId;
 
   } else {
 
     nextTie.awayTeam =
       completedTie.winner;
 
+    nextTie.awayId =
+      completedTie.winnerId;
+
   }
+
+
+  /*
+    Prepare the next tie for its
+    correct number of legs.
+  */
+
+  ensureTieLegs(
+    nextTie
+  );
 
 }
 
@@ -2503,21 +3921,41 @@ function getNextAdminRound(
   round
 ) {
 
-  if (round === "round32") {
+  if (
+    round === "round32"
+  ) {
+
     return "round16";
+
   }
 
-  if (round === "round16") {
+
+  if (
+    round === "round16"
+  ) {
+
     return "quarterFinal";
+
   }
 
-  if (round === "quarterFinal") {
+
+  if (
+    round === "quarterFinal"
+  ) {
+
     return "semiFinal";
+
   }
 
-  if (round === "semiFinal") {
+
+  if (
+    round === "semiFinal"
+  ) {
+
     return "final";
+
   }
+
 
   return null;
 
@@ -2525,24 +3963,34 @@ function getNextAdminRound(
 
 
 /* =========================================================
-   UPDATE CURRENT STAGE
+   UPDATE KNOCKOUT STAGE
    ========================================================= */
 
 function updateKnockoutStage() {
 
   const bracket =
-    competition.knockout.bracket || [];
+    competition.knockout.bracket ||
+    [];
+
 
   const order = [
+
     "round32",
+
     "round16",
+
     "quarterFinal",
+
     "semiFinal",
+
     "final"
+
   ];
+
 
   let current =
     "completed";
+
 
   for (
     const round of order
@@ -2554,19 +4002,46 @@ function updateKnockoutStage() {
           tie.round === round
       );
 
+
     if (!ties.length) {
       continue;
     }
 
-    if (
+
+    /*
+      A round becomes active when its
+      teams are available.
+
+      It remains the current stage
+      until every tie in that round
+      has a winner.
+    */
+
+    const hasReadyTie =
+      ties.some(
+        tie =>
+          isTieReady(
+            tie
+          )
+      );
+
+
+    const incomplete =
       ties.some(
         tie =>
           !tie.winner
-      )
+      );
+
+
+    if (
+      hasReadyTie &&
+      incomplete
     ) {
 
       current =
-        getStageName(round);
+        getStageName(
+          round
+        );
 
       break;
 
@@ -2574,33 +4049,268 @@ function updateKnockoutStage() {
 
   }
 
+
   competition.knockout.stage =
     current;
+
+
+  /*
+    If final has a winner, the entire
+    competition is complete.
+  */
+
+  const final =
+    bracket.find(
+      tie =>
+        tie.round === "final" &&
+        tie.number === 1
+    );
+
+
+  if (
+    final?.winner
+  ) {
+
+    competition.knockout.stage =
+      "Completed";
+
+  }
 
 }
 
 
 /* =========================================================
-   EXPOSE KNOCKOUT RESULT
+   AGGREGATE TIE CHECK
    ========================================================= */
 
-window.saveChampionsKnockoutResult =
-  saveKnockoutResult;
+function hasAggregateTie(
+  tie
+) {
+
+  if (
+    getTieLegCount(tie) !== 2
+  ) {
+
+    return false;
+
+  }
+
+
+  ensureTieLegs(
+    tie
+  );
+
+
+  const complete =
+    tie.legs.every(
+      leg =>
+        isValidScore(
+          leg.homeScore
+        ) &&
+        isValidScore(
+          leg.awayScore
+        )
+    );
+
+
+  if (!complete) {
+    return false;
+  }
+
+
+  const aggregate =
+    getAggregateScore(
+      tie
+    );
+
+
+  return (
+    aggregate.home ===
+    aggregate.away
+  );
+
+}
 
 
 /* =========================================================
-   PART 4 — TWO-LEG SUPPORT + TEST BRACKET + RESET
+   RESOLVE AGGREGATE TIE
    ========================================================= */
+
+async function resolveAggregateTie(
+  index
+) {
+
+  const tie =
+    competition.knockout.bracket[
+      index
+    ];
+
+
+  if (!tie) {
+    return;
+  }
+
+
+  if (
+    !hasAggregateTie(
+      tie
+    )
+  ) {
+
+    alert(
+      "This tie does not require aggregate-tie resolution."
+    );
+
+    return;
+  }
+
+
+  const choice =
+    prompt(
+      `Aggregate is tied.
+
+Type 1 for ${tie.homeTeam}
+Type 2 for ${tie.awayTeam}`
+    );
+
+
+  if (
+    choice !== "1" &&
+    choice !== "2"
+  ) {
+
+    alert(
+      "No winner selected."
+    );
+
+    return;
+  }
+
+
+  if (
+    choice === "1"
+  ) {
+
+    tie.winner =
+      tie.homeTeam;
+
+    tie.winnerId =
+      tie.homeId;
+
+  } else {
+
+    tie.winner =
+      tie.awayTeam;
+
+    tie.winnerId =
+      tie.awayId;
+
+  }
+
+
+  advanceAdminWinner(
+    tie
+  );
+
+
+  updateKnockoutStage();
+
+
+  await saveCompetition();
+
+  renderDashboard();
+
+
+  alert(
+    `Winner recorded: ${tie.winner}`
+  );
+
+}
 
 
 /* =========================================================
-   CREATE TEST BRACKET
+   EXPOSE TIE RESOLUTION
+   ========================================================= */
+
+window.resolveChampionsKnockoutTie =
+  resolveAggregateTie;
+
+
+/* =========================================================
+   GET FINAL
+   ========================================================= */
+
+function getFinalTie() {
+
+  return (
+    competition.knockout.bracket
+      ?.find(
+        tie =>
+          tie.round === "final" &&
+          tie.number === 1
+      ) ||
+    null
+  );
+
+}
+
+
+/* =========================================================
+   GET CHAMPION
+   ========================================================= */
+
+function getFinalWinner() {
+
+  const final =
+    getFinalTie();
+
+
+  return (
+    final?.winner ||
+    null
+  );
+
+}
+
+
+/* =========================================================
+   GET QUALIFIED TEAMS
+   ========================================================= */
+
+function getQualifiedTeams() {
+
+  const standings =
+    calculateStandings();
+
+
+  const size =
+    getQualificationSize(
+      standings.length
+    );
+
+
+  if (!size) {
+    return [];
+  }
+
+
+  return standings.slice(
+    0,
+    size
+  );
+
+}
+
+
+/* =========================================================
+   TEST BRACKET CREATION
    ========================================================= */
 
 async function createTestBracket() {
 
   if (
-    competition.teams.length < 9
+    competition.teams.length <
+    MIN_TEAMS
   ) {
 
     alert(
@@ -2610,64 +4320,51 @@ async function createTestBracket() {
     return;
   }
 
-  const standings =
-    calculateStandings();
 
-  const total =
-    standings.length;
+  if (
+    competition.knockout.started
+  ) {
 
-  let qualificationSize = 0;
+    alert(
+      "The knockout stage already exists."
+    );
 
-  if (total >= 33) {
-
-    qualificationSize = 32;
-
-  } else if (total >= 17) {
-
-    qualificationSize = 16;
-
-  } else {
-
-    qualificationSize = 8;
-
+    return;
   }
 
-  const qualified =
-    standings.slice(
-      0,
-      qualificationSize
+
+  const created =
+    createKnockoutFromStandings();
+
+
+  if (!created) {
+
+    alert(
+      "Unable to create the test bracket."
     );
 
-  const bracket =
-    buildInitialKnockoutBracket(
-      qualified,
-      qualificationSize
-    );
+    return;
+  }
 
-  competition.knockout = {
-
-    started: true,
-
-    stage:
-      getFirstKnockoutStage(
-        qualificationSize
-      ),
-
-    qualificationSize,
-
-    bracket
-
-  };
 
   await saveCompetition();
 
   renderDashboard();
+
 
   alert(
     "Test knockout bracket created."
   );
 
 }
+
+/* =========================================================
+   PART 9 OF 10
+   RESET
+   TEST SUMMARY
+   PUBLIC ADMIN DATA
+   LOGOUT
+   ========================================================= */
 
 
 /* =========================================================
@@ -2678,324 +4375,59 @@ async function resetChampionsTest() {
 
   const confirmed =
     confirm(
-      "Reset the entire Champions League test?"
+      "Reset the entire Champions League test? This will remove all teams, fixtures, results and the knockout bracket."
     );
+
 
   if (!confirmed) {
     return;
   }
 
-  competition = {
 
-    teams: [],
+  competition =
+    createDefaultCompetition();
 
-    fixtures: [],
-
-    season: {
-
-      started: false,
-
-      format:
-        "champions",
-
-      leagueMatchesPerTeam:
-        1,
-
-      knockoutLegs:
-        1,
-
-      startDate:
-        "",
-
-      endDate:
-        ""
-
-    },
-
-    knockout: {
-
-      started:
-        false,
-
-      stage:
-        "",
-
-      qualificationSize:
-        0,
-
-      bracket:
-        []
-
-    }
-
-  };
 
   await saveCompetition();
 
   renderDashboard();
 
-}
 
-
-/* =========================================================
-   TWO-LEG RESULT HANDLING
-   ========================================================= */
-
-/*
-  The test system stores each knockout tie
-  as one bracket slot.
-
-  When 2-leg mode is selected, the tie
-  receives separate leg scores.
-
-  The final remains one leg.
-*/
-
-function getTieLegCount(
-  tie
-) {
-
-  if (!tie) {
-    return 1;
-  }
-
-  if (
-    tie.round === "final"
-  ) {
-    return 1;
-  }
-
-  return competition.season.knockoutLegs === 2
-    ? 2
-    : 1;
-
-}
-
-
-/* =========================================================
-   CREATE LEG STRUCTURE
-   ========================================================= */
-
-function ensureTieLegs(
-  tie
-) {
-
-  const legs =
-    getTieLegCount(tie);
-
-  if (legs === 1) {
-
-    tie.legs = [
-
-      {
-        homeScore: null,
-        awayScore: null
-      }
-
-    ];
-
-    return;
-  }
-
-  if (
-    !Array.isArray(tie.legs) ||
-    tie.legs.length !== 2
-  ) {
-
-    tie.legs = [
-
-      {
-        homeScore: null,
-        awayScore: null
-      },
-
-      {
-        homeScore: null,
-        awayScore: null
-      }
-
-    ];
-
-  }
-
-}
-
-
-/* =========================================================
-   GET AGGREGATE
-   ========================================================= */
-
-function getAggregateScore(
-  tie
-) {
-
-  ensureTieLegs(tie);
-
-  let homeTotal = 0;
-
-  let awayTotal = 0;
-
-  tie.legs.forEach(
-    leg => {
-
-      if (
-        Number.isFinite(
-          Number(leg.homeScore)
-        )
-      ) {
-
-        homeTotal +=
-          Number(
-            leg.homeScore
-          );
-
-      }
-
-      if (
-        Number.isFinite(
-          Number(leg.awayScore)
-        )
-      ) {
-
-        awayTotal +=
-          Number(
-            leg.awayScore
-          );
-
-      }
-
-    }
-  );
-
-  return {
-
-    home:
-      homeTotal,
-
-    away:
-      awayTotal
-
-  };
-
-}
-
-
-/* =========================================================
-   GET TWO-LEG WINNER
-   ========================================================= */
-
-function getTwoLegWinner(
-  tie
-) {
-
-  ensureTieLegs(tie);
-
-  const complete =
-    tie.legs.every(
-      leg =>
-        leg.homeScore !== null &&
-        leg.awayScore !== null
-    );
-
-  if (!complete) {
-    return null;
-  }
-
-  const aggregate =
-    getAggregateScore(tie);
-
-  if (
-    aggregate.home >
-    aggregate.away
-  ) {
-
-    return tie.homeTeam;
-
-  }
-
-  if (
-    aggregate.away >
-    aggregate.home
-  ) {
-
-    return tie.awayTeam;
-
-  }
-
-  /*
-    No away-goals rule is assumed.
-    A tied aggregate is left for the
-    administrator to resolve later.
-  */
-
-  return null;
-
-}
-
-
-/* =========================================================
-   UPDATE TWO-LEG WINNERS
-   ========================================================= */
-
-function updateTwoLegWinners() {
-
-  const bracket =
-    competition.knockout.bracket || [];
-
-  bracket.forEach(
-    tie => {
-
-      const legs =
-        getTieLegCount(tie);
-
-      if (legs !== 2) {
-        return;
-      }
-
-      const winner =
-        getTwoLegWinner(tie);
-
-      if (winner) {
-
-        tie.winner =
-          winner;
-
-      }
-
-    }
+  alert(
+    "Champions League test has been reset."
   );
 
 }
 
 
 /* =========================================================
-   COMPLETE FINAL CHECK
-   ========================================================= */
-
-function getFinalWinner() {
-
-  const final =
-    competition.knockout.bracket
-      ?.find(
-        tie =>
-          tie.round === "final" &&
-          tie.number === 1
-      );
-
-  if (!final) {
-    return null;
-  }
-
-  return final.winner || null;
-
-}
-
-
-/* =========================================================
-   ADMIN TEST SUMMARY
+   GET TEST SUMMARY
    ========================================================= */
 
 function getTestSummary() {
+
+  const leagueFixtures =
+    competition.fixtures.filter(
+      fixture =>
+        fixture.type === "league"
+    );
+
+
+  const completedLeagueFixtures =
+    leagueFixtures.filter(
+      fixture =>
+        isValidScore(
+          fixture.homeScore
+        ) &&
+        isValidScore(
+          fixture.awayScore
+        )
+    );
+
+
+  const standings =
+    calculateStandings();
+
 
   return {
 
@@ -3003,10 +4435,15 @@ function getTestSummary() {
       competition.teams.length,
 
     leagueFixtures:
-      competition.fixtures.filter(
-        fixture =>
-          fixture.type === "league"
-      ).length,
+      leagueFixtures.length,
+
+    completedLeagueFixtures:
+      completedLeagueFixtures.length,
+
+    leagueComplete:
+      leagueFixtures.length > 0 &&
+      completedLeagueFixtures.length ===
+        leagueFixtures.length,
 
     knockoutTies:
       competition.knockout.bracket.length,
@@ -3019,7 +4456,12 @@ function getTestSummary() {
       competition.knockout.stage,
 
     champion:
-      getFinalWinner()
+      getFinalWinner(),
+
+    seasonStarted:
+      competition.season.started,
+
+    standings
 
   };
 
@@ -3027,7 +4469,7 @@ function getTestSummary() {
 
 
 /* =========================================================
-   EXPOSE TEST SUMMARY
+   EXPOSE ADMIN TEST API
    ========================================================= */
 
 window.championsAdminTest = {
@@ -3035,29 +4477,443 @@ window.championsAdminTest = {
   getSummary:
     getTestSummary,
 
+
   getStandings:
     calculateStandings,
 
+
+  getQualifiedTeams:
+    getQualifiedTeams,
+
+
   getQualificationSize:
-    () => {
+    () =>
+      getQualificationSize(
+        competition.teams.length
+      ),
 
-      const total =
-        competition.teams.length;
 
-      if (total >= 33) {
-        return 32;
-      }
-
-      if (total >= 17) {
-        return 16;
-      }
-
-      if (total >= 9) {
-        return 8;
-      }
-
-      return 0;
-
-    }
+  getChampion:
+    getFinalWinner
 
 };
+
+
+/* =========================================================
+   LOGOUT
+   ========================================================= */
+
+async function logoutAdmin() {
+
+  try {
+
+    await signOut(
+      auth
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Logout error:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   STANDINGS TABLE HTML
+   ========================================================= */
+
+function createStandingsHTML() {
+
+  const standings =
+    calculateStandings();
+
+
+  if (!standings.length) {
+
+    return `
+      <p>
+        No standings available.
+      </p>
+    `;
+
+  }
+
+
+  return `
+
+    <div class="fixture-card">
+
+      <h3>
+        League Table
+      </h3>
+
+      <div style="overflow-x:auto;">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>
+                #
+              </th>
+
+              <th>
+                Team
+              </th>
+
+              <th>
+                P
+              </th>
+
+              <th>
+                W
+              </th>
+
+              <th>
+                D
+              </th>
+
+              <th>
+                L
+              </th>
+
+              <th>
+                GF
+              </th>
+
+              <th>
+                GA
+              </th>
+
+              <th>
+                GD
+              </th>
+
+              <th>
+                Pts
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            ${
+              standings
+                .map(
+                  (team, index) => `
+
+                    <tr>
+
+                      <td>
+                        ${index + 1}
+                      </td>
+
+                      <td>
+                        ${escapeHTML(
+                          team.name
+                        )}
+                      </td>
+
+                      <td>
+                        ${team.played}
+                      </td>
+
+                      <td>
+                        ${team.wins}
+                      </td>
+
+                      <td>
+                        ${team.draws}
+                      </td>
+
+                      <td>
+                        ${team.losses}
+                      </td>
+
+                      <td>
+                        ${team.goalsFor}
+                      </td>
+
+                      <td>
+                        ${team.goalsAgainst}
+                      </td>
+
+                      <td>
+                        ${team.goalDifference}
+                      </td>
+
+                      <td>
+                        <strong>
+                          ${team.points}
+                        </strong>
+                      </td>
+
+                    </tr>
+
+                  `
+                )
+                .join("")
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+/* =========================================================
+   ESCAPE HTML
+   ========================================================= */
+
+function escapeHTML(value) {
+
+  return String(value)
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+
+}
+
+/* =========================================================
+   PART 10 OF 10
+   FINAL SAFETY
+   INITIAL RENDER HELPERS
+   ========================================================= */
+
+
+/* =========================================================
+   FINAL DATA SAFETY CHECK
+   ========================================================= */
+
+function validateCompetitionState() {
+
+  if (!competition) {
+
+    competition =
+      createDefaultCompetition();
+
+  }
+
+
+  if (
+    !Array.isArray(
+      competition.teams
+    )
+  ) {
+
+    competition.teams = [];
+
+  }
+
+
+  if (
+    !Array.isArray(
+      competition.fixtures
+    )
+  ) {
+
+    competition.fixtures = [];
+
+  }
+
+
+  if (
+    !competition.season
+  ) {
+
+    competition.season = {
+
+      started: false,
+
+      format: "champions",
+
+      leagueMatchesPerTeam: 1,
+
+      knockoutLegs: 1,
+
+      startDate: "",
+
+      endDate: ""
+
+    };
+
+  }
+
+
+  if (
+    !competition.knockout
+  ) {
+
+    competition.knockout = {
+
+      started: false,
+
+      stage: "",
+
+      qualificationSize: 0,
+
+      bracket: []
+
+    };
+
+  }
+
+
+  competition.season
+    .leagueMatchesPerTeam =
+      clampNumber(
+        competition.season
+          .leagueMatchesPerTeam,
+        1,
+        MAX_LEAGUE_MATCHES
+      );
+
+
+  competition.season
+    .knockoutLegs =
+      Number(
+        competition.season
+          .knockoutLegs
+      ) === 2
+        ? 2
+        : 1;
+
+}
+
+
+/* =========================================================
+   SAFE RENDER
+   ========================================================= */
+
+function safeRenderDashboard() {
+
+  try {
+
+    validateCompetitionState();
+
+    renderDashboard();
+
+  } catch (error) {
+
+    console.error(
+      "Dashboard render error:",
+      error
+    );
+
+    showMessage(
+      "seasonStatus",
+      "Unable to render Champions League dashboard."
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   SHOW MESSAGE
+   ========================================================= */
+
+function showMessage(
+  elementId,
+  message
+) {
+
+  const element =
+    document.getElementById(
+      elementId
+    );
+
+
+  if (element) {
+
+    element.textContent =
+      message;
+
+  }
+
+}
+
+
+/* =========================================================
+   FINAL ADMIN STATE ACCESS
+   ========================================================= */
+
+window.championsAdminState = {
+
+  getCompetition:
+    () => competition,
+
+  getTeams:
+    () =>
+      [...competition.teams],
+
+  getFixtures:
+    () =>
+      [...competition.fixtures],
+
+  getKnockout:
+    () =>
+      ({
+        ...competition.knockout
+      })
+
+};
+
+
+/* =========================================================
+   FINAL INITIAL STATE CHECK
+   ========================================================= */
+
+if (
+  document.readyState !==
+  "loading"
+) {
+
+  /*
+    The main DOMContentLoaded listener
+    in Part 1 handles initialization.
+
+    This block intentionally does not
+    initialize Firebase a second time.
+  */
+
+}
+
+
+/* =========================================================
+   END OF CHAMPIONS ADMIN
+   ========================================================= */
