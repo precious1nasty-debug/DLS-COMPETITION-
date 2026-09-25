@@ -18,17 +18,31 @@ import {
 
 
 /* =========================
-   FIREBASE CONFIG
+   FIREBASE CONFIGURATION
 ========================= */
 
 const firebaseConfig = {
+
   apiKey: "AIzaSyBbknvIO-87ff0lOCSUHtJlPs_CyhkTDnE",
-  authDomain: "dls-competition.firebaseapp.com",
-  projectId: "dls-competition",
-  storageBucket: "dls-competition.firebasestorage.app",
-  messagingSenderId: "855283628558",
-  appId: "1:855283628558:web:c7c4335e13da16a8775a5f",
-  measurementId: "G-1CFJFVHBXZ"
+
+  authDomain:
+    "dls-competition.firebaseapp.com",
+
+  projectId:
+    "dls-competition",
+
+  storageBucket:
+    "dls-competition.firebasestorage.app",
+
+  messagingSenderId:
+    "855283628558",
+
+  appId:
+    "1:855283628558:web:c7c4335e13da16a8775a5f",
+
+  measurementId:
+    "G-1CFJFVHBXZ"
+
 };
 
 
