@@ -1,7 +1,7 @@
 /* =========================================================
    DLS CHAMPIONS LEAGUE
-   champions-admin.js
-   PART 10C — ADMIN LOGIN + SETTINGS
+   SEPARATE TEST ADMIN
+   PART 1 — FIREBASE + GLOBALS
    ========================================================= */
 
 import {
@@ -17,28 +17,26 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 
-/* =========================================================
-   ADMIN CONFIGURATION
-   ========================================================= */
-
 const ADMIN_EMAIL =
   "obakimoprecious07@gmail.com";
 
 
-/* =========================================================
-   GLOBAL DATA
-   ========================================================= */
-
 let approvedTeams = [];
 
-let savedMatchesPerTeam = null;
 
-let championsCompetitionData = null;
+let championsData = {
+  started: false,
+  matchesPerTeam: 1,
+  teams: [],
+  fixtures: [],
+  knockoutRound: null,
+  winner: null
+};
 
 
-/* =========================================================
-   ELEMENTS
-   ========================================================= */
+/* =========================
+   LOGIN ELEMENTS
+========================= */
 
 const adminLogin =
   document.getElementById("adminLogin");
@@ -55,664 +53,318 @@ const adminEmail =
 const adminPassword =
   document.getElementById("adminPassword");
 
-const adminLoginButton =
-  document.getElementById("adminLoginButton");
-
 const adminLoginMessage =
   document.getElementById("adminLoginMessage");
 
-const adminWelcome =
-  document.getElementById("adminWelcome");
 
-const championsStatus =
-  document.getElementById("championsStatus");
-
-const eligibleTeamsCount =
-  document.getElementById("eligibleTeamsCount");
-
-const matchesPerTeamDisplay =
-  document.getElementById("matchesPerTeamDisplay");
-
-const fixturesCount =
-  document.getElementById("fixturesCount");
-
-const championName =
-  document.getElementById("championName");
+/* =========================
+   SETTINGS ELEMENTS
+========================= */
 
 const matchesPerTeam =
   document.getElementById("matchesPerTeam");
 
-const settingsMessage =
-  document.getElementById("settingsMessage");
-
 const saveSettingsButton =
   document.getElementById("saveSettingsButton");
 
-const eligibleTeamsList =
-  document.getElementById("eligibleTeamsList");
-
-const teamsMessage =
-  document.getElementById("teamsMessage");
-
-const startCompetitionMessage =
-  document.getElementById("startCompetitionMessage");
+const generateFixturesButton =
+  document.getElementById("generateFixturesButton");
 
 const startCompetitionButton =
   document.getElementById("startCompetitionButton");
+
+const settingsMessage =
+  document.getElementById("settingsMessage");
+
+
+/* =========================
+   TEAM ELEMENTS
+========================= */
+
+const approvedTeamList =
+  document.getElementById("approvedTeamList");
+
+const teamCountMessage =
+  document.getElementById("teamCountMessage");
+
+
+/* =========================
+   FIXTURE ELEMENTS
+========================= */
+
+const adminFixtureList =
+  document.getElementById("adminFixtureList");
+
+const leagueResultsList =
+  document.getElementById("leagueResultsList");
+
+
+/* =========================
+   KNOCKOUT ELEMENTS
+========================= */
+
+const generateKnockoutButton =
+  document.getElementById("generateKnockoutButton");
+
+const knockoutResultsList =
+  document.getElementById("knockoutResultsList");
+
+const knockoutMessage =
+  document.getElementById("knockoutMessage");
+
+
+/* =========================
+   STATUS ELEMENT
+========================= */
+
+const competitionStatus =
+  document.getElementById("competitionStatus");
+
+
+/* =========================
+   LOGOUT
+========================= */
 
 const adminLogoutButton =
   document.getElementById("adminLogoutButton");
 
 
 /* =========================================================
-   WAIT FOR FIREBASE
+   PART 2 — HELPER FUNCTIONS + FIRESTORE DATA
    ========================================================= */
 
-function waitForFirebase() {
 
-  return new Promise((resolve, reject) => {
+function escapeHtml(value) {
 
-    let attempts = 0;
-
-    const maxAttempts = 100;
-
-    const timer = setInterval(() => {
-
-      attempts++;
-
-
-      if (
-        window.championsFirebaseReady === true &&
-        window.championsAuth &&
-        window.championsDb
-      ) {
-
-        clearInterval(timer);
-
-        resolve({
-
-          auth:
-            window.championsAuth,
-
-          db:
-            window.championsDb
-
-        });
-
-        return;
-      }
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
 
-      if (attempts >= maxAttempts) {
+function getTeamName(team) {
 
-        clearInterval(timer);
+  return (
+    team.name ||
+    team.teamName ||
+    team.player ||
+    team.playerName ||
+    "Unknown Team"
+  );
+}
 
-        reject(
-          new Error(
-            "Firebase could not be initialized."
-          )
-        );
 
-      }
+/* =========================
+   SAVE CHAMPIONS DATA
+========================= */
 
-    }, 100);
+async function saveChampionsData() {
+
+  await setDoc(
+    doc(
+      window.championsDb,
+      "championsLeague",
+      "main"
+    ),
+    championsData
+  );
+}
+
+
+/* =========================
+   LOAD APPROVED TEAMS
+   FROM EXISTING LEAGUE
+========================= */
+
+async function loadApprovedTeams() {
+
+  const snapshot =
+    await getDoc(
+      doc(
+        window.championsDb,
+        "competition",
+        "main"
+      )
+    );
+
+
+  if (!snapshot.exists()) {
+
+    approvedTeams = [];
+
+    return;
+  }
+
+
+  const data =
+    snapshot.data();
+
+
+  approvedTeams =
+    Array.isArray(data.teams)
+      ? data.teams
+      : [];
+}
+
+
+/* =========================
+   LOAD CHAMPIONS DATA
+========================= */
+
+async function loadChampionsData() {
+
+  const snapshot =
+    await getDoc(
+      doc(
+        window.championsDb,
+        "championsLeague",
+        "main"
+      )
+    );
+
+
+  if (!snapshot.exists()) {
+
+    championsData = {
+
+      started: false,
+
+      matchesPerTeam: 1,
+
+      teams: [],
+
+      fixtures: [],
+
+      knockoutRound: null,
+
+      winner: null
+
+    };
+
+    return;
+  }
+
+
+  const data =
+    snapshot.data();
+
+
+  championsData = {
+
+    started:
+      data.started === true,
+
+    matchesPerTeam:
+      Number(data.matchesPerTeam) || 1,
+
+    teams:
+      Array.isArray(data.teams)
+        ? data.teams
+        : [],
+
+    fixtures:
+      Array.isArray(data.fixtures)
+        ? data.fixtures
+        : [],
+
+    knockoutRound:
+      data.knockoutRound || null,
+
+    winner:
+      data.winner || null
+
+  };
+
+
+  matchesPerTeam.value =
+    String(
+      championsData.matchesPerTeam
+    );
+}
+
+
+/* =========================================================
+   PART 3 — TEAMS + SETTINGS
+   ========================================================= */
+
+
+/* =========================
+   RENDER APPROVED TEAMS
+========================= */
+
+function renderApprovedTeams() {
+
+  approvedTeamList.innerHTML = "";
+
+  teamCountMessage.textContent =
+    `Approved teams: ${approvedTeams.length}`;
+
+
+  if (approvedTeams.length === 0) {
+
+    approvedTeamList.innerHTML =
+      "<p>No approved teams found.</p>";
+
+    return;
+  }
+
+
+  approvedTeams.forEach((team, index) => {
+
+    const name =
+      getTeamName(team);
+
+
+    const item =
+      document.createElement("div");
+
+    item.className =
+      "admin-team-item";
+
+
+    item.innerHTML = `
+      <strong>${index + 1}. ${escapeHtml(name)}</strong>
+    `;
+
+
+    approvedTeamList.appendChild(item);
 
   });
 
 }
 
 
-/* =========================================================
-   LOGIN MESSAGE
-   ========================================================= */
-
-function showLoginMessage(message) {
-
-  if (!adminLoginMessage) {
-    return;
-  }
-
-  adminLoginMessage.textContent =
-    message;
-
-}
-
-
-/* =========================================================
-   SHOW DASHBOARD
-   ========================================================= */
-
-function showDashboard(user) {
-
-  if (adminLogin) {
-
-    adminLogin.classList.add(
-      "hidden"
-    );
-
-  }
-
-
-  if (adminDashboard) {
-
-    adminDashboard.classList.remove(
-      "hidden"
-    );
-
-  }
-
-
-  if (adminWelcome) {
-
-    adminWelcome.textContent =
-      `Welcome, ${user.email}`;
-
-  }
-
-}
-
-
-/* =========================================================
-   SHOW LOGIN
-   ========================================================= */
-
-function showLogin() {
-
-  if (adminDashboard) {
-
-    adminDashboard.classList.add(
-      "hidden"
-    );
-
-  }
-
-
-  if (adminLogin) {
-
-    adminLogin.classList.remove(
-      "hidden"
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   RENDER APPROVED TEAMS
-   ========================================================= */
-
-function renderApprovedTeams() {
-
-  if (!eligibleTeamsList) {
-    return;
-  }
-
-
-  eligibleTeamsList.innerHTML =
-    "";
-
-
-  if (approvedTeams.length === 0) {
-
-    eligibleTeamsList.innerHTML = `
-      <div class="empty-message">
-        No approved teams are currently available.
-      </div>
-    `;
-
-    return;
-  }
-
-
-  approvedTeams.forEach(
-    (team, index) => {
-
-      const card =
-        document.createElement("div");
-
-      card.className =
-        "team-card";
-
-
-      const teamName =
-        document.createElement("h3");
-
-      teamName.textContent =
-        `${index + 1}. ${team.name}`;
-
-
-      const playerName =
-        document.createElement("p");
-
-      playerName.textContent =
-        team.player
-          ? `Player: ${team.player}`
-          : "Player: Not available";
-
-
-      card.appendChild(
-        teamName
-      );
-
-      card.appendChild(
-        playerName
-      );
-
-      eligibleTeamsList.appendChild(
-        card
-      );
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   LOAD APPROVED TEAMS
-   ========================================================= */
-
-async function loadApprovedTeams() {
-
-  try {
-
-    const {
-      db
-    } = await waitForFirebase();
-
-
-    if (teamsMessage) {
-
-      teamsMessage.textContent =
-        "Loading approved teams...";
-
-    }
-
-
-    /*
-      The existing DLS League stores
-      approved teams in:
-
-      competition/main
-
-      This function ONLY reads that document.
-    */
-
-    const competitionRef =
-      doc(
-        db,
-        "competition",
-        "main"
-      );
-
-
-    const competitionSnapshot =
-      await getDoc(
-        competitionRef
-      );
-
-
-    if (!competitionSnapshot.exists()) {
-
-      approvedTeams = [];
-
-
-      if (eligibleTeamsCount) {
-
-        eligibleTeamsCount.textContent =
-          "0";
-
-      }
-
-
-      if (teamsMessage) {
-
-        teamsMessage.textContent =
-          "The current DLS League competition data could not be found.";
-
-      }
-
-
-      renderApprovedTeams();
-
-      updateStartButton();
-
-      return;
-    }
-
-
-    const competitionData =
-      competitionSnapshot.data();
-
-
-    const teams =
-      Array.isArray(
-        competitionData.teams
-      )
-        ? competitionData.teams
-        : [];
-
-
-    /*
-      Every approved team is eligible.
-
-      No random selection.
-      No checkbox selection.
-    */
-
-    approvedTeams =
-      teams
-        .filter((team) => {
-
-          return (
-            team &&
-            typeof team.name === "string" &&
-            team.name.trim() !== ""
-          );
-
-        })
-        .map((team) => {
-
-          return {
-
-            name:
-              team.name.trim(),
-
-            player:
-              typeof team.player === "string"
-                ? team.player.trim()
-                : ""
-
-          };
-
-        });
-
-
-    if (eligibleTeamsCount) {
-
-      eligibleTeamsCount.textContent =
-        approvedTeams.length;
-
-    }
-
-
-    if (teamsMessage) {
-
-      if (
-        approvedTeams.length === 0
-      ) {
-
-        teamsMessage.textContent =
-          "There are currently no approved teams.";
-
-      } else {
-
-        teamsMessage.textContent =
-          `${approvedTeams.length} approved team${
-            approvedTeams.length === 1
-              ? ""
-              : "s"
-          } are eligible for the Champions League.`;
-
-      }
-
-    }
-
-
-    renderApprovedTeams();
-
-    updateStartButton();
-
-  } catch (error) {
-
-    console.error(
-      "Error loading approved teams:",
-      error
-    );
-
-
-    approvedTeams = [];
-
-
-    if (eligibleTeamsCount) {
-
-      eligibleTeamsCount.textContent =
-        "0";
-
-    }
-
-
-    if (teamsMessage) {
-
-      teamsMessage.textContent =
-        "Unable to load the approved teams.";
-
-    }
-
-
-    renderApprovedTeams();
-
-    updateStartButton();
-
-  }
-
-}
-
-
-/* =========================================================
-   LOAD CHAMPIONS COMPETITION
-   ========================================================= */
-
-async function loadChampionsCompetition() {
-
-  try {
-
-    const {
-      db
-    } = await waitForFirebase();
-
-
-    const championsRef =
-      doc(
-        db,
-        "championsLeague",
-        "main"
-      );
-
-
-    const championsSnapshot =
-      await getDoc(
-        championsRef
-      );
-
-
-    if (
-      !championsSnapshot.exists()
-    ) {
-
-      championsCompetitionData =
-        null;
-
-      savedMatchesPerTeam =
-        null;
-
-      updateDashboard();
-
-      updateStartButton();
-
-      return;
-    }
-
-
-    championsCompetitionData =
-      championsSnapshot.data();
-
-
-    const storedMatches =
-      championsCompetitionData
-        .matchesPerTeam;
-
-
-    if (
-      Number.isInteger(
-        storedMatches
-      ) &&
-      storedMatches >= 1 &&
-      storedMatches <= 8
-    ) {
-
-      savedMatchesPerTeam =
-        storedMatches;
-
-    } else {
-
-      savedMatchesPerTeam =
-        null;
-
-    }
-
-
-    if (
-      matchesPerTeam &&
-      savedMatchesPerTeam !== null
-    ) {
-
-      matchesPerTeam.value =
-        String(
-          savedMatchesPerTeam
-        );
-
-    }
-
-
-    updateDashboard();
-
-    updateStartButton();
-
-  } catch (error) {
-
-    console.error(
-      "Error loading Champions League data:",
-      error
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   UPDATE DASHBOARD
-   ========================================================= */
-
-function updateDashboard() {
-
-  if (eligibleTeamsCount) {
-
-    eligibleTeamsCount.textContent =
-      approvedTeams.length;
-
-  }
-
-
-  if (matchesPerTeamDisplay) {
-
-    matchesPerTeamDisplay.textContent =
-      savedMatchesPerTeam !== null
-        ? String(
-            savedMatchesPerTeam
-          )
-        : "Not Set";
-
-  }
-
-
-  if (fixturesCount) {
-
-    const fixtures =
-      championsCompetitionData &&
-      Array.isArray(
-        championsCompetitionData.fixtures
-      )
-        ? championsCompetitionData.fixtures.length
-        : 0;
-
-    fixturesCount.textContent =
-      fixtures;
-
-  }
-
-
-  if (championName) {
-
-    const champion =
-      championsCompetitionData &&
-      championsCompetitionData.champion;
-
-
-    if (
-      champion &&
-      champion.name
-    ) {
-
-      championName.textContent =
-        champion.name;
-
-    } else {
-
-      championName.textContent =
-        "Not Decided";
-
-    }
-
-  }
-
-
-  if (championsStatus) {
-
-    const status =
-      championsCompetitionData &&
-      championsCompetitionData.status;
-
-
-    championsStatus.textContent =
-      status ||
-      "Not Started";
-
-  }
-
-}
-
-
-/* =========================================================
+/* =========================
    VALIDATE MATCHES PER TEAM
-   ========================================================= */
+========================= */
 
-function validateMatchesPerTeam(
-  value
-) {
+function validateMatchesPerTeam() {
 
-  const number =
-    Number(value);
+  const teamCount =
+    approvedTeams.length;
+
+  const matches =
+    Number(matchesPerTeam.value);
 
 
-  if (
-    !Number.isInteger(number)
-  ) {
+  if (teamCount < 9) {
 
     return {
       valid: false,
       message:
-        "Please select the number of matches per team."
+        "At least 9 approved teams are required."
     };
 
   }
 
 
   if (
-    number < 1 ||
-    number > 8
+    !Number.isInteger(matches) ||
+    matches < 1 ||
+    matches > 8
   ) {
 
     return {
@@ -724,74 +376,25 @@ function validateMatchesPerTeam(
   }
 
 
-  /*
-    A team cannot play more unique opponents
-    than there are other teams.
-
-    Example:
-
-    8 teams = maximum 7 unique opponents.
-  */
-
-  if (
-    approvedTeams.length < 2
-  ) {
+  if (matches > teamCount - 1) {
 
     return {
       valid: false,
       message:
-        "At least 2 approved teams are required."
+        "Matches per team cannot exceed the number of other teams."
     };
 
   }
 
 
   if (
-    number >
-    approvedTeams.length - 1
+    (teamCount * matches) % 2 !== 0
   ) {
 
     return {
       valid: false,
       message:
-        `With ${approvedTeams.length} teams, each team can play a maximum of ${
-          approvedTeams.length - 1
-        } matches in the league phase.`
-    };
-
-  }
-
-
-  /*
-    Every team must play exactly the selected
-    number of matches.
-
-    Total team appearances must therefore
-    be even, because every fixture contains
-    two teams.
-
-    Example:
-
-    5 teams × 3 matches = 15 appearances.
-
-    That cannot be divided equally into
-    two-team fixtures.
-
-    Therefore this setting is rejected.
-  */
-
-  const totalAppearances =
-    approvedTeams.length * number;
-
-
-  if (
-    totalAppearances % 2 !== 0
-  ) {
-
-    return {
-      valid: false,
-      message:
-        `This combination cannot give every team exactly ${number} matches. Please choose another number.`
+        "This number of matches per team cannot be used with the current number of teams."
     };
 
   }
@@ -799,519 +402,2142 @@ function validateMatchesPerTeam(
 
   return {
     valid: true,
-    value: number
+    message: ""
   };
 
 }
 
 
-/* =========================================================
-   SAVE COMPETITION SETTINGS
-   ========================================================= */
+/* =========================
+   SAVE SETTINGS
+========================= */
 
-async function saveCompetitionSettings() {
+saveSettingsButton.addEventListener(
+  "click",
+  async () => {
 
-  if (
-    !matchesPerTeam ||
-    !saveSettingsButton
-  ) {
-    return;
-  }
+    const validation =
+      validateMatchesPerTeam();
 
 
-  const validation =
-    validateMatchesPerTeam(
-      matchesPerTeam.value
-    );
-
-
-  if (!validation.valid) {
-
-    if (settingsMessage) {
+    if (!validation.valid) {
 
       settingsMessage.textContent =
         validation.message;
 
+      return;
     }
+
+
+    championsData.matchesPerTeam =
+      Number(matchesPerTeam.value);
+
+
+    try {
+
+      await saveChampionsData();
+
+
+      settingsMessage.textContent =
+        "Champions League settings saved.";
+
+    } catch (error) {
+
+      console.error(error);
+
+      settingsMessage.textContent =
+        "Unable to save settings.";
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   PART 4 — LEAGUE FIXTURE GENERATION
+   ========================================================= */
+
+
+/* =========================
+   CREATE TEAM IDS
+========================= */
+
+function getTeamId(team, index) {
+
+  return String(
+    team.id ||
+    team.uid ||
+    team.teamId ||
+    team.name ||
+    team.teamName ||
+    `team-${index}`
+  );
+
+}
+
+
+/* =========================
+   SHUFFLE TEAMS
+========================= */
+
+function shuffleArray(array) {
+
+  const result =
+    [...array];
+
+
+  for (
+    let i = result.length - 1;
+    i > 0;
+    i--
+  ) {
+
+    const j =
+      Math.floor(
+        Math.random() * (i + 1)
+      );
+
+
+    [
+      result[i],
+      result[j]
+    ] =
+    [
+      result[j],
+      result[i]
+    ];
+
+  }
+
+
+  return result;
+
+}
+
+
+/* =========================
+   GENERATE FIXTURES
+========================= */
+
+function generateLeagueFixtures() {
+
+  const validation =
+    validateMatchesPerTeam();
+
+
+  if (!validation.valid) {
+
+    settingsMessage.textContent =
+      validation.message;
+
+    return null;
+
+  }
+
+
+  const matchesPerTeamValue =
+    Number(matchesPerTeam.value);
+
+
+  const teams =
+    shuffleArray(
+      approvedTeams
+    );
+
+
+  const teamCount =
+    teams.length;
+
+
+  const fixtures = [];
+
+
+  /*
+     Each team receives exactly K opponents.
+
+     The cyclic method guarantees:
+     - no team plays itself
+     - no duplicate opponent
+     - every team gets exactly K matches
+  */
+
+
+  const opponentDistances = [];
+
+
+  for (
+    let distance = 1;
+    distance <= Math.floor(teamCount / 2);
+    distance++
+  ) {
+
+    if (
+      opponentDistances.length <
+      matchesPerTeamValue
+    ) {
+
+      opponentDistances.push(
+        distance
+      );
+
+    }
+
+  }
+
+
+  const seenPairs =
+    new Set();
+
+
+  function addFixture(
+    homeIndex,
+    awayIndex
+  ) {
+
+    const a =
+      Math.min(
+        homeIndex,
+        awayIndex
+      );
+
+    const b =
+      Math.max(
+        homeIndex,
+        awayIndex
+      );
+
+
+    const pairKey =
+      `${a}-${b}`;
+
+
+    if (
+      seenPairs.has(pairKey)
+    ) {
+
+      return;
+
+    }
+
+
+    seenPairs.add(pairKey);
+
+
+    fixtures.push({
+
+      id:
+        `league-${fixtures.length + 1}`,
+
+      phase:
+        "league",
+
+      home:
+        getTeamId(
+          teams[homeIndex],
+          homeIndex
+        ),
+
+      away:
+        getTeamId(
+          teams[awayIndex],
+          awayIndex
+        ),
+
+      homeName:
+        getTeamName(
+          teams[homeIndex]
+        ),
+
+      awayName:
+        getTeamName(
+          teams[awayIndex]
+        ),
+
+      homeScore:
+        null,
+
+      awayScore:
+        null,
+
+      completed:
+        false
+
+    });
+
+  }
+
+
+  /*
+     EVEN number of teams
+  */
+
+  if (teamCount % 2 === 0) {
+
+    for (
+      let i = 0;
+      i < teamCount;
+      i++
+    ) {
+
+      for (
+        const distance
+        of opponentDistances
+      ) {
+
+        const opponent =
+          (i + distance) %
+          teamCount;
+
+
+        addFixture(
+          i,
+          opponent
+        );
+
+      }
+
+    }
+
+  }
+
+
+  /*
+     ODD number of teams
+
+     The validation guarantees K is even.
+  */
+
+  else {
+
+    for (
+      let i = 0;
+      i < teamCount;
+      i++
+    ) {
+
+      for (
+        const distance
+        of opponentDistances
+      ) {
+
+        const forward =
+          (i + distance) %
+          teamCount;
+
+        const backward =
+          (
+            i - distance +
+            teamCount
+          ) %
+          teamCount;
+
+
+        addFixture(
+          i,
+          forward
+        );
+
+
+        if (
+          fixtures.length <
+          (teamCount * matchesPerTeamValue) / 2
+        ) {
+
+          addFixture(
+            i,
+            backward
+          );
+
+        }
+
+      }
+
+    }
+
+  }
+
+
+  /*
+     Verify every team has
+     exactly the requested number
+     of matches.
+  */
+
+  const counts =
+    {};
+
+
+  teams.forEach(
+    (team, index) => {
+
+      counts[
+        getTeamId(team, index)
+      ] = 0;
+
+    }
+  );
+
+
+  fixtures.forEach(
+    fixture => {
+
+      counts[fixture.home]++;
+      counts[fixture.away]++;
+
+    }
+  );
+
+
+  const distributionValid =
+    Object.values(counts)
+      .every(
+        count =>
+          count ===
+          matchesPerTeamValue
+      );
+
+
+  if (!distributionValid) {
+
+    settingsMessage.textContent =
+      "Fixture generation failed. Please try again.";
+
+    return null;
+
+  }
+
+
+  return fixtures;
+
+}
+
+
+/* =========================
+   GENERATE BUTTON
+========================= */
+
+generateFixturesButton.addEventListener(
+  "click",
+  async () => {
+
+    if (championsData.started) {
+
+      settingsMessage.textContent =
+        "Fixtures cannot be regenerated after the competition starts.";
+
+      return;
+
+    }
+
+
+    const fixtures =
+      generateLeagueFixtures();
+
+
+    if (!fixtures) {
+
+      return;
+
+    }
+
+
+    championsData.teams =
+      approvedTeams.map(
+        (team, index) => ({
+          ...team,
+          id:
+            getTeamId(
+              team,
+              index
+            )
+        })
+      );
+
+
+    championsData.fixtures =
+      fixtures;
+
+
+    championsData.knockoutRound =
+      null;
+
+
+    championsData.winner =
+      null;
+
+
+    try {
+
+      await saveChampionsData();
+
+
+      settingsMessage.textContent =
+        `${fixtures.length} league fixtures generated successfully.`;
+
+
+      renderAdminFixtures();
+
+    } catch (error) {
+
+      console.error(error);
+
+      settingsMessage.textContent =
+        "Unable to save generated fixtures.";
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   PART 5 — FIXTURE DISPLAY + RESULTS
+   ========================================================= */
+
+
+/* =========================
+   RENDER LEAGUE FIXTURES
+========================= */
+
+function renderAdminFixtures() {
+
+  adminFixtureList.innerHTML = "";
+  leagueResultsList.innerHTML = "";
+
+
+  const fixtures =
+    championsData.fixtures
+      .filter(
+        fixture =>
+          fixture.phase === "league"
+      );
+
+
+  if (fixtures.length === 0) {
+
+    adminFixtureList.innerHTML =
+      "<p>No fixtures generated yet.</p>";
 
     return;
   }
 
 
-  try {
+  fixtures.forEach(
+    (fixture, index) => {
 
-    const {
-      db
-    } = await waitForFirebase();
+      const card =
+        document.createElement("div");
+
+      card.className =
+        "admin-fixture";
 
 
-    saveSettingsButton.disabled =
-      true;
+      const homeScore =
+        fixture.homeScore ?? "";
+
+      const awayScore =
+        fixture.awayScore ?? "";
 
 
-    if (settingsMessage) {
+      card.innerHTML = `
+        <div>
+          <strong>
+            ${index + 1}.
+            ${escapeHtml(fixture.homeName)}
+            vs
+            ${escapeHtml(fixture.awayName)}
+          </strong>
+        </div>
 
-      settingsMessage.textContent =
-        "Saving competition settings...";
+        <div class="score-inputs">
+
+          <input
+            type="number"
+            min="0"
+            step="1"
+            id="homeScore-${escapeHtml(fixture.id)}"
+            value="${homeScore}"
+            placeholder="Home"
+          >
+
+          <span>-</span>
+
+          <input
+            type="number"
+            min="0"
+            step="1"
+            id="awayScore-${escapeHtml(fixture.id)}"
+            value="${awayScore}"
+            placeholder="Away"
+          >
+
+          <button
+            type="button"
+            class="save-result-button"
+            data-fixture-id="${escapeHtml(fixture.id)}"
+          >
+            Save
+          </button>
+
+        </div>
+      `;
+
+
+      adminFixtureList.appendChild(card);
 
     }
+  );
 
 
-    const championsRef =
-      doc(
-        db,
-        "championsLeague",
-        "main"
-      );
+  document
+    .querySelectorAll(
+      ".save-result-button"
+    )
+    .forEach(
+      button => {
 
+        button.addEventListener(
+          "click",
+          () => {
 
-    const existingSnapshot =
-      await getDoc(
-        championsRef
-      );
+            saveLeagueResult(
+              button.dataset.fixtureId
+            );
 
+          }
+        );
 
-    const existingData =
-      existingSnapshot.exists()
-        ? existingSnapshot.data()
-        : {};
-
-
-    const selectedValue =
-      validation.value;
-
-
-    await setDoc(
-      championsRef,
-      {
-
-        ...existingData,
-
-        matchesPerTeam:
-          selectedValue,
-
-        eligibleTeams:
-          approvedTeams,
-
-        updatedAt:
-          new Date().toISOString()
-
-      },
-      {
-        merge: true
       }
     );
 
 
-    savedMatchesPerTeam =
-      selectedValue;
+  renderSavedLeagueResults();
+
+}
 
 
-    championsCompetitionData = {
+/* =========================
+   SAVE LEAGUE RESULT
+========================= */
 
-      ...existingData,
+async function saveLeagueResult(
+  fixtureId
+) {
 
-      matchesPerTeam:
-        selectedValue,
-
-      eligibleTeams:
-        approvedTeams
-
-    };
-
-
-    updateDashboard();
-
-    updateStartButton();
+  const fixture =
+    championsData.fixtures.find(
+      item =>
+        item.id === fixtureId
+    );
 
 
-    if (settingsMessage) {
+  if (!fixture) {
 
-      settingsMessage.textContent =
-        `Saved: each team will play ${selectedValue} league-phase match${
-          selectedValue === 1
-            ? ""
-            : "es"
-        }.`;
+    return;
+
+  }
+
+
+  const homeInput =
+    document.getElementById(
+      `homeScore-${fixtureId}`
+    );
+
+
+  const awayInput =
+    document.getElementById(
+      `awayScore-${fixtureId}`
+    );
+
+
+  const homeScore =
+    Number(homeInput.value);
+
+
+  const awayScore =
+    Number(awayInput.value);
+
+
+  if (
+    homeInput.value === "" ||
+    awayInput.value === "" ||
+    !Number.isInteger(homeScore) ||
+    !Number.isInteger(awayScore) ||
+    homeScore < 0 ||
+    awayScore < 0
+  ) {
+
+    alert(
+      "Enter valid scores for both teams."
+    );
+
+    return;
+
+  }
+
+
+  fixture.homeScore =
+    homeScore;
+
+  fixture.awayScore =
+    awayScore;
+
+  fixture.completed =
+    true;
+
+
+  try {
+
+    await saveChampionsData();
+
+    renderAdminFixtures();
+
+    alert(
+      "Match result saved."
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Unable to save match result."
+    );
+
+  }
+
+}
+
+
+/* =========================
+   RENDER SAVED RESULTS
+========================= */
+
+function renderSavedLeagueResults() {
+
+  leagueResultsList.innerHTML = "";
+
+
+  const completedFixtures =
+    championsData.fixtures.filter(
+      fixture =>
+        fixture.phase === "league" &&
+        fixture.completed === true
+    );
+
+
+  if (
+    completedFixtures.length === 0
+  ) {
+
+    leagueResultsList.innerHTML =
+      "<p>No results entered yet.</p>";
+
+    return;
+
+  }
+
+
+  completedFixtures.forEach(
+    fixture => {
+
+      const item =
+        document.createElement("div");
+
+      item.className =
+        "admin-result";
+
+
+      item.innerHTML = `
+        <strong>
+          ${escapeHtml(fixture.homeName)}
+          ${fixture.homeScore}
+          -
+          ${fixture.awayScore}
+          ${escapeHtml(fixture.awayName)}
+        </strong>
+      `;
+
+
+      leagueResultsList.appendChild(item);
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   PART 6 — LEAGUE TABLE + QUALIFICATION
+   ========================================================= */
+
+
+/* =========================
+   BUILD LEAGUE TABLE
+========================= */
+
+function buildLeagueTable() {
+
+  const table = {};
+
+
+  championsData.teams.forEach(
+    (team, index) => {
+
+      const id =
+        getTeamId(team, index);
+
+
+      table[id] = {
+
+        id,
+
+        name:
+          getTeamName(team),
+
+        played: 0,
+
+        wins: 0,
+
+        draws: 0,
+
+        losses: 0,
+
+        goalsFor: 0,
+
+        goalsAgainst: 0,
+
+        goalDifference: 0,
+
+        points: 0
+
+      };
+
+    }
+  );
+
+
+  championsData.fixtures
+    .filter(
+      fixture =>
+        fixture.phase === "league" &&
+        fixture.completed === true
+    )
+    .forEach(
+      fixture => {
+
+        const home =
+          table[fixture.home];
+
+        const away =
+          table[fixture.away];
+
+
+        if (!home || !away) {
+
+          return;
+
+        }
+
+
+        const homeScore =
+          Number(fixture.homeScore);
+
+        const awayScore =
+          Number(fixture.awayScore);
+
+
+        home.played++;
+        away.played++;
+
+
+        home.goalsFor +=
+          homeScore;
+
+        home.goalsAgainst +=
+          awayScore;
+
+
+        away.goalsFor +=
+          awayScore;
+
+        away.goalsAgainst +=
+          homeScore;
+
+
+        if (
+          homeScore >
+          awayScore
+        ) {
+
+          home.wins++;
+          home.points += 3;
+
+          away.losses++;
+
+        }
+
+        else if (
+          homeScore <
+          awayScore
+        ) {
+
+          away.wins++;
+          away.points += 3;
+
+          home.losses++;
+
+        }
+
+        else {
+
+          home.draws++;
+          away.draws++;
+
+          home.points++;
+          away.points++;
+
+        }
+
+      }
+    );
+
+
+  Object.values(table)
+    .forEach(team => {
+
+      team.goalDifference =
+        team.goalsFor -
+        team.goalsAgainst;
+
+    });
+
+
+  return Object.values(table)
+    .sort(
+      (a, b) =>
+
+        b.points -
+        a.points ||
+
+        b.goalDifference -
+        a.goalDifference ||
+
+        b.goalsFor -
+        a.goalsFor ||
+
+        a.name.localeCompare(
+          b.name
+        )
+    );
+
+}
+
+
+/* =========================
+   GET QUALIFIED COUNT
+========================= */
+
+function getQualifiedCount() {
+
+  const count =
+    championsData.teams.length;
+
+
+  if (
+    count >= 9 &&
+    count <= 16
+  ) {
+
+    return 8;
+
+  }
+
+
+  if (
+    count >= 17 &&
+    count <= 32
+  ) {
+
+    return 16;
+
+  }
+
+
+  if (
+    count >= 33
+  ) {
+
+    return 32;
+
+  }
+
+
+  return 0;
+
+}
+
+
+/* =========================
+   GET QUALIFIED TEAMS
+========================= */
+
+function getQualifiedTeams() {
+
+  const table =
+    buildLeagueTable();
+
+
+  const qualifiedCount =
+    getQualifiedCount();
+
+
+  if (
+    qualifiedCount === 0
+  ) {
+
+    return [];
+
+  }
+
+
+  return table
+    .slice(0, qualifiedCount);
+
+}
+
+
+/* =========================
+   CHECK LEAGUE COMPLETION
+========================= */
+
+function isLeagueComplete() {
+
+  const requiredFixtures =
+    championsData.fixtures.filter(
+      fixture =>
+        fixture.phase === "league"
+    );
+
+
+  if (
+    requiredFixtures.length === 0
+  ) {
+
+    return false;
+
+  }
+
+
+  return requiredFixtures.every(
+    fixture =>
+      fixture.completed === true
+  );
+
+}
+
+
+/* =========================================================
+   PART 7 — KNOCKOUT RANDOM DRAW
+   ========================================================= */
+
+
+/* =========================
+   SHUFFLE QUALIFIED TEAMS
+========================= */
+
+function shuffleQualifiedTeams(
+  teams
+) {
+
+  return shuffleArray(teams);
+
+}
+
+
+/* =========================
+   GET KNOCKOUT ROUND
+========================= */
+
+function getKnockoutRoundName(
+  teamCount
+) {
+
+  if (teamCount === 8) {
+
+    return "Quarter-final";
+
+  }
+
+
+  if (teamCount === 16) {
+
+    return "Round of 16";
+
+  }
+
+
+  if (teamCount === 32) {
+
+    return "Round of 32";
+
+  }
+
+
+  return null;
+
+}
+
+
+/* =========================
+   CREATE RANDOM DRAW
+========================= */
+
+function createKnockoutDraw(
+  qualifiedTeams
+) {
+
+  const count =
+    qualifiedTeams.length;
+
+
+  const round =
+    getKnockoutRoundName(
+      count
+    );
+
+
+  if (!round) {
+
+    return null;
+
+  }
+
+
+  const shuffled =
+    shuffleQualifiedTeams(
+      qualifiedTeams
+    );
+
+
+  const matches = [];
+
+
+  for (
+    let i = 0;
+    i < shuffled.length;
+    i += 2
+  ) {
+
+    const home =
+      shuffled[i];
+
+    const away =
+      shuffled[i + 1];
+
+
+    matches.push({
+
+      id:
+        `knockout-${Date.now()}-${i}`,
+
+      phase:
+        "knockout",
+
+      round,
+
+      home:
+        home.id,
+
+      away:
+        away.id,
+
+      homeName:
+        home.name,
+
+      awayName:
+        away.name,
+
+      homeScore:
+        null,
+
+      awayScore:
+        null,
+
+      completed:
+        false,
+
+      winner:
+        null
+
+    });
+
+  }
+
+
+  return {
+
+    round,
+
+    matches
+
+  };
+
+}
+
+
+/* =========================
+   GENERATE KNOCKOUT BUTTON
+========================= */
+
+generateKnockoutButton.addEventListener(
+  "click",
+  async () => {
+
+    if (!isLeagueComplete()) {
+
+      knockoutMessage.textContent =
+        "All league matches must be completed first.";
+
+      return;
+
+    }
+
+
+    if (
+      championsData.knockoutRound
+    ) {
+
+      knockoutMessage.textContent =
+        "The knockout draw has already been generated.";
+
+      return;
+
+    }
+
+
+    const qualifiedTeams =
+      getQualifiedTeams();
+
+
+    if (
+      qualifiedTeams.length !== 8 &&
+      qualifiedTeams.length !== 16 &&
+      qualifiedTeams.length !== 32
+    ) {
+
+      knockoutMessage.textContent =
+        "Unable to determine the qualified teams.";
+
+      return;
+
+    }
+
+
+    const draw =
+      createKnockoutDraw(
+        qualifiedTeams
+      );
+
+
+    if (!draw) {
+
+      knockoutMessage.textContent =
+        "Unable to generate knockout draw.";
+
+      return;
+
+    }
+
+
+    championsData.knockoutRound =
+      {
+
+        currentRound:
+          draw.round,
+
+        matches:
+          draw.matches,
+
+        completed:
+          false
+
+      };
+
+
+    try {
+
+      await saveChampionsData();
+
+
+      knockoutMessage.textContent =
+        `${draw.round} draw generated randomly.`;
+
+      renderKnockoutResults();
+
+    } catch (error) {
+
+      console.error(error);
+
+      knockoutMessage.textContent =
+        "Unable to save knockout draw.";
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   PART 8 — KNOCKOUT RESULTS + NEXT ROUNDS
+   ========================================================= */
+
+
+/* =========================
+   RENDER KNOCKOUT MATCHES
+========================= */
+
+function renderKnockoutResults() {
+
+  knockoutResultsList.innerHTML = "";
+
+
+  const knockout =
+    championsData.knockoutRound;
+
+
+  if (!knockout) {
+
+    knockoutResultsList.innerHTML =
+      "<p>No knockout draw generated yet.</p>";
+
+    return;
+
+  }
+
+
+  const matches =
+    Array.isArray(knockout.matches)
+      ? knockout.matches
+      : [];
+
+
+  if (matches.length === 0) {
+
+    knockoutResultsList.innerHTML =
+      "<p>No knockout matches found.</p>";
+
+    return;
+
+  }
+
+
+  matches.forEach(
+    (match, index) => {
+
+      const card =
+        document.createElement("div");
+
+      card.className =
+        "admin-fixture";
+
+
+      const homeScore =
+        match.homeScore ?? "";
+
+      const awayScore =
+        match.awayScore ?? "";
+
+
+      card.innerHTML = `
+
+        <div>
+          <strong>
+            ${index + 1}.
+            ${escapeHtml(match.homeName)}
+            vs
+            ${escapeHtml(match.awayName)}
+          </strong>
+        </div>
+
+        <div>
+          <small>
+            ${escapeHtml(match.round)}
+          </small>
+        </div>
+
+        <div class="score-inputs">
+
+          <input
+            type="number"
+            min="0"
+            step="1"
+            id="knockout-home-${escapeHtml(match.id)}"
+            value="${homeScore}"
+            placeholder="Home"
+          >
+
+          <span>-</span>
+
+          <input
+            type="number"
+            min="0"
+            step="1"
+            id="knockout-away-${escapeHtml(match.id)}"
+            value="${awayScore}"
+            placeholder="Away"
+          >
+
+          <button
+            type="button"
+            class="save-knockout-button"
+            data-match-id="${escapeHtml(match.id)}"
+          >
+            Save
+          </button>
+
+        </div>
+
+      `;
+
+
+      knockoutResultsList.appendChild(
+        card
+      );
+
+    }
+  );
+
+
+  document
+    .querySelectorAll(
+      ".save-knockout-button"
+    )
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            saveKnockoutResult(
+              button.dataset.matchId
+            );
+
+          }
+        );
+
+      }
+    );
+
+}
+
+
+/* =========================
+   SAVE KNOCKOUT RESULT
+========================= */
+
+async function saveKnockoutResult(
+  matchId
+) {
+
+  const knockout =
+    championsData.knockoutRound;
+
+
+  if (!knockout) {
+
+    return;
+
+  }
+
+
+  const match =
+    knockout.matches.find(
+      item =>
+        item.id === matchId
+    );
+
+
+  if (!match) {
+
+    return;
+
+  }
+
+
+  const homeInput =
+    document.getElementById(
+      `knockout-home-${matchId}`
+    );
+
+
+  const awayInput =
+    document.getElementById(
+      `knockout-away-${matchId}`
+    );
+
+
+  const homeScore =
+    Number(homeInput.value);
+
+
+  const awayScore =
+    Number(awayInput.value);
+
+
+  if (
+    homeInput.value === "" ||
+    awayInput.value === "" ||
+    !Number.isInteger(homeScore) ||
+    !Number.isInteger(awayScore) ||
+    homeScore < 0 ||
+    awayScore < 0
+  ) {
+
+    alert(
+      "Enter valid scores for both teams."
+    );
+
+    return;
+
+  }
+
+
+  if (
+    homeScore === awayScore
+  ) {
+
+    alert(
+      "Knockout matches cannot end in a draw. Enter the final winning score."
+    );
+
+    return;
+
+  }
+
+
+  match.homeScore =
+    homeScore;
+
+  match.awayScore =
+    awayScore;
+
+  match.completed =
+    true;
+
+
+  match.winner =
+    homeScore > awayScore
+      ? match.home
+      : match.away;
+
+
+  try {
+
+    await saveChampionsData();
+
+    renderKnockoutResults();
+
+    alert(
+      "Knockout result saved."
+    );
+
+
+    if (
+      knockout.matches.every(
+        item =>
+          item.completed === true
+      )
+    ) {
+
+      await advanceKnockoutRound();
 
     }
 
   } catch (error) {
 
-    console.error(
-      "Error saving competition settings:",
-      error
+    console.error(error);
+
+    alert(
+      "Unable to save knockout result."
     );
-
-
-    if (settingsMessage) {
-
-      settingsMessage.textContent =
-        "Unable to save the competition settings.";
-
-    }
-
-  } finally {
-
-    saveSettingsButton.disabled =
-      false;
 
   }
 
 }
 
 
-/* =========================================================
-   UPDATE START BUTTON
-   ========================================================= */
+/* =========================
+   ADVANCE KNOCKOUT ROUND
+========================= */
 
-function updateStartButton() {
+async function advanceKnockoutRound() {
 
-  if (
-    !startCompetitionButton
-  ) {
+  const knockout =
+    championsData.knockoutRound;
+
+
+  if (!knockout) {
+
     return;
-  }
-
-
-  /*
-    The actual fixture-generation system
-    will be added in a later part.
-
-    For now, the button stays disabled.
-  */
-
-  startCompetitionButton.disabled =
-    true;
-
-
-  if (
-    startCompetitionMessage
-  ) {
-
-    if (
-      approvedTeams.length < 2
-    ) {
-
-      startCompetitionMessage.textContent =
-        "At least 2 approved teams are required.";
-
-      return;
-    }
-
-
-    if (
-      savedMatchesPerTeam === null
-    ) {
-
-      startCompetitionMessage.textContent =
-        "Select and save the number of matches per team.";
-
-      return;
-    }
-
-
-    const validation =
-      validateMatchesPerTeam(
-        savedMatchesPerTeam
-      );
-
-
-    if (!validation.valid) {
-
-      startCompetitionMessage.textContent =
-        validation.message;
-
-      return;
-    }
-
-
-    startCompetitionMessage.textContent =
-      "Competition settings are valid. Fixture generation will be added next.";
 
   }
 
-}
 
-
-/* =========================================================
-   LOGIN
-   ========================================================= */
-
-async function handleAdminLogin(
-  event
-) {
-
-  event.preventDefault();
+  const winners =
+    knockout.matches
+      .map(
+        match =>
+          match.winner
+      )
+      .filter(Boolean);
 
 
   if (
-    !adminEmail ||
-    !adminPassword ||
-    !adminLoginButton
+    winners.length !==
+    knockout.matches.length
   ) {
+
     return;
+
   }
 
 
-  const email =
-    adminEmail.value.trim();
+  if (winners.length === 1) {
 
-  const password =
-    adminPassword.value;
+    championsData.winner =
+      winners[0];
+
+    knockout.completed =
+      true;
+
+    try {
+
+      await saveChampionsData();
+
+      renderKnockoutResults();
+
+      updateCompetitionStatus();
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
+
+    return;
+
+  }
 
 
-  if (
-    !email ||
-    !password
-  ) {
+  const winnerObjects =
+    winners.map(
+      winnerId => {
 
-    showLoginMessage(
-      "Please enter your email and password."
+        const team =
+          championsData.teams.find(
+            (item, index) =>
+              getTeamId(
+                item,
+                index
+              ) === winnerId
+          );
+
+
+        return {
+
+          id: winnerId,
+
+          name:
+            team
+              ? getTeamName(team)
+              : "Unknown Team"
+
+        };
+
+      }
     );
 
-    return;
-  }
+
+  const nextRoundMatches = [];
 
 
-  if (
-    email.toLowerCase() !==
-    ADMIN_EMAIL.toLowerCase()
+  for (
+    let i = 0;
+    i < winnerObjects.length;
+    i += 2
   ) {
 
-    showLoginMessage(
-      "This account is not authorized to access the Champions League Admin."
-    );
+    const home =
+      winnerObjects[i];
 
-    return;
+    const away =
+      winnerObjects[i + 1];
+
+
+    nextRoundMatches.push({
+
+      id:
+        `knockout-${Date.now()}-${i}`,
+
+      phase:
+        "knockout",
+
+      round:
+        getNextKnockoutRound(
+          winners.length
+        ),
+
+      home:
+        home.id,
+
+      away:
+        away.id,
+
+      homeName:
+        home.name,
+
+      awayName:
+        away.name,
+
+      homeScore:
+        null,
+
+      awayScore:
+        null,
+
+      completed:
+        false,
+
+      winner:
+        null
+
+    });
+
   }
 
 
-  adminLoginButton.disabled =
-    true;
+  knockout.currentRound =
+    getNextKnockoutRound(
+      winners.length
+    );
 
+  knockout.matches =
+    nextRoundMatches;
 
-  showLoginMessage(
-    "Logging in..."
-  );
+  knockout.completed =
+    false;
 
 
   try {
 
-    const {
-      auth
-    } = await waitForFirebase();
+    await saveChampionsData();
+
+    renderKnockoutResults();
+
+    updateCompetitionStatus();
+
+  } catch (error) {
+
+    console.error(error);
+
+  }
+
+}
 
 
-    const credential =
+/* =========================
+   NEXT ROUND NAME
+========================= */
+
+function getNextKnockoutRound(
+  winnerCount
+) {
+
+  if (winnerCount === 16) {
+
+    return "Round of 16";
+
+  }
+
+
+  if (winnerCount === 8) {
+
+    return "Quarter-final";
+
+  }
+
+
+  if (winnerCount === 4) {
+
+    return "Semi-final";
+
+  }
+
+
+  if (winnerCount === 2) {
+
+    return "Final";
+
+  }
+
+
+  return null;
+
+}
+
+
+/* =========================================================
+   PART 9 — STATUS + RENDERING + START
+   ========================================================= */
+
+
+/* =========================
+   UPDATE COMPETITION STATUS
+========================= */
+
+function updateCompetitionStatus() {
+
+  if (championsData.winner) {
+
+    const winnerTeam =
+      championsData.teams.find(
+        (team, index) =>
+          getTeamId(
+            team,
+            index
+          ) === championsData.winner
+      );
+
+
+    competitionStatus.textContent =
+      winnerTeam
+        ? `Winner: ${getTeamName(winnerTeam)}`
+        : "Competition completed.";
+
+    return;
+
+  }
+
+
+  if (championsData.started) {
+
+    competitionStatus.textContent =
+      "Champions League is currently active.";
+
+    return;
+
+  }
+
+
+  if (
+    championsData.fixtures.length > 0
+  ) {
+
+    competitionStatus.textContent =
+      "Fixtures generated. Competition has not started.";
+
+    return;
+
+  }
+
+
+  competitionStatus.textContent =
+    "Champions League is ready for setup.";
+
+}
+
+
+/* =========================
+   START COMPETITION
+========================= */
+
+startCompetitionButton.addEventListener(
+  "click",
+  async () => {
+
+    if (championsData.started) {
+
+      settingsMessage.textContent =
+        "Competition has already started.";
+
+      return;
+
+    }
+
+
+    if (
+      championsData.fixtures.length === 0
+    ) {
+
+      settingsMessage.textContent =
+        "Generate fixtures before starting the competition.";
+
+      return;
+
+    }
+
+
+    const validation =
+      validateMatchesPerTeam();
+
+
+    if (!validation.valid) {
+
+      settingsMessage.textContent =
+        validation.message;
+
+      return;
+
+    }
+
+
+    championsData.started =
+      true;
+
+
+    try {
+
+      await saveChampionsData();
+
+
+      settingsMessage.textContent =
+        "Champions League has started.";
+
+      updateCompetitionStatus();
+
+    } catch (error) {
+
+      console.error(error);
+
+      championsData.started =
+        false;
+
+      settingsMessage.textContent =
+        "Unable to start competition.";
+
+    }
+
+  }
+);
+
+
+/* =========================
+   INITIAL ADMIN RENDER
+========================= */
+
+function renderAdmin() {
+
+  renderApprovedTeams();
+
+  renderAdminFixtures();
+
+  renderKnockoutResults();
+
+  updateCompetitionStatus();
+
+}
+
+
+/* =========================
+   LOCK SETTINGS AFTER START
+========================= */
+
+function updateControlState() {
+
+  if (championsData.started) {
+
+    matchesPerTeam.disabled =
+      true;
+
+    saveSettingsButton.disabled =
+      true;
+
+    generateFixturesButton.disabled =
+      true;
+
+    startCompetitionButton.disabled =
+      true;
+
+  }
+
+}
+
+
+/* =========================
+   LOAD ALL ADMIN DATA
+========================= */
+
+async function loadAdminData() {
+
+  try {
+
+    await loadApprovedTeams();
+
+    await loadChampionsData();
+
+    renderAdmin();
+
+    updateControlState();
+
+  } catch (error) {
+
+    console.error(error);
+
+    settingsMessage.textContent =
+      "Unable to load Champions League data.";
+
+  }
+
+}
+
+
+/* =========================================================
+   PART 10 — AUTHENTICATION + INITIALIZATION
+   ========================================================= */
+
+
+/* =========================
+   ADMIN LOGIN
+========================= */
+
+adminLoginForm.addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+
+    const email =
+      adminEmail.value.trim();
+
+    const password =
+      adminPassword.value;
+
+
+    adminLoginMessage.textContent =
+      "Signing in...";
+
+
+    if (
+      email !== ADMIN_EMAIL
+    ) {
+
+      adminLoginMessage.textContent =
+        "Invalid admin email.";
+
+      return;
+
+    }
+
+
+    try {
+
       await signInWithEmailAndPassword(
-        auth,
+        window.championsAuth,
         email,
         password
       );
 
 
-    if (
-      !credential.user.email ||
-      credential.user.email.toLowerCase() !==
-      ADMIN_EMAIL.toLowerCase()
-    ) {
+      adminLoginMessage.textContent =
+        "Login successful.";
 
-      await signOut(auth);
+    } catch (error) {
 
-      showLoginMessage(
-        "This account is not authorized."
-      );
+      console.error(error);
+
+      adminLoginMessage.textContent =
+        "Login failed. Check your email and password.";
+
+    }
+
+  }
+);
+
+
+/* =========================
+   AUTH STATE
+========================= */
+
+onAuthStateChanged(
+  window.championsAuth,
+  async user => {
+
+    if (!user) {
+
+      adminLogin.style.display =
+        "block";
+
+      adminDashboard.style.display =
+        "none";
 
       return;
+
     }
 
 
-    showLoginMessage(
-      "Login successful."
-    );
+    if (
+      user.email !== ADMIN_EMAIL
+    ) {
 
-  } catch (error) {
+      await signOut(
+        window.championsAuth
+      );
 
-    console.error(
-      "Admin login error:",
-      error
-    );
+      adminLoginMessage.textContent =
+        "This account is not authorized.";
+
+      return;
+
+    }
 
 
-    showLoginMessage(
-      "Login failed. Please check your email and password."
-    );
+    adminLogin.style.display =
+      "none";
 
-  } finally {
+    adminDashboard.style.display =
+      "block";
 
-    adminLoginButton.disabled =
-      false;
+
+    await loadAdminData();
 
   }
+);
 
-}
 
-
-/* =========================================================
+/* =========================
    LOGOUT
-   ========================================================= */
+========================= */
 
-async function handleAdminLogout() {
+adminLogoutButton.addEventListener(
+  "click",
+  async () => {
 
-  try {
+    try {
 
-    const {
-      auth
-    } = await waitForFirebase();
+      await signOut(
+        window.championsAuth
+      );
 
+    } catch (error) {
 
-    await signOut(auth);
+      console.error(error);
 
-
-    approvedTeams = [];
-
-    savedMatchesPerTeam =
-      null;
-
-    championsCompetitionData =
-      null;
-
-
-    showLogin();
-
-    showLoginMessage(
-      "You have been logged out."
-    );
-
-  } catch (error) {
-
-    console.error(
-      "Logout error:",
-      error
-    );
+    }
 
   }
-
-}
-
-
-/* =========================================================
-   AUTH STATE
-   ========================================================= */
-
-async function initializeAdmin() {
-
-  try {
-
-    const {
-      auth
-    } = await waitForFirebase();
+);
 
 
-    onAuthStateChanged(
-      auth,
-      async (user) => {
+/* =========================
+   INITIAL UI STATE
+========================= */
 
-        if (!user) {
+adminDashboard.style.display =
+  "none";
 
-          showLogin();
-
-          return;
-        }
-
-
-        if (
-          !user.email ||
-          user.email.toLowerCase() !==
-          ADMIN_EMAIL.toLowerCase()
-        ) {
-
-          await signOut(auth);
-
-          showLogin();
-
-          showLoginMessage(
-            "This account is not authorized."
-          );
-
-          return;
-        }
-
-
-        showDashboard(user);
-
-
-        /*
-          Load both:
-
-          1. Approved teams from the
-             existing DLS League.
-
-          2. Existing Champions League
-             settings, if any.
-        */
-
-        await loadApprovedTeams();
-
-        await loadChampionsCompetition();
-
-      }
-    );
-
-  } catch (error) {
-
-    console.error(
-      "Admin initialization error:",
-      error
-    );
-
-
-    showLoginMessage(
-      "Firebase could not be initialized."
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   EVENT LISTENERS
-   ========================================================= */
-
-if (adminLoginForm) {
-
-  adminLoginForm.addEventListener(
-    "submit",
-    handleAdminLogin
-  );
-
-}
-
-
-if (saveSettingsButton) {
-
-  saveSettingsButton.addEventListener(
-    "click",
-    saveCompetitionSettings
-  );
-
-}
-
-
-if (adminLogoutButton) {
-
-  adminLogoutButton.addEventListener(
-    "click",
-    handleAdminLogout
-  );
-
-}
-
-
-/* =========================================================
-   START ADMIN
-   ========================================================= */
-
-initializeAdmin();
+adminLogin.style.display =
+  "block";
