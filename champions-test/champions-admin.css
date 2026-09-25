@@ -1,7 +1,7 @@
 /* =========================================================
    DLS CHAMPIONS LEAGUE
    champions-admin.css
-   PART 7B — ADMIN DASHBOARD STYLING
+   PART 7 — ADMIN DASHBOARD DESIGN
    ========================================================= */
 
 
@@ -56,14 +56,14 @@ body {
 
 main {
   width: 100%;
-  max-width: 900px;
+  max-width: 950px;
   margin: 0 auto;
   padding: 24px 16px 40px;
 }
 
 
 /* =========================
-   ADMIN SECTION
+   MAIN SECTIONS
 ========================= */
 
 .admin-section {
@@ -80,7 +80,7 @@ main {
 
 
 /* =========================
-   LOGIN FORM
+   LOGIN
 ========================= */
 
 #adminLoginForm {
@@ -109,7 +109,7 @@ main {
 
 
 /* =========================
-   BUTTON BASE
+   BUTTONS
 ========================= */
 
 button {
@@ -121,10 +121,10 @@ button {
   cursor: pointer;
 }
 
-
-/* =========================
-   LOGIN BUTTON
-========================= */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 #adminLoginButton {
   margin-top: 12px;
@@ -132,25 +132,20 @@ button {
   color: #ffffff;
 }
 
-#adminLoginButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
 
 /* =========================
-   MESSAGE
+   MESSAGES
 ========================= */
 
 .message {
-  margin-top: 15px;
+  margin-top: 14px;
   min-height: 20px;
   font-size: 14px;
 }
 
 
 /* =========================
-   DASHBOARD CARD
+   DASHBOARD CARDS
 ========================= */
 
 .dashboard-card {
@@ -162,7 +157,7 @@ button {
 }
 
 .dashboard-card h3 {
-  font-size: 17px;
+  font-size: 16px;
   margin-bottom: 8px;
 }
 
@@ -189,33 +184,116 @@ button {
 
 
 /* =========================
-   DASHBOARD MENU
+   SUBSECTIONS
 ========================= */
 
-.dashboard-menu {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-top: 22px;
+.admin-subsection {
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #ffffff;
 }
 
-.dashboard-menu button {
-  width: 100%;
-  background: #2563eb;
-  color: #ffffff;
+.admin-subsection h2 {
+  font-size: 20px;
+  margin-bottom: 12px;
 }
 
-.dashboard-menu button:hover {
-  opacity: 0.9;
+.admin-subsection p {
+  line-height: 1.5;
+  margin-bottom: 12px;
 }
 
 
 /* =========================
-   LOGOUT
+   SETTINGS
 ========================= */
+
+#competitionSettingsSection label {
+  display: block;
+  font-weight: bold;
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+#matchesPerTeam {
+  width: 100%;
+  max-width: 300px;
+  padding: 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 16px;
+  outline: none;
+}
+
+#matchesPerTeam:focus {
+  border-color: #2563eb;
+}
+
+#saveSettingsButton {
+  background: #2563eb;
+  color: #ffffff;
+  margin-top: 8px;
+}
+
+
+/* =========================
+   TEAM LIST
+========================= */
+
+.team-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.team-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 15px;
+}
+
+.team-card h3 {
+  font-size: 17px;
+  margin-bottom: 6px;
+}
+
+.team-card p {
+  font-size: 14px;
+  color: #555;
+}
+
+
+/* =========================
+   START COMPETITION
+========================= */
+
+#startCompetitionButton {
+  background: #16a34a;
+  color: #ffffff;
+  margin-top: 8px;
+}
+
+#startCompetitionButton:disabled {
+  background: #94a3b8;
+}
+
+
+/* =========================
+   DASHBOARD ACTIONS
+========================= */
+
+.dashboard-actions {
+  margin-top: 24px;
+  text-align: right;
+}
 
 #adminLogoutButton {
   background: #dc2626;
+  color: #ffffff;
 }
 
 
@@ -250,16 +328,28 @@ button {
     padding: 18px;
   }
 
+  .admin-subsection {
+    padding: 16px;
+  }
+
   .dashboard-grid {
     grid-template-columns: 1fr;
   }
 
-  .dashboard-menu {
+  .team-list {
     grid-template-columns: 1fr;
   }
 
   .dashboard-card p {
     font-size: 19px;
+  }
+
+  #matchesPerTeam {
+    max-width: 100%;
+  }
+
+  .dashboard-actions {
+    text-align: center;
   }
 
 }
