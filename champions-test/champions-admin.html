@@ -19,18 +19,27 @@
 
 </head>
 
+
 <body>
+
 
   <header class="admin-header">
 
     <h1>🏆 Champions League Admin</h1>
 
-    <p>DLS Champions League Test Management</p>
+    <p>
+      DLS Champions League Test Management
+    </p>
 
   </header>
 
 
   <main>
+
+
+    <!-- =========================
+         ADMIN LOGIN
+    ========================== -->
 
     <section
       id="adminLogin"
@@ -39,11 +48,14 @@
 
       <h2>Admin Login</h2>
 
+
       <form id="adminLoginForm">
+
 
         <label for="adminEmail">
           Email
         </label>
+
 
         <input
           type="email"
@@ -52,9 +64,11 @@
           autocomplete="email"
         >
 
+
         <label for="adminPassword">
           Password
         </label>
+
 
         <input
           type="password"
@@ -63,6 +77,7 @@
           autocomplete="current-password"
         >
 
+
         <button
           type="submit"
           id="adminLoginButton"
@@ -70,49 +85,124 @@
           Login
         </button>
 
+
       </form>
+
 
       <div
         id="adminLoginMessage"
         class="message"
       ></div>
 
+
     </section>
 
+
+
+    <!-- =========================
+         ADMIN DASHBOARD
+    ========================== -->
 
     <section
       id="adminDashboard"
       class="hidden"
     >
 
+
+
+      <!-- =========================
+           CHAMPIONS SETTINGS
+      ========================== -->
+
       <section class="admin-section">
 
-        <h2>Champions League Settings</h2>
+        <h2>
+          Champions League Settings
+        </h2>
+
 
         <div
           id="settingsMessage"
           class="message"
         ></div>
 
+
+
+        <!-- SEASON START -->
+
+        <label for="seasonStartDate">
+          Season Start Date
+        </label>
+
+
+        <input
+          type="date"
+          id="seasonStartDate"
+        >
+
+
+
+        <!-- SEASON END -->
+
+        <label for="seasonEndDate">
+          Season End Date
+        </label>
+
+
+        <input
+          type="date"
+          id="seasonEndDate"
+        >
+
+
+
+        <!-- MATCHES PER TEAM -->
+
         <label for="matchesPerTeam">
           Matches Per Team
         </label>
 
+
         <select id="matchesPerTeam">
 
-          <option value="1">1 Match</option>
-          <option value="2">2 Matches</option>
-          <option value="3">3 Matches</option>
-          <option value="4">4 Matches</option>
-          <option value="5">5 Matches</option>
-          <option value="6">6 Matches</option>
-          <option value="7">7 Matches</option>
-          <option value="8">8 Matches</option>
+          <option value="1">
+            1 Match
+          </option>
+
+          <option value="2">
+            2 Matches
+          </option>
+
+          <option value="3">
+            3 Matches
+          </option>
+
+          <option value="4">
+            4 Matches
+          </option>
+
+          <option value="5">
+            5 Matches
+          </option>
+
+          <option value="6">
+            6 Matches
+          </option>
+
+          <option value="7">
+            7 Matches
+          </option>
+
+          <option value="8">
+            8 Matches
+          </option>
 
         </select>
 
 
+
         <div class="button-row">
+
 
           <button
             id="saveSettingsButton"
@@ -121,12 +211,14 @@
             Save Settings
           </button>
 
+
           <button
             id="generateFixturesButton"
             type="button"
           >
             Generate Fixtures
           </button>
+
 
           <button
             id="startCompetitionButton"
@@ -135,74 +227,149 @@
             Start Champions League
           </button>
 
+
         </div>
+
 
       </section>
 
 
+
+      <!-- =========================
+           APPROVED TEAMS
+      ========================== -->
+
       <section class="admin-section">
 
-        <h2>Approved Teams</h2>
+        <h2>
+          Approved Teams
+        </h2>
+
 
         <p>
           Teams are read from the existing DLS competition.
         </p>
+
 
         <div
           id="teamCountMessage"
           class="message"
         ></div>
 
+
         <div
           id="approvedTeamList"
           class="team-list"
         ></div>
 
+
       </section>
 
 
+
+      <!-- =========================
+           LEAGUE PHASE FIXTURES
+      ========================== -->
+
       <section class="admin-section">
 
-        <h2>League Phase Fixtures</h2>
+        <h2>
+          League Phase Fixtures
+        </h2>
+
 
         <div
           id="adminFixtureList"
           class="match-list"
         ></div>
 
+
       </section>
 
 
+
+      <!-- =========================
+           LEAGUE PHASE RESULTS
+      ========================== -->
+
       <section class="admin-section">
 
-        <h2>League Phase Results</h2>
+        <h2>
+          League Phase Results
+        </h2>
+
 
         <div
           id="leagueResultsList"
           class="match-list"
         ></div>
 
+
       </section>
 
-            <section class="admin-section">
 
-        <h2>League Table</h2>
+
+      <!-- =========================
+           LEAGUE TABLE
+      ========================== -->
+
+      <section class="admin-section">
+
+        <h2>
+          League Table
+        </h2>
+
 
         <div
           id="leagueTable"
           class="table-container"
         ></div>
 
+
       </section>
+
+
+
+      <!-- =========================
+           KNOCKOUT PHASE
+      ========================== -->
 
       <section class="admin-section">
 
-        <h2>Knockout Phase</h2>
+        <h2>
+          Knockout Phase
+        </h2>
+
 
         <div
           id="knockoutMessage"
           class="message"
         ></div>
+
+
+
+        <!-- KNOCKOUT LEGS
+             ONLY FOR KNOCKOUT
+        -->
+
+        <label for="knockoutLegs">
+          Knockout Legs
+        </label>
+
+
+        <select id="knockoutLegs">
+
+          <option value="1">
+            1 Leg
+          </option>
+
+          <option value="2">
+            2 Legs
+          </option>
+
+        </select>
+
+
 
         <button
           id="generateKnockoutButton"
@@ -211,22 +378,60 @@
           Generate Knockout Draw
         </button>
 
+
+
+        <!-- KNOCKOUT MATCHES -->
+
         <div
           id="knockoutResultsList"
           class="match-list"
         ></div>
 
+
+
+        <!-- CHAMPIONS LEAGUE TREE -->
+
+        <div
+          id="knockoutTree"
+          class="knockout-tree"
+        ></div>
+
+
+
+        <!-- WINNER -->
+
+        <div
+          id="winner"
+        ></div>
+
+
       </section>
 
+
+
+      <!-- =========================
+           COMPETITION STATUS
+      ========================== -->
 
       <section class="admin-section">
 
-        <h2>Competition Status</h2>
+        <h2>
+          Competition Status
+        </h2>
 
-        <div id="competitionStatus"></div>
+
+        <div
+          id="competitionStatus"
+        ></div>
+
 
       </section>
 
+
+
+      <!-- =========================
+           LOGOUT
+      ========================== -->
 
       <div class="dashboard-actions">
 
@@ -239,20 +444,33 @@
 
       </div>
 
+
     </section>
+
 
   </main>
 
+
+
+  <!-- =========================
+       FIREBASE
+  ========================== -->
 
   <script
     type="module"
     src="champions-firebase.js"
   ></script>
 
+
+  <!-- =========================
+       ADMIN JAVASCRIPT
+  ========================== -->
+
   <script
     type="module"
     src="champions-admin.js"
   ></script>
+
 
 </body>
 
