@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 
   <meta charset="UTF-8">
@@ -11,223 +12,238 @@
 
   <title>Champions League Admin</title>
 
-  <link rel="stylesheet" href="champions-admin.css">
+  <link
+    rel="stylesheet"
+    href="champions-admin.css"
+  >
 
 </head>
 
 <body>
 
-<header class="admin-header">
+  <header class="admin-header">
 
-  <h1>🏆 Champions League Admin</h1>
+    <h1>🏆 Champions League Admin</h1>
 
-  <p>DLS Champions League Test Management</p>
+    <p>DLS Champions League Test Management</p>
 
-</header>
-
-
-<main>
-
-  <section id="adminLogin" class="admin-section">
-
-    <h2>Admin Login</h2>
-
-    <form id="adminLoginForm">
-
-      <label for="adminEmail">
-        Email
-      </label>
-
-      <input
-        type="email"
-        id="adminEmail"
-        required
-        autocomplete="email"
-      >
+  </header>
 
 
-      <label for="adminPassword">
-        Password
-      </label>
+  <main>
 
-      <input
-        type="password"
-        id="adminPassword"
-        required
-        autocomplete="current-password"
-      >
+    <section
+      id="adminLogin"
+      class="admin-section"
+    >
 
+      <h2>Admin Login</h2>
 
-      <button
-        type="submit"
-        id="adminLoginButton"
-      >
-        Login
-      </button>
+      <form id="adminLoginForm">
 
-    </form>
+        <label for="adminEmail">
+          Email
+        </label>
 
-    <div id="adminLoginMessage" class="message"></div>
+        <input
+          type="email"
+          id="adminEmail"
+          required
+          autocomplete="email"
+        >
 
-  </section>
+        <label for="adminPassword">
+          Password
+        </label>
 
-
-  <section
-    id="adminDashboard"
-    class="hidden"
-  >
-
-    <section class="admin-section">
-
-      <h2>Champions League Settings</h2>
-
-      <div id="settingsMessage" class="message"></div>
-
-      <label for="matchesPerTeam">
-        Matches Per Team
-      </label>
-
-      <select id="matchesPerTeam">
-
-        <option value="1">1 Match</option>
-        <option value="2">2 Matches</option>
-        <option value="3">3 Matches</option>
-        <option value="4">4 Matches</option>
-        <option value="5">5 Matches</option>
-        <option value="6">6 Matches</option>
-        <option value="7">7 Matches</option>
-        <option value="8">8 Matches</option>
-
-      </select>
-
-
-      <div class="button-row">
+        <input
+          type="password"
+          id="adminPassword"
+          required
+          autocomplete="current-password"
+        >
 
         <button
-          id="saveSettingsButton"
-          type="button"
+          type="submit"
+          id="adminLoginButton"
         >
-          Save Settings
+          Login
         </button>
 
+      </form>
+
+      <div
+        id="adminLoginMessage"
+        class="message"
+      ></div>
+
+    </section>
+
+
+    <section
+      id="adminDashboard"
+      class="hidden"
+    >
+
+      <section class="admin-section">
+
+        <h2>Champions League Settings</h2>
+
+        <div
+          id="settingsMessage"
+          class="message"
+        ></div>
+
+        <label for="matchesPerTeam">
+          Matches Per Team
+        </label>
+
+        <select id="matchesPerTeam">
+
+          <option value="1">1 Match</option>
+          <option value="2">2 Matches</option>
+          <option value="3">3 Matches</option>
+          <option value="4">4 Matches</option>
+          <option value="5">5 Matches</option>
+          <option value="6">6 Matches</option>
+          <option value="7">7 Matches</option>
+          <option value="8">8 Matches</option>
+
+        </select>
+
+
+        <div class="button-row">
+
+          <button
+            id="saveSettingsButton"
+            type="button"
+          >
+            Save Settings
+          </button>
+
+          <button
+            id="generateFixturesButton"
+            type="button"
+          >
+            Generate Fixtures
+          </button>
+
+          <button
+            id="startCompetitionButton"
+            type="button"
+          >
+            Start Champions League
+          </button>
+
+        </div>
+
+      </section>
+
+
+      <section class="admin-section">
+
+        <h2>Approved Teams</h2>
+
+        <p>
+          Teams are read from the existing DLS competition.
+        </p>
+
+        <div
+          id="teamCountMessage"
+          class="message"
+        ></div>
+
+        <div
+          id="approvedTeamList"
+          class="team-list"
+        ></div>
+
+      </section>
+
+
+      <section class="admin-section">
+
+        <h2>League Phase Fixtures</h2>
+
+        <div
+          id="adminFixtureList"
+          class="match-list"
+        ></div>
+
+      </section>
+
+
+      <section class="admin-section">
+
+        <h2>League Phase Results</h2>
+
+        <div
+          id="leagueResultsList"
+          class="match-list"
+        ></div>
+
+      </section>
+
+
+      <section class="admin-section">
+
+        <h2>Knockout Phase</h2>
+
+        <div
+          id="knockoutMessage"
+          class="message"
+        ></div>
 
         <button
-          id="generateFixturesButton"
+          id="generateKnockoutButton"
           type="button"
         >
-          Generate Fixtures
+          Generate Knockout Draw
         </button>
 
+        <div
+          id="knockoutResultsList"
+          class="match-list"
+        ></div>
+
+      </section>
+
+
+      <section class="admin-section">
+
+        <h2>Competition Status</h2>
+
+        <div id="competitionStatus"></div>
+
+      </section>
+
+
+      <div class="dashboard-actions">
 
         <button
-          id="startCompetitionButton"
+          id="adminLogoutButton"
           type="button"
         >
-          Start Champions League
+          Logout
         </button>
 
       </div>
 
     </section>
 
-
-    <section class="admin-section">
-
-      <h2>Approved Teams</h2>
-
-      <p>
-        Teams are read from the existing DLS competition.
-      </p>
-
-      <div id="teamCountMessage" class="message"></div>
-
-      <div
-        id="approvedTeamList"
-        class="team-list"
-      ></div>
-
-    </section>
+  </main>
 
 
-    <section class="admin-section">
+  <script
+    type="module"
+    src="champions-firebase.js"
+  ></script>
 
-      <h2>League Phase Fixtures</h2>
-
-      <div
-        id="adminFixtureList"
-        class="match-list"
-      ></div>
-
-    </section>
-
-
-    <section class="admin-section">
-
-      <h2>League Phase Results</h2>
-
-      <div
-        id="leagueResultsList"
-        class="match-list"
-      ></div>
-
-    </section>
-
-
-    <section class="admin-section">
-
-      <h2>Knockout Phase</h2>
-
-      <div id="knockoutMessage" class="message"></div>
-
-      <button
-        id="generateKnockoutButton"
-        type="button"
-      >
-        Generate Knockout Draw
-      </button>
-
-      <div
-        id="knockoutResultsList"
-        class="match-list"
-      ></div>
-
-    </section>
-
-
-    <section class="admin-section">
-
-      <h2>Competition Status</h2>
-
-      <div id="competitionStatus"></div>
-
-    </section>
-
-
-    <div class="dashboard-actions">
-
-      <button
-        id="adminLogoutButton"
-        type="button"
-      >
-        Logout
-      </button>
-
-    </div>
-
-  </section>
-
-</main>
-
-
-<script
-  type="module"
-  src="champions-firebase.js"
-></script>
-
-<script
-  type="module"
-  src="champions-admin.js"
-></script>
+  <script
+    type="module"
+    src="champions-admin.js"
+  ></script>
 
 </body>
+
 </html>
