@@ -1,7 +1,7 @@
 /* =========================================================
    DLS CHAMPIONS LEAGUE
    champions.css
-   PART 3 — PUBLIC PAGE STYLING
+   PART 3 — PUBLIC WEBSITE DESIGN
    ========================================================= */
 
 
@@ -16,16 +16,15 @@
 }
 
 
-html {
-  scroll-behavior: smooth;
-}
-
+/* =========================
+   BODY
+========================= */
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
-  background: #f4f6f8;
-  color: #1f2937;
-  line-height: 1.5;
+  font-family: Arial, sans-serif;
+  background: #f4f6f9;
+  color: #222;
+  min-height: 100vh;
 }
 
 
@@ -33,30 +32,21 @@ body {
    HEADER
 ========================= */
 
-.site-header {
+.champions-header {
   background: #111827;
   color: #ffffff;
-  padding: 28px 16px;
   text-align: center;
+  padding: 25px 16px;
 }
 
-
-.header-content {
-  width: 100%;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-
-.site-header h1 {
-  font-size: 28px;
+.champions-header h1 {
+  font-size: 26px;
   margin-bottom: 8px;
 }
 
-
-.site-header p {
-  font-size: 15px;
-  opacity: 0.9;
+.champions-header p {
+  font-size: 14px;
+  opacity: 0.85;
 }
 
 
@@ -64,77 +54,56 @@ body {
    NAVIGATION
 ========================= */
 
-.main-nav {
-  width: 100%;
-  background: #ffffff;
-  border-bottom: 1px solid #dbe1e7;
-
+.champions-nav {
+  background: #1f2937;
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  align-items: center;
-
   gap: 8px;
-
-  padding: 12px 10px;
-
-  overflow-x: auto;
+  padding: 12px;
 }
 
-
-.main-nav a {
-  color: #111827;
+.champions-nav a {
+  color: #ffffff;
   text-decoration: none;
-
   font-size: 14px;
-  font-weight: 600;
-
-  white-space: nowrap;
-
+  font-weight: bold;
   padding: 9px 12px;
-
-  border-radius: 8px;
+  border-radius: 7px;
 }
 
-
-.main-nav a:hover {
-  background: #eef2f7;
+.champions-nav a:hover {
+  background: #374151;
 }
 
 
 /* =========================
-   MAIN CONTENT
+   MAIN
 ========================= */
 
 main {
   width: 100%;
-  max-width: 1100px;
-
+  max-width: 1000px;
   margin: 0 auto;
-
   padding: 20px 14px 40px;
 }
 
 
-.section {
+/* =========================
+   SECTIONS
+========================= */
+
+.champions-section {
   background: #ffffff;
-
-  border: 1px solid #e1e5ea;
   border-radius: 12px;
-
   padding: 20px;
-
   margin-bottom: 20px;
-
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
 }
 
-
-.section h2 {
-  font-size: 21px;
-
-  margin-bottom: 16px;
-
-  color: #111827;
+.champions-section h2 {
+  margin-bottom: 15px;
+  font-size: 22px;
 }
 
 
@@ -142,18 +111,12 @@ main {
    STATUS
 ========================= */
 
-.status-box {
-  background: #f3f4f6;
-
-  border: 1px solid #d1d5db;
-
-  border-radius: 10px;
-
-  padding: 16px;
-
-  font-weight: 600;
-
-  text-align: center;
+#competitionStatus {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 14px;
+  font-weight: bold;
 }
 
 
@@ -161,116 +124,61 @@ main {
    TEAM LIST
 ========================= */
 
-.team-list {
+#teamList {
   display: grid;
-
-  grid-template-columns:
-    repeat(auto-fit, minmax(220px, 1fr));
-
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
 }
 
-
 .team-card {
-  background: #f9fafb;
-
-  border: 1px solid #e1e5ea;
-
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 10px;
-
   padding: 15px;
 }
 
-
 .team-card h3 {
-  font-size: 16px;
-
-  margin-bottom: 5px;
+  font-size: 17px;
+  margin-bottom: 6px;
 }
-
 
 .team-card p {
   font-size: 14px;
-
-  color: #6b7280;
+  color: #555;
 }
 
 
 /* =========================
-   GROUPS
+   LEAGUE TABLE
 ========================= */
 
-.group-card {
-  border: 1px solid #dbe1e7;
-
-  border-radius: 10px;
-
-  overflow: hidden;
-
-  margin-bottom: 18px;
-}
-
-
-.group-title {
-  background: #f3f4f6;
-
-  padding: 12px 14px;
-
-  font-size: 17px;
-
-  font-weight: 700;
-}
-
-
-.group-content {
-  padding: 12px;
-}
-
-
-/* =========================
-   TABLES
-========================= */
-
-.table-wrapper {
+.league-table-wrapper {
   width: 100%;
-
   overflow-x: auto;
-
-  margin-bottom: 20px;
 }
 
-
-table {
+.league-table {
   width: 100%;
-
   border-collapse: collapse;
-
-  min-width: 600px;
+  min-width: 650px;
 }
 
-
-th,
-td {
-  border: 1px solid #dbe1e7;
-
-  padding: 9px 8px;
-
+.league-table th,
+.league-table td {
+  border: 1px solid #dbe1e8;
+  padding: 10px 8px;
   text-align: center;
-
-  font-size: 13px;
+  font-size: 14px;
 }
 
-
-th {
-  background: #f3f4f6;
-
-  font-weight: 700;
+.league-table th {
+  background: #111827;
+  color: #ffffff;
 }
 
-
-td:first-child,
-th:first-child {
+.league-table td.team-name {
   text-align: left;
+  font-weight: bold;
 }
 
 
@@ -278,39 +186,27 @@ th:first-child {
    FIXTURES
 ========================= */
 
+.fixture-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .fixture-card {
-  background: #f9fafb;
-
-  border: 1px solid #e1e5ea;
-
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 10px;
-
   padding: 14px;
-
-  margin-bottom: 10px;
 }
 
-
-.fixture-stage {
-  font-size: 12px;
-
-  color: #6b7280;
-
-  margin-bottom: 5px;
+.fixture-card h3 {
+  margin-bottom: 8px;
+  font-size: 16px;
 }
 
-
-.fixture-teams {
-  font-weight: 700;
-
-  font-size: 15px;
-}
-
-
-.fixture-score {
-  margin-top: 5px;
-
-  font-weight: 700;
+.fixture-card p {
+  font-size: 14px;
+  margin-top: 4px;
 }
 
 
@@ -319,38 +215,23 @@ th:first-child {
 ========================= */
 
 .knockout-round {
-  border: 1px solid #dbe1e7;
-
-  border-radius: 10px;
-
-  padding: 15px;
-
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
-
 
 .knockout-round h3 {
-  margin-bottom: 12px;
-
-  font-size: 18px;
-}
-
-
-.knockout-tie {
-  background: #f9fafb;
-
-  border: 1px solid #e5e7eb;
-
-  border-radius: 8px;
-
-  padding: 12px;
-
   margin-bottom: 10px;
 }
 
+.knockout-match {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
 
-.knockout-tie:last-child {
-  margin-bottom: 0;
+.knockout-match p {
+  margin-top: 5px;
 }
 
 
@@ -358,70 +239,75 @@ th:first-child {
    FINAL
 ========================= */
 
-#finalContainer {
+.final-container {
   text-align: center;
 }
 
-
-.final-box {
-  border: 2px solid #d1d5db;
-
+.final-match {
+  background: #f8fafc;
+  border: 2px solid #dbe1e8;
   border-radius: 12px;
-
-  padding: 24px;
-
-  background: #f9fafb;
+  padding: 20px;
 }
 
-
-.final-box h3 {
-  font-size: 22px;
-
+.final-match h3 {
   margin-bottom: 12px;
 }
 
-
-.champion-box {
-  margin-top: 20px;
-
-  padding: 20px;
-
-  border-radius: 12px;
-
-  background: #f3f4f6;
-}
-
-
-.champion-box h3 {
-  font-size: 24px;
-
-  margin-bottom: 6px;
+.final-match p {
+  margin-top: 7px;
 }
 
 
 /* =========================
-   EMPTY / LOADING TEXT
+   WINNER
 ========================= */
 
-.empty-message {
-  color: #6b7280;
-
+.winner-section {
   text-align: center;
+}
 
-  padding: 15px;
+.winner-card {
+  background: #f8fafc;
+  border: 2px solid #dbe1e8;
+  border-radius: 14px;
+  padding: 25px 18px;
+}
+
+.winner-card .trophy {
+  font-size: 50px;
+  margin-bottom: 10px;
+}
+
+.winner-card h3 {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.winner-card p {
+  margin-top: 6px;
 }
 
 
-.error-message {
-  color: #b91c1c;
+/* =========================
+   EMPTY / MESSAGE STATES
+========================= */
 
-  background: #fef2f2;
-
-  border: 1px solid #fecaca;
-
+.empty-message {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
   border-radius: 8px;
+  padding: 15px;
+  text-align: center;
+  color: #64748b;
+}
 
-  padding: 12px;
+.error-message {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 15px;
+  color: #b91c1c;
 }
 
 
@@ -429,16 +315,12 @@ th:first-child {
    FOOTER
 ========================= */
 
-.site-footer {
+.champions-footer {
   background: #111827;
-
   color: #ffffff;
-
   text-align: center;
-
   padding: 20px 15px;
-
-  font-size: 13px;
+  font-size: 14px;
 }
 
 
@@ -448,59 +330,43 @@ th:first-child {
 
 @media (max-width: 600px) {
 
-  .site-header {
-    padding: 22px 12px;
+  .champions-header {
+    padding: 20px 12px;
   }
 
-
-  .site-header h1 {
+  .champions-header h1 {
     font-size: 22px;
   }
 
+  .champions-nav {
+    gap: 5px;
+  }
 
-  .site-header p {
+  .champions-nav a {
     font-size: 13px;
+    padding: 8px 9px;
   }
-
-
-  .main-nav {
-    justify-content: flex-start;
-  }
-
-
-  .main-nav a {
-    font-size: 13px;
-
-    padding: 8px 10px;
-  }
-
 
   main {
-    padding: 14px 10px 30px;
+    padding: 15px 10px 30px;
   }
 
-
-  .section {
-    padding: 15px;
-
-    border-radius: 10px;
+  .champions-section {
+    padding: 16px;
   }
 
-
-  .section h2 {
-    font-size: 19px;
+  .champions-section h2 {
+    font-size: 20px;
   }
 
-
-  .team-list {
+  #teamList {
     grid-template-columns: 1fr;
   }
 
-
-  .table-wrapper {
-    margin-left: -2px;
-
-    margin-right: -2px;
+  .league-table th,
+  .league-table td {
+    font-size: 13px;
+    padding: 8px 6px;
   }
 
 }
