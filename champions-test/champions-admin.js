@@ -1,7 +1,7 @@
 /* =========================================================
    DLS CHAMPIONS LEAGUE
    champions-admin.js
-   PART 7D — AUTH + LOAD APPROVED LEAGUE TEAMS
+   PART 7F — AUTH + APPROVED TEAMS + SELECTION SETUP
    ========================================================= */
 
 import {
@@ -29,6 +29,8 @@ const ADMIN_EMAIL =
 ========================= */
 
 let approvedTeams = [];
+
+let selectedChampionsTeams = [];
 
 
 /* =========================
@@ -113,6 +115,16 @@ const teamSelectionMessage =
 const availableTeamsList =
   document.getElementById(
     "availableTeamsList"
+  );
+
+const randomSelectionButton =
+  document.getElementById(
+    "randomSelectionButton"
+  );
+
+const selectedTeamsList =
+  document.getElementById(
+    "selectedTeamsList"
   );
 
 
@@ -406,6 +418,102 @@ function renderAvailableTeams() {
 
 
 /* =========================
+   RENDER SELECTED TEAMS
+========================= */
+
+function renderSelectedTeams() {
+
+  if (!selectedTeamsList) {
+    return;
+  }
+
+
+  selectedTeamsList.innerHTML = "";
+
+
+  if (
+    selectedChampionsTeams.length === 0
+  ) {
+
+    const emptyMessage =
+      document.createElement("p");
+
+    emptyMessage.textContent =
+      "No Champions League teams selected.";
+
+    selectedTeamsList.appendChild(
+      emptyMessage
+    );
+
+    return;
+
+  }
+
+
+  selectedChampionsTeams.forEach(
+    (team) => {
+
+      const teamCard =
+        document.createElement("div");
+
+
+      teamCard.className =
+        "selected-team-card";
+
+
+      const teamName =
+        document.createElement("strong");
+
+
+      teamName.textContent =
+        team.name;
+
+
+      teamCard.appendChild(
+        teamName
+      );
+
+
+      if (team.player) {
+
+        const playerName =
+          document.createElement("span");
+
+
+        playerName.textContent =
+          ` — ${team.player}`;
+
+
+        teamCard.appendChild(
+          playerName
+        );
+
+      }
+
+
+      selectedTeamsList.appendChild(
+        teamCard
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================
+   RANDOM SELECTION SETUP
+========================= */
+
+if (randomSelectionButton) {
+
+  randomSelectionButton.disabled =
+    true;
+
+}
+
+
+/* =========================
    ADMIN LOGIN
 ========================= */
 
@@ -500,6 +608,17 @@ loginForm.addEventListener(
 
       await loadApprovedTeams();
 
+
+      if (randomSelectionButton) {
+
+        randomSelectionButton.disabled =
+          approvedTeams.length === 0;
+
+      }
+
+
+      renderSelectedTeams();
+
     } catch (error) {
 
       console.error(
@@ -566,6 +685,17 @@ waitForFirebase().then(
 
 
         await loadApprovedTeams();
+
+
+        if (randomSelectionButton) {
+
+          randomSelectionButton.disabled =
+            approvedTeams.length === 0;
+
+        }
+
+
+        renderSelectedTeams();
 
       }
     );
