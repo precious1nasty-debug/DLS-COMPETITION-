@@ -1,12 +1,12 @@
 /* =========================================================
    DLS CHAMPIONS LEAGUE
-   SEPARATE TEST ADMIN
-   PART 1 — FIREBASE + GLOBALS
+   CHAMPIONS ADMIN
+   PART 1 — FIREBASE + AUTH + GLOBALS
    ========================================================= */
 
 
 /* =========================
-   FIREBASE AUTH IMPORTS
+   FIREBASE AUTH
 ========================= */
 
 import {
@@ -17,7 +17,7 @@ import {
 
 
 /* =========================
-   FIRESTORE IMPORTS
+   FIRESTORE
 ========================= */
 
 import {
@@ -28,22 +28,27 @@ import {
 
 
 /* =========================
-   FIREBASE READY
-========================= */
-
-let firebaseReady = false;
-
-
-/* =========================
-   GLOBAL DATA
+   ADMIN EMAIL
 ========================= */
 
 const ADMIN_EMAIL =
   "obakimoprecious07@gmail.com";
 
 
-let approvedTeams = [];
+/* =========================
+   FIREBASE REFERENCES
+========================= */
 
+let championsAuth = null;
+
+let championsDb = null;
+
+
+/* =========================
+   APPLICATION DATA
+========================= */
+
+let approvedTeams = [];
 
 let championsData = {
 
@@ -63,12 +68,145 @@ let championsData = {
 
 
 /* =========================
-   FIREBASE REFERENCES
+   FIREBASE READY STATE
 ========================= */
 
-let championsAuth = null;
+let firebaseReady = false;
 
-let championsDb = null;
+
+/* =========================
+   LOGIN ELEMENTS
+========================= */
+
+const adminLogin =
+  document.getElementById(
+    "adminLogin"
+  );
+
+const adminDashboard =
+  document.getElementById(
+    "adminDashboard"
+  );
+
+const adminLoginForm =
+  document.getElementById(
+    "adminLoginForm"
+  );
+
+const adminEmail =
+  document.getElementById(
+    "adminEmail"
+  );
+
+const adminPassword =
+  document.getElementById(
+    "adminPassword"
+  );
+
+const adminLoginMessage =
+  document.getElementById(
+    "adminLoginMessage"
+  );
+
+
+/* =========================
+   SETTINGS ELEMENTS
+========================= */
+
+const matchesPerTeam =
+  document.getElementById(
+    "matchesPerTeam"
+  );
+
+const saveSettingsButton =
+  document.getElementById(
+    "saveSettingsButton"
+  );
+
+const generateFixturesButton =
+  document.getElementById(
+    "generateFixturesButton"
+  );
+
+const startCompetitionButton =
+  document.getElementById(
+    "startCompetitionButton"
+  );
+
+const settingsMessage =
+  document.getElementById(
+    "settingsMessage"
+  );
+
+
+/* =========================
+   TEAM ELEMENTS
+========================= */
+
+const approvedTeamList =
+  document.getElementById(
+    "approvedTeamList"
+  );
+
+const teamCountMessage =
+  document.getElementById(
+    "teamCountMessage"
+  );
+
+
+/* =========================
+   FIXTURE ELEMENTS
+========================= */
+
+const adminFixtureList =
+  document.getElementById(
+    "adminFixtureList"
+  );
+
+const leagueResultsList =
+  document.getElementById(
+    "leagueResultsList"
+  );
+
+
+/* =========================
+   KNOCKOUT ELEMENTS
+========================= */
+
+const generateKnockoutButton =
+  document.getElementById(
+    "generateKnockoutButton"
+  );
+
+const knockoutResultsList =
+  document.getElementById(
+    "knockoutResultsList"
+  );
+
+const knockoutMessage =
+  document.getElementById(
+    "knockoutMessage"
+  );
+
+
+/* =========================
+   STATUS
+========================= */
+
+const competitionStatus =
+  document.getElementById(
+    "competitionStatus"
+  );
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+const adminLogoutButton =
+  document.getElementById(
+    "adminLogoutButton"
+  );
 
 
 /* =========================
@@ -81,7 +219,7 @@ function waitForFirebase() {
     resolve => {
 
       if (
-        window.championsFirebaseReady
+        window.championsFirebaseReady === true
       ) {
 
         championsAuth =
@@ -90,8 +228,7 @@ function waitForFirebase() {
         championsDb =
           window.championsDb;
 
-        firebaseReady =
-          true;
+        firebaseReady = true;
 
         resolve();
 
@@ -110,8 +247,7 @@ function waitForFirebase() {
           championsDb =
             window.championsDb;
 
-          firebaseReady =
-            true;
+          firebaseReady = true;
 
           resolve();
 
@@ -126,220 +262,9 @@ function waitForFirebase() {
 
 }
 
-
-/* =========================
-   LOGIN ELEMENTS
-========================= */
-
-const adminLogin =
-  document.getElementById("adminLogin");
-
-const adminDashboard =
-  document.getElementById("adminDashboard");
-
-const adminLoginForm =
-  document.getElementById("adminLoginForm");
-
-const adminEmail =
-  document.getElementById("adminEmail");
-
-const adminPassword =
-  document.getElementById("adminPassword");
-
-const adminLoginMessage =
-  document.getElementById("adminLoginMessage");
-
-
-/* =========================
-   SETTINGS ELEMENTS
-========================= */
-
-const matchesPerTeam =
-  document.getElementById("matchesPerTeam");
-
-const saveSettingsButton =
-  document.getElementById("saveSettingsButton");
-
-const generateFixturesButton =
-  document.getElementById("generateFixturesButton");
-
-const startCompetitionButton =
-  document.getElementById("startCompetitionButton");
-
-const settingsMessage =
-  document.getElementById("settingsMessage");
-
-
-/* =========================
-   TEAM ELEMENTS
-========================= */
-
-const approvedTeamList =
-  document.getElementById("approvedTeamList");
-
-const teamCountMessage =
-  document.getElementById("teamCountMessage");
-
-
-/* =========================
-   FIXTURE ELEMENTS
-========================= */
-
-const adminFixtureList =
-  document.getElementById("adminFixtureList");
-
-const leagueResultsList =
-  document.getElementById("leagueResultsList");
-
-
-/* =========================
-   KNOCKOUT ELEMENTS
-========================= */
-
-const generateKnockoutButton =
-  document.getElementById("generateKnockoutButton");
-
-const knockoutResultsList =
-  document.getElementById("knockoutResultsList");
-
-const knockoutMessage =
-  document.getElementById("knockoutMessage");
-
-
-/* =========================
-   STATUS
-========================= */
-
-const competitionStatus =
-  document.getElementById("competitionStatus");
-
-
-/* =========================
-   LOGOUT
-========================= */
-
-const adminLogoutButton =
-  document.getElementById("adminLogoutButton");
-
 /* =========================================================
-   PART 2 — HELPER FUNCTIONS + FIRESTORE DATA
+   PART 2 — FIREBASE LOADING + ADMIN LOGIN
    ========================================================= */
-
-
-/* =========================
-   ESCAPE HTML
-========================= */
-
-function escapeHtml(value) {
-
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-
-}
-
-
-/* =========================
-   GET TEAM NAME
-========================= */
-
-function getTeamName(team) {
-
-  return (
-    team.name ||
-    team.teamName ||
-    team.player ||
-    team.playerName ||
-    "Unknown Team"
-  );
-
-}
-
-
-/* =========================
-   GET TEAM ID
-========================= */
-
-function getTeamId(team, index) {
-
-  return String(
-    team.id ||
-    team.uid ||
-    team.teamId ||
-    team.name ||
-    team.teamName ||
-    `team-${index}`
-  );
-
-}
-
-
-/* =========================
-   SAVE CHAMPIONS DATA
-========================= */
-
-async function saveChampionsData() {
-
-  if (!firebaseReady || !championsDb) {
-
-    throw new Error(
-      "Firebase is not ready."
-    );
-
-  }
-
-
-  await setDoc(
-    doc(
-      championsDb,
-      "championsLeague",
-      "main"
-    ),
-    championsData
-  );
-
-}
-
-
-/* =========================
-   LOAD APPROVED TEAMS
-   FROM EXISTING LEAGUE
-========================= */
-
-async function loadApprovedTeams() {
-
-  const snapshot =
-    await getDoc(
-      doc(
-        championsDb,
-        "competition",
-        "main"
-      )
-    );
-
-
-  if (!snapshot.exists()) {
-
-    approvedTeams = [];
-
-    return;
-
-  }
-
-
-  const data =
-    snapshot.data();
-
-
-  approvedTeams =
-    Array.isArray(data.teams)
-      ? data.teams
-      : [];
-
-}
 
 
 /* =========================
@@ -348,17 +273,52 @@ async function loadApprovedTeams() {
 
 async function loadChampionsData() {
 
-  const snapshot =
-    await getDoc(
-      doc(
-        championsDb,
-        "championsLeague",
-        "main"
-      )
+  const championsRef =
+    doc(
+      championsDb,
+      "championsLeague",
+      "main"
     );
 
+  const snapshot =
+    await getDoc(
+      championsRef
+    );
 
-  if (!snapshot.exists()) {
+  if (snapshot.exists()) {
+
+    const data =
+      snapshot.data();
+
+    championsData = {
+
+      started:
+        data.started === true,
+
+      matchesPerTeam:
+        Number(
+          data.matchesPerTeam
+        ) || 1,
+
+      teams:
+        Array.isArray(data.teams)
+          ? data.teams
+          : [],
+
+      fixtures:
+        Array.isArray(data.fixtures)
+          ? data.fixtures
+          : [],
+
+      knockoutRound:
+        data.knockoutRound || null,
+
+      winner:
+        data.winner || null
+
+    };
+
+  } else {
 
     championsData = {
 
@@ -376,103 +336,155 @@ async function loadChampionsData() {
 
     };
 
+  }
 
-    matchesPerTeam.value = "1";
+}
+
+
+/* =========================
+   LOAD APPROVED TEAMS
+   FROM MAIN COMPETITION
+========================= */
+
+async function loadApprovedTeams() {
+
+  const competitionRef =
+    doc(
+      championsDb,
+      "competition",
+      "main"
+    );
+
+  const snapshot =
+    await getDoc(
+      competitionRef
+    );
+
+  if (!snapshot.exists()) {
+
+    approvedTeams = [];
 
     return;
 
   }
-
 
   const data =
     snapshot.data();
 
-
-  championsData = {
-
-    started:
-      data.started === true,
-
-    matchesPerTeam:
-      Number(data.matchesPerTeam) || 1,
-
-    teams:
-      Array.isArray(data.teams)
-        ? data.teams
-        : [],
-
-    fixtures:
-      Array.isArray(data.fixtures)
-        ? data.fixtures
-        : [],
-
-    knockoutRound:
-      data.knockoutRound || null,
-
-    winner:
-      data.winner || null
-
-  };
-
-
-  matchesPerTeam.value =
-    String(
-      championsData.matchesPerTeam
-    );
+  approvedTeams =
+    Array.isArray(data.teams)
+      ? data.teams
+      : [];
 
 }
 
-/* =========================================================
-   PART 3 — TEAMS + SETTINGS
-   ========================================================= */
+
+/* =========================
+   SAVE CHAMPIONS DATA
+========================= */
+
+async function saveChampionsData() {
+
+  const championsRef =
+    doc(
+      championsDb,
+      "championsLeague",
+      "main"
+    );
+
+  await setDoc(
+    championsRef,
+    championsData
+  );
+
+}
 
 
 /* =========================
-   RENDER APPROVED TEAMS
+   LOGIN
 ========================= */
 
-function renderApprovedTeams() {
+if (adminLoginForm) {
 
-  approvedTeamList.innerHTML = "";
+  adminLoginForm.addEventListener(
+    "submit",
+    async event => {
 
-  teamCountMessage.textContent =
-    `Approved teams: ${approvedTeams.length}`;
+      event.preventDefault();
 
+      if (!firebaseReady) {
 
-  if (approvedTeams.length === 0) {
+        adminLoginMessage.textContent =
+          "Firebase is still loading. Please wait.";
 
-    approvedTeamList.innerHTML =
-      "<p>No approved teams found.</p>";
+        return;
 
-    return;
+      }
 
-  }
+      const email =
+        adminEmail.value.trim();
 
+      const password =
+        adminPassword.value;
 
-  approvedTeams.forEach(
-    (team, index) => {
+      if (!email || !password) {
 
-      const name =
-        getTeamName(team);
+        adminLoginMessage.textContent =
+          "Please enter your email and password.";
 
+        return;
 
-      const item =
-        document.createElement("div");
+      }
 
+      adminLoginMessage.textContent =
+        "Signing in...";
 
-      item.className =
-        "admin-team-item";
+      try {
 
+        const credential =
+          await signInWithEmailAndPassword(
+            championsAuth,
+            email,
+            password
+          );
 
-      item.innerHTML = `
-        <strong>
-          ${index + 1}.
-          ${escapeHtml(name)}
-        </strong>
-      `;
+        const signedInEmail =
+          credential.user.email
+            ? credential.user.email
+                .toLowerCase()
+                .trim()
+            : "";
 
+        if (
+          signedInEmail !==
+          ADMIN_EMAIL.toLowerCase()
+        ) {
 
-      approvedTeamList.appendChild(item);
+          await signOut(
+            championsAuth
+          );
+
+          adminLoginMessage.textContent =
+            "This account is not authorized.";
+
+          return;
+
+        }
+
+        adminLoginMessage.textContent =
+          "Login successful.";
+
+      } catch (error) {
+
+        console.error(
+          "Admin login error:",
+          error
+        );
+
+        adminLoginMessage.textContent =
+          "Login failed. Check your email and password.";
+
+      }
 
     }
   );
@@ -481,37 +493,320 @@ function renderApprovedTeams() {
 
 
 /* =========================
-   VALIDATE MATCHES PER TEAM
+   AUTH STATE
 ========================= */
 
-function validateMatchesPerTeam() {
+async function handleAdminAuth(
+  user
+) {
 
-  const teamCount =
+  if (!user) {
+
+    adminLogin.classList.remove(
+      "hidden"
+    );
+
+    adminDashboard.classList.add(
+      "hidden"
+    );
+
+    return;
+
+  }
+
+  const signedInEmail =
+    user.email
+      ? user.email
+          .toLowerCase()
+          .trim()
+      : "";
+
+  if (
+    signedInEmail !==
+    ADMIN_EMAIL.toLowerCase()
+  ) {
+
+    await signOut(
+      championsAuth
+    );
+
+    return;
+
+  }
+
+  try {
+
+    await loadChampionsData();
+
+    await loadApprovedTeams();
+
+    adminLogin.classList.add(
+      "hidden"
+    );
+
+    adminDashboard.classList.remove(
+      "hidden"
+    );
+
+    renderApprovedTeams();
+
+    renderFixtures();
+
+    renderKnockout();
+
+    updateCompetitionStatus();
+
+  } catch (error) {
+
+    console.error(
+      "Admin data loading error:",
+      error
+    );
+
+    adminLoginMessage.textContent =
+      "Unable to load Champions League data.";
+
+  }
+
+}
+
+
+/* =========================
+   START FIREBASE
+========================= */
+
+async function initializeAdmin() {
+
+  try {
+
+    await waitForFirebase();
+
+    onAuthStateChanged(
+      championsAuth,
+      handleAdminAuth
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Firebase initialization error:",
+      error
+    );
+
+    if (adminLoginMessage) {
+
+      adminLoginMessage.textContent =
+        "Firebase could not be initialized.";
+
+    }
+
+  }
+
+}
+
+
+initializeAdmin();
+
+/* =========================================================
+   PART 3 — TEAMS
+   LOAD, VALIDATE AND DISPLAY APPROVED TEAMS
+   ========================================================= */
+
+
+/* =========================
+   TEAM ID
+========================= */
+
+function getTeamId(team) {
+
+  if (!team) {
+    return "";
+  }
+
+  return String(
+    team.id ||
+    team.teamId ||
+    team.uid ||
+    ""
+  );
+
+}
+
+
+/* =========================
+   TEAM NAME
+========================= */
+
+function getTeamName(team) {
+
+  if (!team) {
+    return "Unnamed Team";
+  }
+
+  return String(
+    team.name ||
+    team.teamName ||
+    "Unnamed Team"
+  );
+
+}
+
+
+/* =========================
+   NORMALIZE APPROVED TEAMS
+========================= */
+
+function normalizeApprovedTeams() {
+
+  approvedTeams =
+    approvedTeams
+      .map(
+        (team, index) => {
+
+          const id =
+            getTeamId(team);
+
+          const name =
+            getTeamName(team);
+
+          return {
+
+            ...team,
+
+            id:
+              id ||
+              `team-${index + 1}`,
+
+            name:
+              name
+
+          };
+
+        }
+      )
+      .filter(
+        team =>
+          team.id &&
+          team.name
+      );
+
+}
+
+
+/* =========================
+   VALIDATE TEAM COUNT
+========================= */
+
+function validateTeamCount() {
+
+  const count =
     approvedTeams.length;
 
-  const matches =
-    Number(matchesPerTeam.value);
-
-
-  if (teamCount < 9) {
+  if (count < 9) {
 
     return {
 
       valid: false,
 
       message:
-        "At least 9 approved teams are required."
+        `Champions League requires at least 9 approved teams. Currently there are ${count}.`
 
     };
 
   }
 
+  if (count > 128) {
+
+    return {
+
+      valid: false,
+
+      message:
+        "Champions League supports a maximum of 128 teams."
+
+    };
+
+  }
+
+  return {
+
+    valid: true,
+
+    message:
+      `${count} approved teams are available.`
+
+  };
+
+}
+
+
+/* =========================
+   QUALIFICATION COUNT
+========================= */
+
+function getQualifiedCount(
+  teamCount
+) {
 
   if (
-    !Number.isInteger(matches) ||
-    matches < 1 ||
-    matches > 8
+    teamCount >= 9 &&
+    teamCount <= 16
   ) {
+
+    return 8;
+
+  }
+
+  if (
+    teamCount >= 17 &&
+    teamCount <= 32
+  ) {
+
+    return 16;
+
+  }
+
+  if (
+    teamCount >= 33
+  ) {
+
+    return 32;
+
+  }
+
+  return 0;
+
+}
+
+
+/* =========================
+   VALIDATE MATCH COUNT
+========================= */
+
+function validateMatchesPerTeam(
+  matches
+) {
+
+  const teamCount =
+    approvedTeams.length;
+
+  const value =
+    Number(matches);
+
+  if (!Number.isInteger(value)) {
+
+    return {
+
+      valid: false,
+
+      message:
+        "Matches per team must be a whole number."
+
+    };
+
+  }
+
+  if (value < 1 || value > 8) {
 
     return {
 
@@ -524,9 +819,21 @@ function validateMatchesPerTeam() {
 
   }
 
+  if (value > teamCount - 1) {
+
+    return {
+
+      valid: false,
+
+      message:
+        "A team cannot play itself or the same opponent twice."
+
+    };
+
+  }
 
   if (
-    matches > teamCount - 1
+    (teamCount * value) % 2 !== 0
   ) {
 
     return {
@@ -534,40 +841,18 @@ function validateMatchesPerTeam() {
       valid: false,
 
       message:
-        "Matches per team cannot exceed the number of other teams."
+        `${teamCount} teams × ${value} matches is not an even total. Choose another matches-per-team value.`
 
     };
 
   }
-
-
-  /*
-     The total number of team-match
-     appearances must be even because
-     every match contains two teams.
-  */
-
-  if (
-    (teamCount * matches) % 2 !== 0
-  ) {
-
-    return {
-
-      valid: false,
-
-      message:
-        "This number of matches per team cannot be used with the current number of teams."
-
-    };
-
-  }
-
 
   return {
 
     valid: true,
 
-    message: ""
+    message:
+      `${value} matches per team is valid.`
 
   };
 
@@ -575,308 +860,505 @@ function validateMatchesPerTeam() {
 
 
 /* =========================
+   RENDER APPROVED TEAMS
+========================= */
+
+function renderApprovedTeams() {
+
+  if (!approvedTeamList) {
+    return;
+  }
+
+  normalizeApprovedTeams();
+
+  const validation =
+    validateTeamCount();
+
+  if (teamCountMessage) {
+
+    teamCountMessage.textContent =
+      validation.message;
+
+    teamCountMessage.className =
+      validation.valid
+        ? "message"
+        : "message status-warning";
+
+  }
+
+  approvedTeamList.innerHTML = "";
+
+  if (approvedTeams.length === 0) {
+
+    approvedTeamList.innerHTML =
+      `
+        <div class="team-card">
+          No approved teams found.
+        </div>
+      `;
+
+    return;
+
+  }
+
+  approvedTeams.forEach(
+    (team, index) => {
+
+      const card =
+        document.createElement(
+          "div"
+        );
+
+      card.className =
+        "team-card";
+
+      card.innerHTML =
+        `
+          <strong>
+            ${escapeHtml(
+              getTeamName(team)
+            )}
+          </strong>
+
+          <span>
+            Team ${index + 1}
+          </span>
+        `;
+
+      approvedTeamList.appendChild(
+        card
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================
+   ESCAPE HTML
+========================= */
+
+function escapeHtml(
+  value
+) {
+
+  return String(value)
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
+}
+
+/* =========================================================
+   PART 4 — SETTINGS + LEAGUE FIXTURE GENERATION
+   ========================================================= */
+
+
+/* =========================
    SAVE SETTINGS
 ========================= */
 
-saveSettingsButton.addEventListener(
-  "click",
-  async () => {
+if (saveSettingsButton) {
 
-    const validation =
-      validateMatchesPerTeam();
+  saveSettingsButton.addEventListener(
+    "click",
+    async () => {
 
+      const value =
+        Number(
+          matchesPerTeam.value
+        );
 
-    if (!validation.valid) {
+      const validation =
+        validateMatchesPerTeam(
+          value
+        );
 
-      settingsMessage.textContent =
-        validation.message;
+      if (!validation.valid) {
 
-      return;
+        settingsMessage.textContent =
+          validation.message;
+
+        settingsMessage.className =
+          "message status-warning";
+
+        return;
+
+      }
+
+      if (championsData.started) {
+
+        settingsMessage.textContent =
+          "Settings cannot be changed after the competition starts.";
+
+        settingsMessage.className =
+          "message status-warning";
+
+        return;
+
+      }
+
+      championsData.matchesPerTeam =
+        value;
+
+      try {
+
+        await saveChampionsData();
+
+        settingsMessage.textContent =
+          `Settings saved: ${value} matches per team.`;
+
+        settingsMessage.className =
+          "message status-live";
+
+      } catch (error) {
+
+        console.error(
+          "Save settings error:",
+          error
+        );
+
+        settingsMessage.textContent =
+          "Unable to save settings.";
+
+        settingsMessage.className =
+          "message status-warning";
+
+      }
 
     }
+  );
 
-
-    championsData.matchesPerTeam =
-      Number(
-        matchesPerTeam.value
-      );
-
-
-    try {
-
-      await saveChampionsData();
-
-
-      settingsMessage.textContent =
-        "Champions League settings saved.";
-
-    } catch (error) {
-
-      console.error(error);
-
-      settingsMessage.textContent =
-        "Unable to save settings.";
-
-    }
-
-  }
-);
-
-/* =========================================================
-   PART 4 — LEAGUE FIXTURE GENERATION
-   ========================================================= */
+}
 
 
 /* =========================
    SHUFFLE TEAMS
 ========================= */
 
-function shuffleArray(array) {
+function shuffleTeams(
+  teams
+) {
 
-  const result =
-    [...array];
-
+  const shuffled =
+    [...teams];
 
   for (
-    let i = result.length - 1;
+    let i = shuffled.length - 1;
     i > 0;
     i--
   ) {
 
-    const j =
+    const randomIndex =
       Math.floor(
-        Math.random() * (i + 1)
+        Math.random() *
+        (i + 1)
       );
 
-
     [
-      result[i],
-      result[j]
+      shuffled[i],
+      shuffled[randomIndex]
     ] =
     [
-      result[j],
-      result[i]
+      shuffled[randomIndex],
+      shuffled[i]
     ];
 
   }
 
-
-  return result;
+  return shuffled;
 
 }
 
 
 /* =========================
-   GENERATE LEAGUE FIXTURES
+   CREATE FIXTURE ID
+========================= */
+
+function createFixtureId(
+  index
+) {
+
+  return (
+    `champions-league-${Date.now()}-${index}-${Math.random()
+      .toString(36)
+      .slice(2, 8)}`
+  );
+
+}
+
+
+/* =========================
+   CHECK OPPONENT
+========================= */
+
+function opponentAlreadyExists(
+  fixtures,
+  teamA,
+  teamB
+) {
+
+  return fixtures.some(
+    fixture => {
+
+      const home =
+        fixture.home;
+
+      const away =
+        fixture.away;
+
+      return (
+        (
+          home === teamA &&
+          away === teamB
+        ) ||
+        (
+          home === teamB &&
+          away === teamA
+        )
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================
+   ADD FIXTURE
+========================= */
+
+function addLeagueFixture(
+  fixtures,
+  homeTeam,
+  awayTeam
+) {
+
+  if (!homeTeam || !awayTeam) {
+    return false;
+  }
+
+  const homeId =
+    getTeamId(homeTeam);
+
+  const awayId =
+    getTeamId(awayTeam);
+
+  if (!homeId || !awayId) {
+    return false;
+  }
+
+  if (homeId === awayId) {
+    return false;
+  }
+
+  if (
+    opponentAlreadyExists(
+      fixtures,
+      homeId,
+      awayId
+    )
+  ) {
+
+    return false;
+
+  }
+
+  fixtures.push({
+
+    id:
+      createFixtureId(
+        fixtures.length
+      ),
+
+    phase:
+      "league",
+
+    home:
+      homeId,
+
+    away:
+      awayId,
+
+    homeName:
+      getTeamName(homeTeam),
+
+    awayName:
+      getTeamName(awayTeam),
+
+    homeScore:
+      null,
+
+    awayScore:
+      null,
+
+    status:
+      "scheduled",
+
+    completed:
+      false
+
+  });
+
+  return true;
+
+}
+
+
+/* =========================
+   GENERATE FIXTURES
 ========================= */
 
 function generateLeagueFixtures() {
 
-  const validation =
-    validateMatchesPerTeam();
+  normalizeApprovedTeams();
 
+  const teamValidation =
+    validateTeamCount();
 
-  if (!validation.valid) {
+  if (!teamValidation.valid) {
 
-    settingsMessage.textContent =
-      validation.message;
-
-    return null;
+    throw new Error(
+      teamValidation.message
+    );
 
   }
 
-
-  const matchesPerTeamValue =
+  const requestedMatches =
     Number(
       matchesPerTeam.value
     );
 
+  const matchValidation =
+    validateMatchesPerTeam(
+      requestedMatches
+    );
+
+  if (!matchValidation.valid) {
+
+    throw new Error(
+      matchValidation.message
+    );
+
+  }
 
   const teams =
-    shuffleArray(
+    shuffleTeams(
       approvedTeams
     );
 
+  const fixtures = [];
 
   const teamCount =
     teams.length;
 
-
-  const fixtures = [];
-
-
-  /*
-     Track every pair of teams.
-
-     This prevents the same two teams
-     from being scheduled more than once.
-  */
-
-  const seenPairs =
-    new Set();
-
-
-  /* =========================
-     ADD FIXTURE
-  ========================= */
-
-  function addFixture(
-    firstIndex,
-    secondIndex
-  ) {
-
-    if (
-      firstIndex === secondIndex
-    ) {
-
-      return;
-
-    }
-
-
-    const first =
-      Math.min(
-        firstIndex,
-        secondIndex
-      );
-
-    const second =
-      Math.max(
-        firstIndex,
-        secondIndex
-      );
-
-
-    const pairKey =
-      `${first}-${second}`;
-
-
-    if (
-      seenPairs.has(pairKey)
-    ) {
-
-      return;
-
-    }
-
-
-    seenPairs.add(pairKey);
-
-
-    fixtures.push({
-
-      id:
-        `league-${fixtures.length + 1}`,
-
-      phase:
-        "league",
-
-      home:
-        getTeamId(
-          teams[firstIndex],
-          firstIndex
-        ),
-
-      away:
-        getTeamId(
-          teams[secondIndex],
-          secondIndex
-        ),
-
-      homeName:
-        getTeamName(
-          teams[firstIndex]
-        ),
-
-      awayName:
-        getTeamName(
-          teams[secondIndex]
-        ),
-
-      homeScore:
-        null,
-
-      awayScore:
-        null,
-
-      completed:
-        false
-
-    });
-
-  }
-
+  const targetMatches =
+    requestedMatches;
 
   /*
-     =====================================================
-     CYCLIC FIXTURE SYSTEM
-     =====================================================
+     For every team, pair it with the
+     required number of opponents.
 
-     For every distance:
+     The circular-distance method works
+     for every valid N/K combination:
 
-       +distance
-       -distance
-
-     This gives each team two opponents
-     for every distance.
-
-     Example:
-
-     8 matches per team
-     = 4 distances × 2 opponents
-
-     If the number of teams is even
-     and matches per team is odd,
-     the exact opposite team is added
-     as the final opponent.
+       N × K must be even
+       K <= N - 1
   */
 
+  const distances = [];
 
-  const pairedDistances =
+  const half =
     Math.floor(
-      matchesPerTeamValue / 2
+      targetMatches / 2
     );
-
-
-  /* =========================
-     ADD PAIRED DISTANCES
-  ========================= */
 
   for (
     let distance = 1;
-    distance <= pairedDistances;
+    distance <= half;
     distance++
   ) {
 
-    for (
-      let i = 0;
-      i < teamCount;
-      i++
+    distances.push(
+      distance
+    );
+
+  }
+
+  /*
+     If both N and K are even/odd in a
+     way that leaves one opposite pairing,
+     add the unique opposite distance.
+  */
+
+  if (
+    targetMatches % 2 === 1
+  ) {
+
+    const opposite =
+      teamCount / 2;
+
+    if (
+      Number.isInteger(
+        opposite
+      )
     ) {
 
-      const forward =
+      distances.push(
+        opposite
+      );
+
+    }
+
+  }
+
+
+  for (
+    let i = 0;
+    i < teamCount;
+    i++
+  ) {
+
+    for (
+      const distance of distances
+    ) {
+
+      const j =
         (i + distance) %
         teamCount;
 
+      if (j === i) {
+        continue;
+      }
 
-      const backward =
-        (
-          i -
-          distance +
-          teamCount
-        ) %
-        teamCount;
+      const homeTeam =
+        teams[i];
 
+      const awayTeam =
+        teams[j];
 
-      addFixture(
-        i,
-        forward
-      );
-
-
-      addFixture(
-        i,
-        backward
+      addLeagueFixture(
+        fixtures,
+        homeTeam,
+        awayTeam
       );
 
     }
@@ -885,89 +1367,19 @@ function generateLeagueFixtures() {
 
 
   /*
-     =====================================================
-     ODD MATCH COUNT PER TEAM
-     =====================================================
-
-     An odd number of matches per team
-     is only possible when the number
-     of teams is even.
-
-     The remaining opponent is the
-     team directly opposite in the circle.
+     Safety check:
+     Every team must have exactly
+     the requested number of matches.
   */
 
-  if (
-    matchesPerTeamValue % 2 === 1
-  ) {
-
-    const oppositeDistance =
-      teamCount / 2;
-
-
-    for (
-      let i = 0;
-      i < teamCount;
-      i++
-    ) {
-
-      const opponent =
-        (
-          i +
-          oppositeDistance
-        ) %
-        teamCount;
-
-
-      addFixture(
-        i,
-        opponent
-      );
-
-    }
-
-  }
-
-
-  /* =========================
-     VERIFY FIXTURE COUNT
-  ========================= */
-
-  const expectedFixtureCount =
-    (
-      teamCount *
-      matchesPerTeamValue
-    ) / 2;
-
-
-  if (
-    fixtures.length !==
-    expectedFixtureCount
-  ) {
-
-    settingsMessage.textContent =
-      "Fixture generation failed. Please try again.";
-
-    return null;
-
-  }
-
-
-  /* =========================
-     VERIFY TEAM DISTRIBUTION
-  ========================= */
-
-  const counts = {};
-
+  const matchCounts =
+    {};
 
   teams.forEach(
-    (team, index) => {
+    team => {
 
-      counts[
-        getTeamId(
-          team,
-          index
-        )
+      matchCounts[
+        getTeamId(team)
       ] = 0;
 
     }
@@ -977,33 +1389,67 @@ function generateLeagueFixtures() {
   fixtures.forEach(
     fixture => {
 
-      counts[
-        fixture.home
-      ]++;
+      if (
+        matchCounts[
+          fixture.home
+        ] !== undefined
+      ) {
 
-      counts[
-        fixture.away
-      ]++;
+        matchCounts[
+          fixture.home
+        ]++;
+
+      }
+
+      if (
+        matchCounts[
+          fixture.away
+        ] !== undefined
+      ) {
+
+        matchCounts[
+          fixture.away
+        ]++;
+
+      }
 
     }
   );
 
 
-  const distributionValid =
-    Object.values(counts)
-      .every(
-        count =>
-          count ===
-          matchesPerTeamValue
-      );
+  const invalidTeam =
+    teams.find(
+      team =>
+        matchCounts[
+          getTeamId(team)
+        ] !== targetMatches
+    );
 
 
-  if (!distributionValid) {
+  if (invalidTeam) {
 
-    settingsMessage.textContent =
-      "Fixture generation failed. Each team must have exactly the selected number of matches.";
+    throw new Error(
+      `Fixture generation failed for ${getTeamName(invalidTeam)}.`
+    );
 
-    return null;
+  }
+
+
+  const expectedFixtureCount =
+    (
+      teamCount *
+      targetMatches
+    ) / 2;
+
+
+  if (
+    fixtures.length !==
+    expectedFixtureCount
+  ) {
+
+    throw new Error(
+      "Fixture generation produced an incorrect number of matches."
+    );
 
   }
 
@@ -1014,119 +1460,313 @@ function generateLeagueFixtures() {
 
 
 /* =========================
-   GENERATE FIXTURES BUTTON
+   GENERATE BUTTON
 ========================= */
 
-generateFixturesButton.addEventListener(
-  "click",
-  async () => {
+if (generateFixturesButton) {
 
-    if (championsData.started) {
+  generateFixturesButton.addEventListener(
+    "click",
+    async () => {
 
-      settingsMessage.textContent =
-        "Fixtures cannot be regenerated after the competition starts.";
+      if (championsData.started) {
 
-      return;
+        settingsMessage.textContent =
+          "Fixtures cannot be regenerated after the competition starts.";
+
+        settingsMessage.className =
+          "message status-warning";
+
+        return;
+
+      }
+
+      try {
+
+        normalizeApprovedTeams();
+
+        const validation =
+          validateTeamCount();
+
+        if (!validation.valid) {
+
+          settingsMessage.textContent =
+            validation.message;
+
+          settingsMessage.className =
+            "message status-warning";
+
+          return;
+
+        }
+
+        const fixtures =
+          generateLeagueFixtures();
+
+        championsData.teams =
+          approvedTeams.map(
+            team => ({
+              ...team
+            })
+          );
+
+        championsData.fixtures =
+          fixtures;
+
+        championsData.knockoutRound =
+          null;
+
+        championsData.winner =
+          null;
+
+        championsData.started =
+          false;
+
+        championsData.matchesPerTeam =
+          Number(
+            matchesPerTeam.value
+          );
+
+
+        await saveChampionsData();
+
+
+        settingsMessage.textContent =
+          `${fixtures.length} league fixtures generated successfully.`;
+
+        settingsMessage.className =
+          "message status-live";
+
+
+        renderFixtures();
+
+        updateCompetitionStatus();
+
+      } catch (error) {
+
+        console.error(
+          "Fixture generation error:",
+          error
+        );
+
+        settingsMessage.textContent =
+          error.message ||
+          "Unable to generate fixtures.";
+
+        settingsMessage.className =
+          "message status-warning";
+
+      }
 
     }
+  );
 
-
-    const fixtures =
-      generateLeagueFixtures();
-
-
-    if (!fixtures) {
-
-      return;
-
-    }
-
-
-    /*
-       Store all approved teams.
-
-       The shuffled order is used only
-       for fixture generation.
-    */
-
-    championsData.teams =
-      approvedTeams.map(
-        (team, index) => ({
-
-          ...team,
-
-          id:
-            getTeamId(
-              team,
-              index
-            )
-
-        })
-      );
-
-
-    championsData.fixtures =
-      fixtures;
-
-
-    championsData.knockoutRound =
-      null;
-
-
-    championsData.winner =
-      null;
-
-
-    try {
-
-      await saveChampionsData();
-
-
-      settingsMessage.textContent =
-        `${fixtures.length} league fixtures generated successfully.`;
-
-
-      renderAdminFixtures();
-
-    } catch (error) {
-
-      console.error(error);
-
-      settingsMessage.textContent =
-        "Unable to save generated fixtures.";
-
-    }
-
-  }
-);
+}
 
 /* =========================================================
-   PART 5 — FIXTURE DISPLAY + RESULTS
+   PART 5 — LEAGUE FIXTURES + RESULTS
    ========================================================= */
 
 
 /* =========================
-   RENDER LEAGUE FIXTURES
+   FIND TEAM
 ========================= */
 
-function renderAdminFixtures() {
+function findTeamById(
+  teamId
+) {
+
+  return championsData.teams.find(
+    team =>
+      getTeamId(team) ===
+      String(teamId)
+  ) || approvedTeams.find(
+    team =>
+      getTeamId(team) ===
+      String(teamId)
+  ) || null;
+
+}
+
+
+/* =========================
+   GET FIXTURE TEAM NAME
+========================= */
+
+function getFixtureTeamName(
+  fixture,
+  side
+) {
+
+  const id =
+    side === "home"
+      ? fixture.home
+      : fixture.away;
+
+  const storedName =
+    side === "home"
+      ? fixture.homeName
+      : fixture.awayName;
+
+  const team =
+    findTeamById(id);
+
+  if (team) {
+
+    return getTeamName(team);
+
+  }
+
+  return storedName ||
+    "Unknown Team";
+
+}
+
+
+/* =========================
+   NORMALIZE FIXTURE
+========================= */
+
+function normalizeFixture(
+  fixture
+) {
+
+  if (!fixture) {
+    return null;
+  }
+
+  const home =
+    fixture.home ||
+    fixture.homeTeamId ||
+    "";
+
+  const away =
+    fixture.away ||
+    fixture.awayTeamId ||
+    "";
+
+  const homeScore =
+    fixture.homeScore !== undefined
+      ? fixture.homeScore
+      : null;
+
+  const awayScore =
+    fixture.awayScore !== undefined
+      ? fixture.awayScore
+      : null;
+
+  const completed =
+    fixture.completed === true ||
+    fixture.status === "completed";
+
+  return {
+
+    ...fixture,
+
+    home:
+      home,
+
+    away:
+      away,
+
+    homeName:
+      getFixtureTeamName(
+        {
+          ...fixture,
+          home
+        },
+        "home"
+      ),
+
+    awayName:
+      getFixtureTeamName(
+        {
+          ...fixture,
+          away
+        },
+        "away"
+      ),
+
+    homeScore:
+      homeScore,
+
+    awayScore:
+      awayScore,
+
+    status:
+      completed
+        ? "completed"
+        : "scheduled",
+
+    completed:
+      completed
+
+  };
+
+}
+
+
+/* =========================
+   VALID SCORE
+========================= */
+
+function isValidScore(
+  value
+) {
+
+  if (
+    value === "" ||
+    value === null ||
+    value === undefined
+  ) {
+
+    return false;
+
+  }
+
+  const number =
+    Number(value);
+
+  return (
+    Number.isInteger(number) &&
+    number >= 0
+  );
+
+}
+
+
+/* =========================
+   RENDER FIXTURES
+========================= */
+
+function renderFixtures() {
+
+  if (!adminFixtureList) {
+    return;
+  }
 
   adminFixtureList.innerHTML = "";
 
-  leagueResultsList.innerHTML = "";
-
-
   const fixtures =
-    championsData.fixtures.filter(
-      fixture =>
-        fixture.phase === "league"
-    );
+    Array.isArray(
+      championsData.fixtures
+    )
+      ? championsData.fixtures
+          .map(
+            normalizeFixture
+          )
+          .filter(Boolean)
+      : [];
 
 
   if (fixtures.length === 0) {
 
     adminFixtureList.innerHTML =
-      "<p>No fixtures generated yet.</p>";
+      `
+        <div class="match-card">
+          No league fixtures have been generated yet.
+        </div>
+      `;
 
     return;
 
@@ -1137,81 +1777,247 @@ function renderAdminFixtures() {
     (fixture, index) => {
 
       const card =
-        document.createElement("div");
-
+        document.createElement(
+          "div"
+        );
 
       card.className =
-        "admin-fixture";
+        "match-card";
+
+
+      const homeName =
+        getFixtureTeamName(
+          fixture,
+          "home"
+        );
+
+      const awayName =
+        getFixtureTeamName(
+          fixture,
+          "away"
+        );
+
+
+      const completed =
+        fixture.completed === true;
 
 
       const homeScore =
-        fixture.homeScore ?? "";
+        completed &&
+        fixture.homeScore !== null
+          ? fixture.homeScore
+          : "";
 
 
       const awayScore =
-        fixture.awayScore ?? "";
+        completed &&
+        fixture.awayScore !== null
+          ? fixture.awayScore
+          : "";
 
 
-      card.innerHTML = `
+      card.innerHTML =
+        `
+          <h3>
+            Match ${index + 1}
+          </h3>
 
-        <div>
+          <div class="score-row">
 
-          <strong>
-            ${index + 1}.
-            ${escapeHtml(
-              fixture.homeName
-            )}
-            vs
-            ${escapeHtml(
-              fixture.awayName
-            )}
-          </strong>
+            <strong>
+              ${escapeHtml(
+                homeName
+              )}
+            </strong>
 
-        </div>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              class="home-score"
+              value="${escapeHtml(
+                String(homeScore)
+              )}"
+              placeholder="0"
+            >
+
+            <span>
+              -
+            </span>
+
+            <input
+              type="number"
+              min="0"
+              step="1"
+              class="away-score"
+              value="${escapeHtml(
+                String(awayScore)
+              )}"
+              placeholder="0"
+            >
+
+            <strong>
+              ${escapeHtml(
+                awayName
+              )}
+            </strong>
+
+          </div>
+
+          <div class="button-row">
+
+            <button
+              type="button"
+              class="save-result-button"
+            >
+              ${
+                completed
+                  ? "Update Result"
+                  : "Save Result"
+              }
+            </button>
+
+          </div>
+
+          <p class="message result-message"></p>
+        `;
 
 
-        <div class="score-inputs">
+      const homeInput =
+        card.querySelector(
+          ".home-score"
+        );
 
-          <input
-            type="number"
-            min="0"
-            step="1"
-            id="homeScore-${escapeHtml(
-              fixture.id
-            )}"
-            value="${homeScore}"
-            placeholder="Home"
-          >
+      const awayInput =
+        card.querySelector(
+          ".away-score"
+        );
 
+      const saveButton =
+        card.querySelector(
+          ".save-result-button"
+        );
 
-          <span>-</span>
-
-
-          <input
-            type="number"
-            min="0"
-            step="1"
-            id="awayScore-${escapeHtml(
-              fixture.id
-            )}"
-            value="${awayScore}"
-            placeholder="Away"
-          >
+      const resultMessage =
+        card.querySelector(
+          ".result-message"
+        );
 
 
-          <button
-            type="button"
-            class="save-result-button"
-            data-fixture-id="${escapeHtml(
-              fixture.id
-            )}"
-          >
-            Save
-          </button>
+      saveButton.addEventListener(
+        "click",
+        async () => {
 
-        </div>
+          if (championsData.started !== true) {
 
-      `;
+            resultMessage.textContent =
+              "Start the competition before entering results.";
+
+            resultMessage.className =
+              "message status-warning";
+
+            return;
+
+          }
+
+
+          if (
+            !isValidScore(
+              homeInput.value
+            ) ||
+            !isValidScore(
+              awayInput.value
+            )
+          ) {
+
+            resultMessage.textContent =
+              "Enter valid whole-number scores for both teams.";
+
+            resultMessage.className =
+              "message status-warning";
+
+            return;
+
+          }
+
+
+          const homeScoreValue =
+            Number(
+              homeInput.value
+            );
+
+          const awayScoreValue =
+            Number(
+              awayInput.value
+            );
+
+
+          const storedFixture =
+            championsData.fixtures.find(
+              item =>
+                item.id ===
+                fixture.id
+            );
+
+
+          if (!storedFixture) {
+
+            resultMessage.textContent =
+              "Fixture could not be found.";
+
+            resultMessage.className =
+              "message status-warning";
+
+            return;
+
+          }
+
+
+          storedFixture.homeScore =
+            homeScoreValue;
+
+          storedFixture.awayScore =
+            awayScoreValue;
+
+          storedFixture.status =
+            "completed";
+
+          storedFixture.completed =
+            true;
+
+
+          try {
+
+            await saveChampionsData();
+
+            resultMessage.textContent =
+              "Result saved successfully.";
+
+            resultMessage.className =
+              "message status-live";
+
+
+            renderFixtures();
+
+            renderLeagueResults();
+
+          } catch (error) {
+
+            console.error(
+              "Save result error:",
+              error
+            );
+
+            resultMessage.textContent =
+              "Unable to save the result.";
+
+            resultMessage.className =
+              "message status-warning";
+
+          }
+
+        }
+      );
 
 
       adminFixtureList.appendChild(
@@ -1221,161 +2027,31 @@ function renderAdminFixtures() {
     }
   );
 
-
-  document
-    .querySelectorAll(
-      ".save-result-button"
-    )
-    .forEach(
-      button => {
-
-        button.addEventListener(
-          "click",
-          () => {
-
-            saveLeagueResult(
-              button.dataset.fixtureId
-            );
-
-          }
-        );
-
-      }
-    );
-
-
-  renderSavedLeagueResults();
-
 }
 
 
 /* =========================
-   SAVE LEAGUE RESULT
+   RENDER COMPLETED RESULTS
 ========================= */
 
-async function saveLeagueResult(
-  fixtureId
-) {
+function renderLeagueResults() {
 
-  const fixture =
-    championsData.fixtures.find(
-      item =>
-        item.id === fixtureId
-    );
-
-
-  if (!fixture) {
-
+  if (!leagueResultsList) {
     return;
-
   }
-
-
-  const homeInput =
-    document.getElementById(
-      `homeScore-${fixtureId}`
-    );
-
-
-  const awayInput =
-    document.getElementById(
-      `awayScore-${fixtureId}`
-    );
-
-
-  if (
-    !homeInput ||
-    !awayInput
-  ) {
-
-    return;
-
-  }
-
-
-  const homeScore =
-    Number(
-      homeInput.value
-    );
-
-
-  const awayScore =
-    Number(
-      awayInput.value
-    );
-
-
-  if (
-    homeInput.value === "" ||
-    awayInput.value === "" ||
-    !Number.isInteger(homeScore) ||
-    !Number.isInteger(awayScore) ||
-    homeScore < 0 ||
-    awayScore < 0
-  ) {
-
-    alert(
-      "Enter valid scores for both teams."
-    );
-
-    return;
-
-  }
-
-
-  fixture.homeScore =
-    homeScore;
-
-
-  fixture.awayScore =
-    awayScore;
-
-
-  fixture.completed =
-    true;
-
-
-  try {
-
-    await saveChampionsData();
-
-
-    renderAdminFixtures();
-
-
-    alert(
-      "Match result saved."
-    );
-
-  } catch (error) {
-
-    console.error(error);
-
-
-    alert(
-      "Unable to save match result."
-    );
-
-  }
-
-}
-
-
-/* =========================
-   RENDER SAVED RESULTS
-========================= */
-
-function renderSavedLeagueResults() {
 
   leagueResultsList.innerHTML = "";
 
-
   const completedFixtures =
-    championsData.fixtures.filter(
-      fixture =>
-        fixture.phase === "league" &&
-        fixture.completed === true
-    );
+    championsData.fixtures
+      .map(
+        normalizeFixture
+      )
+      .filter(
+        fixture =>
+          fixture &&
+          fixture.completed === true
+      );
 
 
   if (
@@ -1383,7 +2059,11 @@ function renderSavedLeagueResults() {
   ) {
 
     leagueResultsList.innerHTML =
-      "<p>No results entered yet.</p>";
+      `
+        <div class="match-card">
+          No completed league results yet.
+        </div>
+      `;
 
     return;
 
@@ -1391,41 +2071,51 @@ function renderSavedLeagueResults() {
 
 
   completedFixtures.forEach(
-    fixture => {
+    (fixture, index) => {
 
-      const item =
-        document.createElement("div");
+      const card =
+        document.createElement(
+          "div"
+        );
 
+      card.className =
+        "match-card";
 
-      item.className =
-        "admin-result";
+      card.innerHTML =
+        `
+          <strong>
+            Result ${index + 1}
+          </strong>
 
+          <p>
+            ${escapeHtml(
+              getFixtureTeamName(
+                fixture,
+                "home"
+              )
+            )}
 
-      item.innerHTML = `
+            <strong>
+              ${fixture.homeScore}
+            </strong>
 
-        <strong>
+            -
 
-          ${escapeHtml(
-            fixture.homeName
-          )}
+            <strong>
+              ${fixture.awayScore}
+            </strong>
 
-          ${fixture.homeScore}
-
-          -
-
-          ${fixture.awayScore}
-
-          ${escapeHtml(
-            fixture.awayName
-          )}
-
-        </strong>
-
-      `;
-
+            ${escapeHtml(
+              getFixtureTeamName(
+                fixture,
+                "away"
+              )
+            )}
+          </p>
+        `;
 
       leagueResultsList.appendChild(
-        item
+        card
       );
 
     }
@@ -1434,32 +2124,440 @@ function renderSavedLeagueResults() {
 }
 
 /* =========================================================
-   PART 6 — LEAGUE TABLE + QUALIFICATION
+   PART 6 — START COMPETITION + STATUS
    ========================================================= */
 
 
 /* =========================
-   BUILD LEAGUE TABLE
+   START COMPETITION
 ========================= */
 
-function buildLeagueTable() {
+if (startCompetitionButton) {
 
-  const table = {};
+  startCompetitionButton.addEventListener(
+    "click",
+    async () => {
+
+      if (championsData.started === true) {
+
+        settingsMessage.textContent =
+          "The Champions League competition has already started.";
+
+        settingsMessage.className =
+          "message status-warning";
+
+        return;
+
+      }
 
 
-  championsData.teams.forEach(
-    (team, index) => {
+      normalizeApprovedTeams();
 
-      const id =
-        getTeamId(
-          team,
-          index
+
+      const teamValidation =
+        validateTeamCount();
+
+      if (!teamValidation.valid) {
+
+        settingsMessage.textContent =
+          teamValidation.message;
+
+        settingsMessage.className =
+          "message status-warning";
+
+        return;
+
+      }
+
+
+      const fixtures =
+        Array.isArray(
+          championsData.fixtures
+        )
+          ? championsData.fixtures
+          : [];
+
+
+      if (fixtures.length === 0) {
+
+        settingsMessage.textContent =
+          "Generate the league fixtures before starting the competition.";
+
+        settingsMessage.className =
+          "message status-warning";
+
+        return;
+
+      }
+
+
+      const expectedMatches =
+        (
+          approvedTeams.length *
+          Number(
+            championsData.matchesPerTeam
+          )
+        ) / 2;
+
+
+      if (
+        fixtures.length !==
+        expectedMatches
+      ) {
+
+        settingsMessage.textContent =
+          "The fixture list is incomplete. Generate the fixtures again.";
+
+        settingsMessage.className =
+          "message status-warning";
+
+        return;
+
+      }
+
+
+      const confirmStart =
+        window.confirm(
+          "Start the Champions League competition now?"
         );
 
 
+      if (!confirmStart) {
+        return;
+      }
+
+
+      championsData.started =
+        true;
+
+
+      try {
+
+        await saveChampionsData();
+
+
+        settingsMessage.textContent =
+          "Champions League competition started successfully.";
+
+        settingsMessage.className =
+          "message status-live";
+
+
+        updateCompetitionStatus();
+
+        renderFixtures();
+
+        renderLeagueResults();
+
+
+        startCompetitionButton.disabled =
+          true;
+
+        generateFixturesButton.disabled =
+          true;
+
+        saveSettingsButton.disabled =
+          true;
+
+
+      } catch (error) {
+
+        console.error(
+          "Start competition error:",
+          error
+        );
+
+
+        championsData.started =
+          false;
+
+
+        settingsMessage.textContent =
+          "Unable to start the competition.";
+
+        settingsMessage.className =
+          "message status-warning";
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================
+   UPDATE STATUS
+========================= */
+
+function updateCompetitionStatus() {
+
+  if (!competitionStatus) {
+    return;
+  }
+
+
+  const teamCount =
+    championsData.teams.length;
+
+
+  const fixtureCount =
+    Array.isArray(
+      championsData.fixtures
+    )
+      ? championsData.fixtures.length
+      : 0;
+
+
+  const completedCount =
+    Array.isArray(
+      championsData.fixtures
+    )
+      ? championsData.fixtures.filter(
+          fixture =>
+            fixture.completed === true ||
+            fixture.status === "completed"
+        ).length
+      : 0;
+
+
+  if (!teamCount) {
+
+    competitionStatus.innerHTML =
+      `
+        <div class="status-warning">
+          No Champions League teams have been loaded.
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  if (!fixtureCount) {
+
+    competitionStatus.innerHTML =
+      `
+        <div class="status-warning">
+          ${teamCount} teams loaded.
+          Fixtures have not been generated.
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  if (!championsData.started) {
+
+    competitionStatus.innerHTML =
+      `
+        <div class="status-warning">
+          <strong>Competition not started.</strong>
+          <br>
+          ${teamCount} teams
+          |
+          ${fixtureCount} league fixtures
+          |
+          ${championsData.matchesPerTeam} matches per team
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  competitionStatus.innerHTML =
+    `
+      <div class="status-live">
+        <strong>Competition is LIVE.</strong>
+        <br>
+        ${teamCount} teams
+        |
+        ${fixtureCount} league fixtures
+        |
+        ${completedCount} results completed
+      </div>
+    `;
+
+
+  if (startCompetitionButton) {
+
+    startCompetitionButton.disabled =
+      true;
+
+  }
+
+  if (generateFixturesButton) {
+
+    generateFixturesButton.disabled =
+      true;
+
+  }
+
+  if (saveSettingsButton) {
+
+    saveSettingsButton.disabled =
+      true;
+
+  }
+
+}
+
+
+/* =========================
+   INITIAL SETTINGS DISPLAY
+========================= */
+
+function loadSettingsIntoForm() {
+
+  if (!matchesPerTeam) {
+    return;
+  }
+
+
+  const savedValue =
+    Number(
+      championsData.matchesPerTeam
+    );
+
+
+  if (
+    savedValue >= 1 &&
+    savedValue <= 8
+  ) {
+
+    matchesPerTeam.value =
+      String(savedValue);
+
+  }
+
+
+  if (
+    championsData.started === true
+  ) {
+
+    if (saveSettingsButton) {
+
+      saveSettingsButton.disabled =
+        true;
+
+    }
+
+    if (generateFixturesButton) {
+
+      generateFixturesButton.disabled =
+        true;
+
+    }
+
+    if (startCompetitionButton) {
+
+      startCompetitionButton.disabled =
+        true;
+
+    }
+
+  }
+
+}
+
+
+/* =========================
+   REFRESH ADMIN DISPLAY
+========================= */
+
+function refreshAdminDisplay() {
+
+  loadSettingsIntoForm();
+
+  renderApprovedTeams();
+
+  renderFixtures();
+
+  renderLeagueResults();
+
+  renderKnockout();
+
+  updateCompetitionStatus();
+
+}
+
+
+/* =========================
+   OVERRIDE DATA LOAD DISPLAY
+========================= */
+
+const originalHandleAdminAuth =
+  handleAdminAuth;
+
+
+/*
+   The authentication function from Part 2
+   already loads the data and renders the
+   main sections.
+
+   This listener simply refreshes the
+   settings controls after Firebase is ready.
+*/
+
+window.addEventListener(
+  "championsFirebaseReady",
+  () => {
+
+    if (
+      firebaseReady &&
+      championsData
+    ) {
+
+      loadSettingsIntoForm();
+
+    }
+
+  }
+);
+
+/* =========================================================
+   PART 7 — LEAGUE TABLE
+   ========================================================= */
+
+
+/* =========================
+   CREATE TABLE DATA
+========================= */
+
+function calculateLeagueTable() {
+
+  const table = {};
+
+  const teams =
+    Array.isArray(
+      championsData.teams
+    )
+      ? championsData.teams
+      : [];
+
+
+  /* =========================
+     INITIALIZE TEAMS
+  ========================= */
+
+  teams.forEach(
+    team => {
+
+      const id =
+        getTeamId(team);
+
+      if (!id) {
+        return;
+      }
+
       table[id] = {
 
-        id,
+        id: id,
 
         name:
           getTeamName(team),
@@ -1486,179 +2584,402 @@ function buildLeagueTable() {
   );
 
 
-  championsData.fixtures
-    .filter(
-      fixture =>
-        fixture.phase === "league" &&
-        fixture.completed === true
+  /* =========================
+     PROCESS RESULTS
+  ========================= */
+
+  const fixtures =
+    Array.isArray(
+      championsData.fixtures
     )
-    .forEach(
-      fixture => {
-
-        const home =
-          table[fixture.home];
-
-        const away =
-          table[fixture.away];
+      ? championsData.fixtures
+      : [];
 
 
-        if (
-          !home ||
-          !away
-        ) {
+  fixtures.forEach(
+    fixture => {
 
-          return;
+      const normalized =
+        normalizeFixture(
+          fixture
+        );
 
-        }
+      if (!normalized) {
+        return;
+      }
 
+      if (
+        normalized.phase !==
+        "league"
+      ) {
 
-        const homeScore =
-          Number(
-            fixture.homeScore
-          );
-
-
-        const awayScore =
-          Number(
-            fixture.awayScore
-          );
-
-
-        home.played++;
-
-        away.played++;
-
-
-        home.goalsFor +=
-          homeScore;
-
-        home.goalsAgainst +=
-          awayScore;
-
-
-        away.goalsFor +=
-          awayScore;
-
-        away.goalsAgainst +=
-          homeScore;
-
-
-        if (
-          homeScore >
-          awayScore
-        ) {
-
-          home.wins++;
-
-          home.points += 3;
-
-          away.losses++;
-
-        }
-
-        else if (
-          homeScore <
-          awayScore
-        ) {
-
-          away.wins++;
-
-          away.points += 3;
-
-          home.losses++;
-
-        }
-
-        else {
-
-          home.draws++;
-
-          away.draws++;
-
-          home.points++;
-
-          away.points++;
-
-        }
+        return;
 
       }
-    );
 
+      if (
+        normalized.completed !==
+        true
+      ) {
 
-  Object.values(table)
-    .forEach(
-      team => {
-
-        team.goalDifference =
-          team.goalsFor -
-          team.goalsAgainst;
+        return;
 
       }
-    );
+
+      const home =
+        table[
+          normalized.home
+        ];
+
+      const away =
+        table[
+          normalized.away
+        ];
 
 
-  return Object.values(table)
-    .sort(
-      (a, b) =>
+      if (!home || !away) {
+        return;
+      }
 
-        b.points -
-        a.points ||
 
-        b.goalDifference -
-        a.goalDifference ||
+      const homeScore =
+        Number(
+          normalized.homeScore
+        );
 
-        b.goalsFor -
-        a.goalsFor ||
+      const awayScore =
+        Number(
+          normalized.awayScore
+        );
 
-        a.name.localeCompare(
-          b.name
-        )
-    );
+
+      if (
+        !Number.isInteger(
+          homeScore
+        ) ||
+        !Number.isInteger(
+          awayScore
+        ) ||
+        homeScore < 0 ||
+        awayScore < 0
+      ) {
+
+        return;
+
+      }
+
+
+      home.played++;
+      away.played++;
+
+
+      home.goalsFor +=
+        homeScore;
+
+      home.goalsAgainst +=
+        awayScore;
+
+
+      away.goalsFor +=
+        awayScore;
+
+      away.goalsAgainst +=
+        homeScore;
+
+
+      if (
+        homeScore >
+        awayScore
+      ) {
+
+        home.wins++;
+
+        home.points += 3;
+
+        away.losses++;
+
+      } else if (
+        homeScore <
+        awayScore
+      ) {
+
+        away.wins++;
+
+        away.points += 3;
+
+        home.losses++;
+
+      } else {
+
+        home.draws++;
+
+        away.draws++;
+
+        home.points++;
+
+        away.points++;
+
+      }
+
+    }
+  );
+
+
+  /* =========================
+     CALCULATE GD
+  ========================= */
+
+  Object.values(
+    table
+  ).forEach(
+    team => {
+
+      team.goalDifference =
+        team.goalsFor -
+        team.goalsAgainst;
+
+    }
+  );
+
+
+  /* =========================
+     SORT TABLE
+  ========================= */
+
+  return Object.values(
+    table
+  ).sort(
+    (a, b) => {
+
+      if (
+        b.points !==
+        a.points
+      ) {
+
+        return (
+          b.points -
+          a.points
+        );
+
+      }
+
+      if (
+        b.goalDifference !==
+        a.goalDifference
+      ) {
+
+        return (
+          b.goalDifference -
+          a.goalDifference
+        );
+
+      }
+
+      if (
+        b.goalsFor !==
+        a.goalsFor
+      ) {
+
+        return (
+          b.goalsFor -
+          a.goalsFor
+        );
+
+      }
+
+      return a.name.localeCompare(
+        b.name
+      );
+
+    }
+  );
 
 }
 
 
 /* =========================
-   GET QUALIFIED COUNT
+   DISPLAY TABLE
 ========================= */
 
-function getQualifiedCount() {
+function renderLeagueTable() {
 
-  const count =
-    championsData.teams.length;
+  const tableContainer =
+    document.getElementById(
+      "leagueTable"
+    );
 
 
-  if (
-    count >= 9 &&
-    count <= 16
-  ) {
+  if (!tableContainer) {
+    return;
+  }
 
-    return 8;
+
+  const table =
+    calculateLeagueTable();
+
+
+  if (table.length === 0) {
+
+    tableContainer.innerHTML =
+      `
+        <div class="match-card">
+          No teams available for the league table.
+        </div>
+      `;
+
+    return;
 
   }
 
 
-  if (
-    count >= 17 &&
-    count <= 32
-  ) {
+  let rows = "";
 
-    return 16;
+
+  table.forEach(
+    (team, index) => {
+
+      rows +=
+        `
+          <tr>
+
+            <td>
+              ${index + 1}
+            </td>
+
+            <td>
+              ${escapeHtml(
+                team.name
+              )}
+            </td>
+
+            <td>
+              ${team.played}
+            </td>
+
+            <td>
+              ${team.wins}
+            </td>
+
+            <td>
+              ${team.draws}
+            </td>
+
+            <td>
+              ${team.losses}
+            </td>
+
+            <td>
+              ${team.goalsFor}
+            </td>
+
+            <td>
+              ${team.goalsAgainst}
+            </td>
+
+            <td>
+              ${team.goalDifference}
+            </td>
+
+            <td>
+              <strong>
+                ${team.points}
+              </strong>
+            </td>
+
+          </tr>
+        `;
+
+    }
+  );
+
+
+  tableContainer.innerHTML =
+    `
+      <div style="overflow-x:auto;">
+
+        <table
+          style="
+            width:100%;
+            border-collapse:collapse;
+            min-width:760px;
+          "
+        >
+
+          <thead>
+
+            <tr>
+
+              <th>Pos</th>
+
+              <th>Team</th>
+
+              <th>P</th>
+
+              <th>W</th>
+
+              <th>D</th>
+
+              <th>L</th>
+
+              <th>GF</th>
+
+              <th>GA</th>
+
+              <th>GD</th>
+
+              <th>Pts</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            ${rows}
+
+          </tbody>
+
+        </table>
+
+      </div>
+    `;
+
+}
+
+/* =========================================================
+   PART 8 — QUALIFICATION + RANDOM KNOCKOUT DRAW
+   ========================================================= */
+
+
+/* =========================
+   CHECK LEAGUE COMPLETION
+========================= */
+
+function isLeagueComplete() {
+
+  const fixtures =
+    Array.isArray(
+      championsData.fixtures
+    )
+      ? championsData.fixtures.filter(
+          fixture =>
+            fixture.phase === "league"
+        )
+      : [];
+
+
+  if (fixtures.length === 0) {
+
+    return false;
 
   }
 
 
-  if (
-    count >= 33 &&
-    count <= 128
-  ) {
-
-    return 32;
-
-  }
-
-
-  return 0;
+  return fixtures.every(
+    fixture =>
+      fixture.completed === true ||
+      fixture.status === "completed"
+  );
 
 }
 
@@ -1670,11 +2991,13 @@ function getQualifiedCount() {
 function getQualifiedTeams() {
 
   const table =
-    buildLeagueTable();
+    calculateLeagueTable();
 
 
   const qualifiedCount =
-    getQualifiedCount();
+    getQualifiedCount(
+      table.length
+    );
 
 
   if (
@@ -1686,50 +3009,97 @@ function getQualifiedTeams() {
   }
 
 
-  return table.slice(
-    0,
-    qualifiedCount
-  );
-
-}
-
-
-/* =========================
-   CHECK LEAGUE COMPLETION
-========================= */
-
-function isLeagueComplete() {
-
-  const requiredFixtures =
-    championsData.fixtures.filter(
-      fixture =>
-        fixture.phase === "league"
+  return table
+    .slice(
+      0,
+      qualifiedCount
+    )
+    .map(
+      team =>
+        findTeamById(
+          team.id
+        ) || {
+          id: team.id,
+          name: team.name
+        }
     );
 
-
-  if (
-    requiredFixtures.length === 0
-  ) {
-
-    return false;
-
-  }
+}
 
 
-  return requiredFixtures.every(
-    fixture =>
-      fixture.completed === true
+/* =========================
+   SHUFFLE QUALIFIED TEAMS
+========================= */
+
+function shuffleQualifiedTeams(
+  teams
+) {
+
+  return shuffleTeams(
+    teams
   );
 
 }
 
-/* =========================================================
-   PART 7 — KNOCKOUT RANDOM DRAW
-   ========================================================= */
+
+/* =========================
+   CREATE KNOCKOUT MATCH
+========================= */
+
+function createKnockoutMatch(
+  homeTeam,
+  awayTeam,
+  round,
+  index
+) {
+
+  return {
+
+    id:
+      `knockout-${Date.now()}-${round}-${index}-${Math.random()
+        .toString(36)
+        .slice(2, 8)}`,
+
+    phase:
+      "knockout",
+
+    round:
+      round,
+
+    home:
+      getTeamId(homeTeam),
+
+    away:
+      getTeamId(awayTeam),
+
+    homeName:
+      getTeamName(homeTeam),
+
+    awayName:
+      getTeamName(awayTeam),
+
+    homeScore:
+      null,
+
+    awayScore:
+      null,
+
+    status:
+      "scheduled",
+
+    completed:
+      false,
+
+    winner:
+      null
+
+  };
+
+}
 
 
 /* =========================
-   GET KNOCKOUT ROUND
+   ROUND NAME
 ========================= */
 
 function getKnockoutRoundName(
@@ -1742,59 +3112,67 @@ function getKnockoutRoundName(
 
   }
 
-
   if (teamCount === 16) {
 
     return "Round of 16";
 
   }
 
-
-  if (teamCount === 32) {
-
-    return "Round of 32";
-
-  }
-
-
-  return null;
+  return "Round of 32";
 
 }
 
 
 /* =========================
-   CREATE RANDOM DRAW
+   GENERATE FIRST KNOCKOUT ROUND
 ========================= */
 
-function createKnockoutDraw(
-  qualifiedTeams
-) {
+function generateKnockout() {
 
-  const count =
-    qualifiedTeams.length;
+  if (!championsData.started) {
 
-
-  const round =
-    getKnockoutRoundName(
-      count
+    throw new Error(
+      "The competition has not started."
     );
-
-
-  if (!round) {
-
-    return null;
 
   }
 
 
-  /*
-     Randomly shuffle the qualified
-     teams before pairing them.
-  */
+  if (!isLeagueComplete()) {
 
-  const shuffled =
-    shuffleArray(
+    throw new Error(
+      "All league matches must be completed before the knockout draw."
+    );
+
+  }
+
+
+  const qualifiedTeams =
+    getQualifiedTeams();
+
+
+  if (
+    qualifiedTeams.length !== 8 &&
+    qualifiedTeams.length !== 16 &&
+    qualifiedTeams.length !== 32
+  ) {
+
+    throw new Error(
+      "The number of qualified teams is invalid."
+    );
+
+  }
+
+
+  const randomizedTeams =
+    shuffleQualifiedTeams(
       qualifiedTeams
+    );
+
+
+  const round =
+    getKnockoutRoundName(
+      randomizedTeams.length
     );
 
 
@@ -1803,189 +3181,133 @@ function createKnockoutDraw(
 
   for (
     let i = 0;
-    i < shuffled.length;
+    i < randomizedTeams.length;
     i += 2
   ) {
 
-    const home =
-      shuffled[i];
-
-    const away =
-      shuffled[i + 1];
-
-
-    matches.push({
-
-      id:
-        `knockout-${Date.now()}-${i}`,
-
-      phase:
-        "knockout",
-
-      round,
-
-      home:
-        home.id,
-
-      away:
-        away.id,
-
-      homeName:
-        home.name,
-
-      awayName:
-        away.name,
-
-      homeScore:
-        null,
-
-      awayScore:
-        null,
-
-      completed:
-        false,
-
-      winner:
-        null
-
-    });
+    matches.push(
+      createKnockoutMatch(
+        randomizedTeams[i],
+        randomizedTeams[i + 1],
+        round,
+        matches.length
+      )
+    );
 
   }
 
 
-  return {
+  championsData.knockoutRound = {
 
-    round,
+    round:
+      round,
 
-    matches
+    matches:
+      matches
 
   };
+
+
+  championsData.winner =
+    null;
+
+
+  return matches;
 
 }
 
 
 /* =========================
-   GENERATE KNOCKOUT
+   GENERATE KNOCKOUT BUTTON
 ========================= */
 
-generateKnockoutButton.addEventListener(
-  "click",
-  async () => {
+if (generateKnockoutButton) {
 
-    if (!championsData.started) {
+  generateKnockoutButton.addEventListener(
+    "click",
+    async () => {
 
-      knockoutMessage.textContent =
-        "Start the Champions League before generating the knockout draw.";
+      try {
 
-      return;
+        if (
+          championsData.knockoutRound
+        ) {
 
-    }
+          const replaceDraw =
+            window.confirm(
+              "A knockout draw already exists. Generate a new random draw?"
+            );
 
+          if (!replaceDraw) {
+            return;
+          }
 
-    if (!isLeagueComplete()) {
-
-      knockoutMessage.textContent =
-        "All league matches must be completed first.";
-
-      return;
-
-    }
-
-
-    if (
-      championsData.knockoutRound
-    ) {
-
-      knockoutMessage.textContent =
-        "The knockout draw has already been generated.";
-
-      return;
-
-    }
+        }
 
 
-    const qualifiedTeams =
-      getQualifiedTeams();
+        const matches =
+          generateKnockout();
 
 
-    if (
-      qualifiedTeams.length !== 8 &&
-      qualifiedTeams.length !== 16 &&
-      qualifiedTeams.length !== 32
-    ) {
-
-      knockoutMessage.textContent =
-        "Unable to determine the qualified teams.";
-
-      return;
-
-    }
+        await saveChampionsData();
 
 
-    const draw =
-      createKnockoutDraw(
-        qualifiedTeams
-      );
+        if (knockoutMessage) {
+
+          knockoutMessage.textContent =
+            `${matches.length} ${championsData.knockoutRound.round} matches generated.`;
+
+          knockoutMessage.className =
+            "message status-live";
+
+        }
 
 
-    if (!draw) {
+        renderKnockout();
 
-      knockoutMessage.textContent =
-        "Unable to generate knockout draw.";
-
-      return;
-
-    }
+        updateCompetitionStatus();
 
 
-    championsData.knockoutRound = {
+      } catch (error) {
 
-      currentRound:
-        draw.round,
-
-      matches:
-        draw.matches,
-
-      completed:
-        false
-
-    };
+        console.error(
+          "Knockout generation error:",
+          error
+        );
 
 
-    try {
+        if (knockoutMessage) {
 
-      await saveChampionsData();
+          knockoutMessage.textContent =
+            error.message ||
+            "Unable to generate knockout draw.";
 
+          knockoutMessage.className =
+            "message status-warning";
 
-      knockoutMessage.textContent =
-        `${draw.round} draw generated randomly.`;
+        }
 
-      renderKnockoutResults();
-
-    } catch (error) {
-
-      console.error(error);
-
-      knockoutMessage.textContent =
-        "Unable to save knockout draw.";
+      }
 
     }
+  );
 
-  }
-);
-
-/* =========================================================
-   PART 8 — KNOCKOUT RESULTS + NEXT ROUNDS
-   ========================================================= */
+}
 
 
 /* =========================
-   RENDER KNOCKOUT MATCHES
+   RENDER KNOCKOUT
 ========================= */
 
-function renderKnockoutResults() {
+function renderKnockout() {
 
-  knockoutResultsList.innerHTML = "";
+  if (!knockoutResultsList) {
+    return;
+  }
+
+
+  knockoutResultsList.innerHTML =
+    "";
 
 
   const knockout =
@@ -1995,7 +3317,11 @@ function renderKnockoutResults() {
   if (!knockout) {
 
     knockoutResultsList.innerHTML =
-      "<p>No knockout draw generated yet.</p>";
+      `
+        <div class="match-card">
+          Knockout draw has not been generated yet.
+        </div>
+      `;
 
     return;
 
@@ -2010,113 +3336,67 @@ function renderKnockoutResults() {
       : [];
 
 
-  if (matches.length === 0) {
+  const heading =
+    document.createElement(
+      "h3"
+    );
 
-    knockoutResultsList.innerHTML =
-      "<p>No knockout matches found.</p>";
+  heading.textContent =
+    knockout.round;
 
-    return;
 
-  }
+  knockoutResultsList.appendChild(
+    heading
+  );
 
 
   matches.forEach(
     (match, index) => {
 
       const card =
-        document.createElement("div");
-
+        document.createElement(
+          "div"
+        );
 
       card.className =
-        "admin-fixture";
+        "match-card";
 
 
-      const homeScore =
-        match.homeScore ?? "";
-
-
-      const awayScore =
-        match.awayScore ?? "";
-
-
-      card.innerHTML = `
-
-        <div>
-
-          <strong>
-
-            ${index + 1}.
-
+      card.innerHTML =
+        `
+          <h3>
             ${escapeHtml(
-              match.homeName
+              knockout.round
             )}
+            ${index + 1}
+          </h3>
+
+          <p>
+            <strong>
+              ${escapeHtml(
+                match.homeName ||
+                "Unknown Team"
+              )}
+            </strong>
 
             vs
 
-            ${escapeHtml(
-              match.awayName
-            )}
+            <strong>
+              ${escapeHtml(
+                match.awayName ||
+                "Unknown Team"
+              )}
+            </strong>
+          </p>
 
-          </strong>
-
-        </div>
-
-
-        <div>
-
-          <small>
-
-            ${escapeHtml(
-              match.round
-            )}
-
-          </small>
-
-        </div>
-
-
-        <div class="score-inputs">
-
-          <input
-            type="number"
-            min="0"
-            step="1"
-            id="knockout-home-${escapeHtml(
-              match.id
-            )}"
-            value="${homeScore}"
-            placeholder="Home"
-          >
-
-
-          <span>-</span>
-
-
-          <input
-            type="number"
-            min="0"
-            step="1"
-            id="knockout-away-${escapeHtml(
-              match.id
-            )}"
-            value="${awayScore}"
-            placeholder="Away"
-          >
-
-
-          <button
-            type="button"
-            class="save-knockout-button"
-            data-match-id="${escapeHtml(
-              match.id
-            )}"
-          >
-            Save
-          </button>
-
-        </div>
-
-      `;
+          <p class="message">
+            ${
+              match.completed
+                ? `Result: ${match.homeScore} - ${match.awayScore}`
+                : "Match not played yet."
+            }
+          </p>
+        `;
 
 
       knockoutResultsList.appendChild(
@@ -2126,380 +3406,119 @@ function renderKnockoutResults() {
     }
   );
 
+}
 
-  document
-    .querySelectorAll(
-      ".save-knockout-button"
-    )
-    .forEach(
-      button => {
+/* =========================================================
+   PART 9 — KNOCKOUT RESULTS + AUTOMATIC ADVANCEMENT
+   ========================================================= */
 
-        button.addEventListener(
-          "click",
-          () => {
 
-            saveKnockoutResult(
-              button.dataset.matchId
-            );
+/* =========================
+   KNOCKOUT SCORE VALIDATION
+========================= */
 
-          }
-        );
+function validateKnockoutScore(
+  value
+) {
 
-      }
-    );
+  if (
+    value === "" ||
+    value === null ||
+    value === undefined
+  ) {
+
+    return false;
+
+  }
+
+  const score =
+    Number(value);
+
+  return (
+    Number.isInteger(score) &&
+    score >= 0
+  );
 
 }
 
 
 /* =========================
-   SAVE KNOCKOUT RESULT
+   DETERMINE KNOCKOUT WINNER
 ========================= */
 
-async function saveKnockoutResult(
-  matchId
+function determineKnockoutWinner(
+  match
 ) {
-
-  const knockout =
-    championsData.knockoutRound;
-
-
-  if (!knockout) {
-
-    return;
-
-  }
-
-
-  const match =
-    knockout.matches.find(
-      item =>
-        item.id === matchId
-    );
-
-
-  if (!match) {
-
-    return;
-
-  }
-
-
-  const homeInput =
-    document.getElementById(
-      `knockout-home-${matchId}`
-    );
-
-
-  const awayInput =
-    document.getElementById(
-      `knockout-away-${matchId}`
-    );
-
-
-  if (
-    !homeInput ||
-    !awayInput
-  ) {
-
-    return;
-
-  }
-
 
   const homeScore =
     Number(
-      homeInput.value
+      match.homeScore
     );
-
 
   const awayScore =
     Number(
-      awayInput.value
+      match.awayScore
     );
 
 
   if (
-    homeInput.value === "" ||
-    awayInput.value === "" ||
-    !Number.isInteger(homeScore) ||
-    !Number.isInteger(awayScore) ||
-    homeScore < 0 ||
-    awayScore < 0
+    homeScore >
+    awayScore
   ) {
 
-    alert(
-      "Enter valid scores for both teams."
-    );
-
-    return;
+    return match.home;
 
   }
 
-
-  /*
-     A knockout match must have
-     one winner.
-  */
 
   if (
-    homeScore === awayScore
+    awayScore >
+    homeScore
   ) {
 
-    alert(
-      "Knockout matches cannot end in a draw. Enter the final winning score."
-    );
-
-    return;
+    return match.away;
 
   }
 
 
-  match.homeScore =
-    homeScore;
-
-
-  match.awayScore =
-    awayScore;
-
-
-  match.completed =
-    true;
-
-
-  match.winner =
-    homeScore > awayScore
-      ? match.home
-      : match.away;
-
-
-  try {
-
-    await saveChampionsData();
-
-
-    alert(
-      "Knockout result saved."
-    );
-
-
-    /*
-       If every match in the current
-       round is complete, automatically
-       create the next round.
-    */
-
-    if (
-      knockout.matches.every(
-        item =>
-          item.completed === true
-      )
-    ) {
-
-      await advanceKnockoutRound();
-
-    }
-    else {
-
-      renderKnockoutResults();
-
-    }
-
-  } catch (error) {
-
-    console.error(error);
-
-    alert(
-      "Unable to save knockout result."
-    );
-
-  }
+  return null;
 
 }
 
 
 /* =========================
-   ADVANCE KNOCKOUT ROUND
+   CHECK ROUND COMPLETE
 ========================= */
 
-async function advanceKnockoutRound() {
+function isKnockoutRoundComplete() {
 
   const knockout =
     championsData.knockoutRound;
 
 
   if (!knockout) {
-
-    return;
-
+    return false;
   }
 
 
-  const winners =
-    knockout.matches
-      .map(
-        match =>
-          match.winner
-      )
-      .filter(Boolean);
+  const matches =
+    Array.isArray(
+      knockout.matches
+    )
+      ? knockout.matches
+      : [];
 
 
-  if (
-    winners.length !==
-    knockout.matches.length
-  ) {
-
-    return;
-
+  if (matches.length === 0) {
+    return false;
   }
 
 
-  /*
-     Only one winner means the
-     competition is complete.
-  */
-
-  if (
-    winners.length === 1
-  ) {
-
-    championsData.winner =
-      winners[0];
-
-
-    knockout.completed =
-      true;
-
-
-    await saveChampionsData();
-
-
-    renderKnockoutResults();
-
-    updateCompetitionStatus();
-
-    return;
-
-  }
-
-
-  const winnerObjects =
-    winners.map(
-      winnerId => {
-
-        const team =
-          championsData.teams.find(
-            (item, index) =>
-              getTeamId(
-                item,
-                index
-              ) === winnerId
-          );
-
-
-        return {
-
-          id:
-            winnerId,
-
-          name:
-            team
-              ? getTeamName(team)
-              : "Unknown Team"
-
-        };
-
-      }
-    );
-
-
-  const nextRound =
-    getNextKnockoutRound(
-      winners.length
-    );
-
-
-  if (!nextRound) {
-
-    return;
-
-  }
-
-
-  const nextRoundMatches =
-    [];
-
-
-  for (
-    let i = 0;
-    i < winnerObjects.length;
-    i += 2
-  ) {
-
-    const home =
-      winnerObjects[i];
-
-    const away =
-      winnerObjects[i + 1];
-
-
-    nextRoundMatches.push({
-
-      id:
-        `knockout-${Date.now()}-${i}`,
-
-      phase:
-        "knockout",
-
-      round:
-        nextRound,
-
-      home:
-        home.id,
-
-      away:
-        away.id,
-
-      homeName:
-        home.name,
-
-      awayName:
-        away.name,
-
-      homeScore:
-        null,
-
-      awayScore:
-        null,
-
-      completed:
-        false,
-
-      winner:
-        null
-
-    });
-
-  }
-
-
-  knockout.currentRound =
-    nextRound;
-
-
-  knockout.matches =
-    nextRoundMatches;
-
-
-  knockout.completed =
-    false;
-
-
-  await saveChampionsData();
-
-
-  renderKnockoutResults();
-
-  updateCompetitionStatus();
+  return matches.every(
+    match =>
+      match.completed === true &&
+      match.winner
+  );
 
 }
 
@@ -2508,12 +3527,13 @@ async function advanceKnockoutRound() {
    NEXT ROUND NAME
 ========================= */
 
-function getNextKnockoutRound(
-  winnerCount
+function getNextRoundName(
+  currentRound
 ) {
 
   if (
-    winnerCount === 16
+    currentRound ===
+    "Round of 32"
   ) {
 
     return "Round of 16";
@@ -2522,7 +3542,8 @@ function getNextKnockoutRound(
 
 
   if (
-    winnerCount === 8
+    currentRound ===
+    "Round of 16"
   ) {
 
     return "Quarter-final";
@@ -2531,7 +3552,8 @@ function getNextKnockoutRound(
 
 
   if (
-    winnerCount === 4
+    currentRound ===
+    "Quarter-final"
   ) {
 
     return "Semi-final";
@@ -2540,7 +3562,8 @@ function getNextKnockoutRound(
 
 
   if (
-    winnerCount === 2
+    currentRound ===
+    "Semi-final"
   ) {
 
     return "Final";
@@ -2552,477 +3575,623 @@ function getNextKnockoutRound(
 
 }
 
-/* =========================================================
-   PART 9 — STATUS + START COMPETITION
-   ========================================================= */
+
+/* =========================
+   CREATE NEXT ROUND
+========================= */
+
+function createNextKnockoutRound() {
+
+  const current =
+    championsData.knockoutRound;
+
+
+  if (!current) {
+
+    throw new Error(
+      "No knockout round exists."
+    );
+
+  }
+
+
+  if (
+    !isKnockoutRoundComplete()
+  ) {
+
+    throw new Error(
+      "All matches in the current round must be completed."
+    );
+
+  }
+
+
+  const nextRound =
+    getNextRoundName(
+      current.round
+    );
+
+
+  if (!nextRound) {
+
+    return false;
+
+  }
+
+
+  const winners =
+    current.matches.map(
+      match =>
+        findTeamById(
+          match.winner
+        ) || {
+          id:
+            match.winner,
+
+          name:
+            match.winnerName ||
+            "Unknown Team"
+        }
+    );
+
+
+  if (
+    winners.length < 2
+  ) {
+
+    throw new Error(
+      "Not enough teams remain for another round."
+    );
+
+  }
+
+
+  const matches = [];
+
+
+  for (
+    let i = 0;
+    i < winners.length;
+    i += 2
+  ) {
+
+    const homeTeam =
+      winners[i];
+
+    const awayTeam =
+      winners[i + 1];
+
+
+    if (
+      !homeTeam ||
+      !awayTeam
+    ) {
+
+      throw new Error(
+        "Unable to create the next knockout round."
+      );
+
+    }
+
+
+    matches.push(
+      createKnockoutMatch(
+        homeTeam,
+        awayTeam,
+        nextRound,
+        matches.length
+      )
+    );
+
+  }
+
+
+  championsData.knockoutRound = {
+
+    round:
+      nextRound,
+
+    matches:
+      matches
+
+  };
+
+
+  return true;
+
+}
 
 
 /* =========================
-   UPDATE COMPETITION STATUS
+   SAVE KNOCKOUT RESULT
 ========================= */
 
-function updateCompetitionStatus() {
+async function saveKnockoutResult(
+  matchId,
+  homeScore,
+  awayScore
+) {
 
-  if (championsData.winner) {
+  if (!championsData.knockoutRound) {
 
-    const winnerTeam =
-      championsData.teams.find(
-        (team, index) =>
-          getTeamId(
-            team,
-            index
-          ) === championsData.winner
+    throw new Error(
+      "No knockout round is active."
+    );
+
+  }
+
+
+  const match =
+    championsData.knockoutRound.matches.find(
+      item =>
+        item.id === matchId
+    );
+
+
+  if (!match) {
+
+    throw new Error(
+      "Knockout match could not be found."
+    );
+
+  }
+
+
+  if (
+    !validateKnockoutScore(
+      homeScore
+    ) ||
+    !validateKnockoutScore(
+      awayScore
+    )
+  ) {
+
+    throw new Error(
+      "Enter valid whole-number scores."
+    );
+
+  }
+
+
+  const homeValue =
+    Number(homeScore);
+
+  const awayValue =
+    Number(awayScore);
+
+
+  /*
+     A knockout match cannot end in a draw
+     because there is currently no penalty
+     shootout field in this system.
+  */
+
+  if (
+    homeValue ===
+    awayValue
+  ) {
+
+    throw new Error(
+      "Knockout matches cannot end in a draw. Enter the final score after the winner is decided."
+    );
+
+  }
+
+
+  match.homeScore =
+    homeValue;
+
+  match.awayScore =
+    awayValue;
+
+  match.winner =
+    determineKnockoutWinner(
+      match
+    );
+
+  match.winnerName =
+    match.winner === match.home
+      ? match.homeName
+      : match.awayName;
+
+  match.status =
+    "completed";
+
+  match.completed =
+    true;
+
+
+  await saveChampionsData();
+
+}
+
+
+/* =========================
+   RENDER KNOCKOUT RESULTS
+========================= */
+
+function renderKnockoutResults() {
+
+  if (!knockoutResultsList) {
+    return;
+  }
+
+
+  const knockout =
+    championsData.knockoutRound;
+
+
+  if (!knockout) {
+    return;
+  }
+
+
+  knockoutResultsList.innerHTML =
+    "";
+
+
+  const heading =
+    document.createElement(
+      "h3"
+    );
+
+  heading.textContent =
+    knockout.round;
+
+
+  knockoutResultsList.appendChild(
+    heading
+  );
+
+
+  knockout.matches.forEach(
+    (match, index) => {
+
+      const card =
+        document.createElement(
+          "div"
+        );
+
+      card.className =
+        "match-card";
+
+
+      const savedHomeScore =
+        match.completed
+          ? match.homeScore
+          : "";
+
+      const savedAwayScore =
+        match.completed
+          ? match.awayScore
+          : "";
+
+
+      card.innerHTML =
+        `
+          <h3>
+            ${escapeHtml(
+              knockout.round
+            )}
+            ${index + 1}
+          </h3>
+
+          <div class="score-row">
+
+            <strong>
+              ${escapeHtml(
+                match.homeName
+              )}
+            </strong>
+
+            <input
+              type="number"
+              min="0"
+              step="1"
+              class="knockout-home-score"
+              value="${savedHomeScore}"
+              placeholder="0"
+            >
+
+            <span>
+              -
+            </span>
+
+            <input
+              type="number"
+              min="0"
+              step="1"
+              class="knockout-away-score"
+              value="${savedAwayScore}"
+              placeholder="0"
+            >
+
+            <strong>
+              ${escapeHtml(
+                match.awayName
+              )}
+            </strong>
+
+          </div>
+
+          <button
+            type="button"
+            class="save-knockout-button"
+          >
+            ${
+              match.completed
+                ? "Update Result"
+                : "Save Result"
+            }
+          </button>
+
+          <p class="message knockout-result-message"></p>
+        `;
+
+
+      const homeInput =
+        card.querySelector(
+          ".knockout-home-score"
+        );
+
+      const awayInput =
+        card.querySelector(
+          ".knockout-away-score"
+        );
+
+      const saveButton =
+        card.querySelector(
+          ".save-knockout-button"
+        );
+
+      const message =
+        card.querySelector(
+          ".knockout-result-message"
+        );
+
+
+      saveButton.addEventListener(
+        "click",
+        async () => {
+
+          try {
+
+            await saveKnockoutResult(
+              match.id,
+              homeInput.value,
+              awayInput.value
+            );
+
+
+            message.textContent =
+              "Knockout result saved.";
+
+            message.className =
+              "message status-live";
+
+
+            renderKnockoutResults();
+
+
+            /*
+               Automatically create the next
+               round when every match is complete.
+            */
+
+            if (
+              isKnockoutRoundComplete()
+            ) {
+
+              const currentRound =
+                championsData.knockoutRound.round;
+
+
+              if (
+                currentRound ===
+                "Final"
+              ) {
+
+                championsData.winner =
+                  championsData.knockoutRound
+                    .matches[0]
+                    .winner;
+
+
+                await saveChampionsData();
+
+                updateCompetitionStatus();
+
+                renderWinner();
+
+                return;
+
+              }
+
+
+              const nextRoundCreated =
+                createNextKnockoutRound();
+
+
+              if (
+                nextRoundCreated
+              ) {
+
+                await saveChampionsData();
+
+                renderKnockoutResults();
+
+              }
+
+            }
+
+          } catch (error) {
+
+            console.error(
+              "Knockout result error:",
+              error
+            );
+
+
+            message.textContent =
+              error.message ||
+              "Unable to save knockout result.";
+
+            message.className =
+              "message status-warning";
+
+          }
+
+        }
       );
 
 
-    competitionStatus.textContent =
-      winnerTeam
-        ? `Winner: ${getTeamName(winnerTeam)}`
-        : "Competition completed.";
-
-
-    return;
-
-  }
-
-
-  if (championsData.started) {
-
-    if (
-      championsData.knockoutRound &&
-      championsData.knockoutRound.currentRound
-    ) {
-
-      competitionStatus.textContent =
-        `Champions League active — ${championsData.knockoutRound.currentRound}.`;
+      knockoutResultsList.appendChild(
+        card
+      );
 
     }
-    else {
-
-      competitionStatus.textContent =
-        "Champions League is currently active.";
-
-    }
-
-
-    return;
-
-  }
-
-
-  if (
-    championsData.fixtures.length > 0
-  ) {
-
-    competitionStatus.textContent =
-      "Fixtures generated. Competition has not started.";
-
-    return;
-
-  }
-
-
-  competitionStatus.textContent =
-    "Champions League is ready for setup.";
-
-}
-
-
-/* =========================
-   START COMPETITION
-========================= */
-
-startCompetitionButton.addEventListener(
-  "click",
-  async () => {
-
-    if (championsData.started) {
-
-      settingsMessage.textContent =
-        "Competition has already started.";
-
-      return;
-
-    }
-
-
-    if (
-      championsData.fixtures.length === 0
-    ) {
-
-      settingsMessage.textContent =
-        "Generate fixtures before starting the competition.";
-
-      return;
-
-    }
-
-
-    const validation =
-      validateMatchesPerTeam();
-
-
-    if (!validation.valid) {
-
-      settingsMessage.textContent =
-        validation.message;
-
-      return;
-
-    }
-
-
-    /*
-       Make sure the generated fixtures
-       still match the selected setting.
-    */
-
-    const expectedFixtureCount =
-      (
-        approvedTeams.length *
-        championsData.matchesPerTeam
-      ) / 2;
-
-
-    if (
-      championsData.fixtures.length !==
-      expectedFixtureCount
-    ) {
-
-      settingsMessage.textContent =
-        "The generated fixtures do not match the current settings. Generate fixtures again.";
-
-      return;
-
-    }
-
-
-    championsData.started =
-      true;
-
-
-    try {
-
-      await saveChampionsData();
-
-
-      settingsMessage.textContent =
-        "Champions League has started.";
-
-
-      updateCompetitionStatus();
-
-
-      updateControlState();
-
-    } catch (error) {
-
-      console.error(error);
-
-
-      championsData.started =
-        false;
-
-
-      settingsMessage.textContent =
-        "Unable to start competition.";
-
-    }
-
-  }
-);
-
-
-/* =========================
-   INITIAL ADMIN RENDER
-========================= */
-
-function renderAdmin() {
-
-  renderApprovedTeams();
-
-  renderAdminFixtures();
-
-  renderKnockoutResults();
-
-  updateCompetitionStatus();
-
-}
-
-
-/* =========================
-   LOCK SETTINGS AFTER START
-========================= */
-
-function updateControlState() {
-
-  if (championsData.started) {
-
-    matchesPerTeam.disabled =
-      true;
-
-    saveSettingsButton.disabled =
-      true;
-
-    generateFixturesButton.disabled =
-      true;
-
-    startCompetitionButton.disabled =
-      true;
-
-  }
-  else {
-
-    matchesPerTeam.disabled =
-      false;
-
-    saveSettingsButton.disabled =
-      false;
-
-    generateFixturesButton.disabled =
-      false;
-
-    startCompetitionButton.disabled =
-      false;
-
-  }
-
-}
-
-
-/* =========================
-   LOAD ALL ADMIN DATA
-========================= */
-
-async function loadAdminData() {
-
-  try {
-
-    await loadApprovedTeams();
-
-    await loadChampionsData();
-
-
-    /*
-       Keep the saved Champions
-       teams if fixtures already exist.
-       Otherwise show current approved
-       League teams.
-    */
-
-    if (
-      championsData.teams.length === 0 &&
-      approvedTeams.length > 0
-    ) {
-
-      championsData.teams =
-        approvedTeams.map(
-          (team, index) => ({
-
-            ...team,
-
-            id:
-              getTeamId(
-                team,
-                index
-              )
-
-          })
-        );
-
-    }
-
-
-    renderAdmin();
-
-    updateControlState();
-
-  } catch (error) {
-
-    console.error(error);
-
-
-    settingsMessage.textContent =
-      "Unable to load Champions League data.";
-
-  }
+  );
 
 }
 
 /* =========================================================
-   PART 10 — AUTHENTICATION + INITIALIZATION
+   PART 10 — FINAL + WINNER + LOGOUT
    ========================================================= */
 
 
 /* =========================
-   START ADMIN
+   RENDER WINNER
 ========================= */
 
-async function startAdmin() {
+function renderWinner() {
 
-  /*
-     Wait until Firebase has finished
-     initializing before using Auth.
-  */
-
-  await waitForFirebase();
-
-
-  if (
-    !championsAuth
-  ) {
-
-    console.error(
-      "Champions Firebase Auth is unavailable."
+  const winnerContainer =
+    document.getElementById(
+      "winner"
     );
 
-    adminLoginMessage.textContent =
-      "Firebase authentication is unavailable.";
+  if (!winnerContainer) {
+    return;
+  }
+
+
+  if (!championsData.winner) {
+
+    winnerContainer.innerHTML =
+      `
+        <div class="match-card">
+          The Champions League winner has not been decided yet.
+        </div>
+      `;
 
     return;
 
   }
 
 
-  /* =========================
-     ADMIN LOGIN
-  ========================= */
-
-  adminLoginForm.addEventListener(
-    "submit",
-    async event => {
-
-      event.preventDefault();
+  const winnerTeam =
+    findTeamById(
+      championsData.winner
+    );
 
 
-      const email =
-        adminEmail.value.trim();
+  const winnerName =
+    winnerTeam
+      ? getTeamName(winnerTeam)
+      : "Unknown Team";
 
 
-      const password =
-        adminPassword.value;
+  winnerContainer.innerHTML =
+    `
+      <div class="status-live">
+
+        <h2>
+          🏆 Champions League Winner
+        </h2>
+
+        <p>
+          <strong>
+            ${escapeHtml(
+              winnerName
+            )}
+          </strong>
+        </p>
+
+      </div>
+    `;
+
+}
 
 
-      adminLoginMessage.textContent =
-        "Signing in...";
+/* =========================
+   FINAL STATUS
+========================= */
+
+function updateFinalStatus() {
+
+  const knockout =
+    championsData.knockoutRound;
 
 
-      if (
-        email !== ADMIN_EMAIL
-      ) {
-
-        adminLoginMessage.textContent =
-          "Invalid admin email.";
-
-        return;
-
-      }
+  if (!knockout) {
+    return;
+  }
 
 
-      if (
-        password === ""
-      ) {
+  if (
+    knockout.round !==
+    "Final"
+  ) {
 
-        adminLoginMessage.textContent =
-          "Enter your password.";
+    return;
 
-        return;
-
-      }
+  }
 
 
-      try {
+  if (
+    !Array.isArray(
+      knockout.matches
+    ) ||
+    knockout.matches.length !== 1
+  ) {
 
-        await signInWithEmailAndPassword(
-          championsAuth,
-          email,
-          password
-        );
+    return;
 
-
-        adminLoginMessage.textContent =
-          "Login successful.";
-
-      } catch (error) {
-
-        console.error(error);
+  }
 
 
-        adminLoginMessage.textContent =
-          "Login failed. Check your email and password.";
-
-      }
-
-    }
-  );
+  const finalMatch =
+    knockout.matches[0];
 
 
-  /* =========================
-     AUTH STATE
-  ========================= */
+  if (
+    finalMatch.completed !== true
+  ) {
 
-  onAuthStateChanged(
-    championsAuth,
-    async user => {
+    return;
 
-      if (!user) {
-
-        adminLogin.style.display =
-          "block";
-
-        adminDashboard.style.display =
-          "none";
-
-        return;
-
-      }
+  }
 
 
-      /*
-         Only the configured admin email
-         may access this dashboard.
-      */
-
-      if (
-        user.email !== ADMIN_EMAIL
-      ) {
-
-        await signOut(
-          championsAuth
-        );
+  if (!finalMatch.winner) {
+    return;
+  }
 
 
-        adminLogin.style.display =
-          "block";
-
-        adminDashboard.style.display =
-          "none";
+  championsData.winner =
+    finalMatch.winner;
 
 
-        adminLoginMessage.textContent =
-          "This account is not authorized.";
+  renderWinner();
 
-        return;
-
-      }
+}
 
 
-      adminLogin.style.display =
-        "none";
+/* =========================
+   LOGOUT
+========================= */
 
-      adminDashboard.style.display =
-        "block";
-
-
-      await loadAdminData();
-
-    }
-  );
-
-
-  /* =========================
-     LOGOUT
-  ========================= */
+if (adminLogoutButton) {
 
   adminLogoutButton.addEventListener(
     "click",
@@ -3034,52 +4203,84 @@ async function startAdmin() {
           championsAuth
         );
 
+        window.location.reload();
+
       } catch (error) {
 
-        console.error(error);
+        console.error(
+          "Logout error:",
+          error
+        );
 
       }
 
     }
   );
 
+}
 
-  /* =========================
-     INITIAL UI STATE
-  ========================= */
 
-  adminDashboard.style.display =
-    "none";
+/* =========================
+   FINAL ADMIN REFRESH
+========================= */
 
-  adminLogin.style.display =
-    "block";
+function refreshAllAdminSections() {
+
+  loadSettingsIntoForm();
+
+  renderApprovedTeams();
+
+  renderFixtures();
+
+  renderLeagueResults();
+
+  renderLeagueTable();
+
+  renderKnockout();
+
+  renderKnockoutResults();
+
+  updateCompetitionStatus();
+
+  updateFinalStatus();
+
+  renderWinner();
 
 }
 
 
 /* =========================
-   START APPLICATION
+   KEEP KNOCKOUT DISPLAY
+   UPDATED
 ========================= */
 
-startAdmin()
-  .catch(
-    error => {
+function refreshKnockoutDisplay() {
 
-      console.error(
-        "Champions Admin initialization failed:",
-        error
-      );
+  renderKnockout();
 
+  renderKnockoutResults();
 
-      adminLogin.style.display =
-        "block";
+  updateFinalStatus();
 
-      adminDashboard.style.display =
-        "none";
+  renderWinner();
+
+}
 
 
-      adminLoginMessage.textContent =
-        "Unable to initialize the admin dashboard.";
+/* =========================
+   INITIAL DISPLAY HOOK
+========================= */
 
+window.addEventListener(
+  "championsFirebaseReady",
+  () => {
+
+    if (!firebaseReady) {
+      return;
     }
-  );
+
+    loadSettingsIntoForm();
+
+  }
+);
+
