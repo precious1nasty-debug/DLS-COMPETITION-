@@ -15,7 +15,9 @@
     content="DLS Champions League"
   >
 
-  <title>DLS Champions League</title>
+  <title>
+    DLS Champions League
+  </title>
 
   <link
     rel="stylesheet"
@@ -26,78 +28,97 @@
 
 <body>
 
-  <header class="site-header">
+  <!-- =========================
+       HEADER
+  ========================== -->
 
-    <div class="header-content">
+  <header class="champions-header">
 
-      <h1>🏆 DLS CHAMPIONS LEAGUE</h1>
+    <h1>
+      🏆 DLS CHAMPIONS LEAGUE
+    </h1>
 
-      <p>
-        Dream League Soccer Champions League
-      </p>
-
-    </div>
+    <p>
+      Champions League Competition
+    </p>
 
   </header>
 
 
-  <nav class="main-nav">
+  <!-- =========================
+       NAVIGATION
+  ========================== -->
 
-    <a href="#home">Home</a>
+  <nav class="champions-nav">
 
-    <a href="#teams">Teams</a>
+    <a href="#home">
+      Home
+    </a>
 
-    <a href="#groups">Groups</a>
+    <a href="#teams">
+      Teams
+    </a>
 
-    <a href="#fixtures">Fixtures</a>
+    <a href="#league">
+      League Table
+    </a>
 
-    <a href="#tables">Tables</a>
+    <a href="#fixtures">
+      Fixtures
+    </a>
 
-    <a href="#knockout">Knockout</a>
+    <a href="#knockout">
+      Knockout
+    </a>
 
-    <a href="#final">Final</a>
+    <a href="#final">
+      Final
+    </a>
+
+    <a href="#winner">
+      Winner
+    </a>
 
   </nav>
 
 
+  <!-- =========================
+       MAIN
+  ========================== -->
+
   <main>
 
-    <!-- =========================
-         HOME
-    ========================== -->
+
+    <!-- HOME -->
 
     <section
       id="home"
-      class="section"
+      class="champions-section"
     >
 
-      <h2>🏆 Champions League</h2>
+      <h2>
+        DLS Champions League
+      </h2>
 
-      <div
-        id="competitionStatus"
-        class="status-box"
-      >
+      <p id="competitionStatus">
         Loading competition...
-      </div>
+      </p>
 
     </section>
 
 
-    <!-- =========================
-         PARTICIPATING TEAMS
-    ========================== -->
+    <!-- TEAMS -->
 
     <section
       id="teams"
-      class="section"
+      class="champions-section"
     >
 
-      <h2>Participating Teams</h2>
+      <h2>
+        Eligible Teams
+      </h2>
 
-      <div
-        id="teamList"
-        class="team-list"
-      >
+      <div id="teamList">
 
         <p>
           Loading teams...
@@ -108,23 +129,21 @@
     </section>
 
 
-    <!-- =========================
-         GROUPS
-    ========================== -->
+    <!-- LEAGUE TABLE -->
 
     <section
-      id="groups"
-      class="section"
+      id="league"
+      class="champions-section"
     >
 
-      <h2>Groups</h2>
+      <h2>
+        League Table
+      </h2>
 
-      <div
-        id="groupsContainer"
-      >
+      <div id="leagueTableContainer">
 
         <p>
-          Groups will appear here.
+          League table will appear here.
         </p>
 
       </div>
@@ -132,20 +151,18 @@
     </section>
 
 
-    <!-- =========================
-         FIXTURES
-    ========================== -->
+    <!-- FIXTURES -->
 
     <section
       id="fixtures"
-      class="section"
+      class="champions-section"
     >
 
-      <h2>Fixtures & Results</h2>
+      <h2>
+        League Phase Fixtures
+      </h2>
 
-      <div
-        id="fixtureList"
-      >
+      <div id="fixtureList">
 
         <p>
           Fixtures will appear here.
@@ -156,47 +173,21 @@
     </section>
 
 
-    <!-- =========================
-         TABLES
-    ========================== -->
-
-    <section
-      id="tables"
-      class="section"
-    >
-
-      <h2>Group Tables</h2>
-
-      <div
-        id="tablesContainer"
-      >
-
-        <p>
-          Tables will appear here.
-        </p>
-
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         KNOCKOUT
-    ========================== -->
+    <!-- KNOCKOUT -->
 
     <section
       id="knockout"
-      class="section"
+      class="champions-section"
     >
 
-      <h2>Knockout Stage</h2>
+      <h2>
+        Knockout Phase
+      </h2>
 
-      <div
-        id="knockoutContainer"
-      >
+      <div id="knockoutContainer">
 
         <p>
-          Knockout stage will appear here.
+          Knockout phase has not started.
         </p>
 
       </div>
@@ -204,33 +195,58 @@
     </section>
 
 
-    <!-- =========================
-         FINAL
-    ========================== -->
+    <!-- FINAL -->
 
     <section
       id="final"
-      class="section"
+      class="champions-section"
     >
 
-      <h2>🏆 Final</h2>
+      <h2>
+        Champions League Final
+      </h2>
 
-      <div
-        id="finalContainer"
-      >
+      <div id="finalContainer">
 
         <p>
-          The Champions League final will appear here.
+          Final has not been played.
         </p>
 
       </div>
 
     </section>
+
+
+    <!-- WINNER -->
+
+    <section
+      id="winner"
+      class="champions-section winner-section"
+    >
+
+      <h2>
+        🏆 Winner Dashboard
+      </h2>
+
+      <div id="winnerContainer">
+
+        <p>
+          Champion will appear here after the final.
+        </p>
+
+      </div>
+
+    </section>
+
 
   </main>
 
 
-  <footer class="site-footer">
+  <!-- =========================
+       FOOTER
+  ========================== -->
+
+  <footer class="champions-footer">
 
     <p>
       © DLS Champions League
@@ -239,10 +255,19 @@
   </footer>
 
 
-    <script
+  <!-- =========================
+       FIREBASE
+  ========================== -->
+
+  <script
     type="module"
     src="champions-firebase.js"
   ></script>
+
+
+  <!-- =========================
+       CHAMPIONS JAVASCRIPT
+  ========================== -->
 
   <script
     type="module"
@@ -250,4 +275,5 @@
   ></script>
 
 </body>
+
 </html>
