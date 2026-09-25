@@ -1,7 +1,7 @@
 /* =========================================================
    DLS CHAMPIONS LEAGUE
    champions.js
-   PART 5 — FIREBASE + PUBLIC DATA LOADING
+   PART 5 — PUBLIC PAGE
    ========================================================= */
 
 import {
@@ -11,23 +11,7 @@ import {
 
 
 /* =========================
-   FIREBASE CHECK
-========================= */
-
-if (!window.championsFirebaseReady) {
-
-  throw new Error(
-    "Champions League Firebase has not finished loading."
-  );
-
-}
-
-
-const db = window.championsDb;
-
-
-/* =========================
-   PAGE ELEMENTS
+   ELEMENTS
 ========================= */
 
 const competitionStatus =
@@ -36,20 +20,20 @@ const competitionStatus =
 const teamList =
   document.getElementById("teamList");
 
-const groupsContainer =
-  document.getElementById("groupsContainer");
+const leagueTableContainer =
+  document.getElementById("leagueTableContainer");
 
 const fixtureList =
   document.getElementById("fixtureList");
-
-const tablesContainer =
-  document.getElementById("tablesContainer");
 
 const knockoutContainer =
   document.getElementById("knockoutContainer");
 
 const finalContainer =
   document.getElementById("finalContainer");
+
+const winnerContainer =
+  document.getElementById("winnerContainer");
 
 
 /* =========================
@@ -63,41 +47,152 @@ function showEmptyState(element, message) {
   }
 
   element.innerHTML = `
-    <p class="empty-message">
+    <div class="empty-message">
       ${message}
-    </p>
+    </div>
   `;
 }
 
 
 /* =========================
-   LOAD CHAMPIONS DATA
+   ERROR STATE
+========================= */
+
+function showErrorState(element, message) {
+
+  if (!element) {
+    return;
+  }
+
+  element.innerHTML = `
+    <div class="error-message">
+      ${message}
+    </div>
+  `;
+}
+
+
+/* =========================
+   WAIT FOR FIREBASE
+========================= */
+
+function waitForFirebase() {
+
+  return new Promise((resolve, reject) => {
+
+    let attempts = 0;
+
+    const maxAttempts = 100;
+
+    const timer = setInterval(() => {
+
+      attempts++;
+
+      if (
+        window.championsFirebaseReady === true &&
+        window.championsDb
+      ) {
+
+        clearInterval(timer);
+
+        resolve(window.championsDb);
+
+        return;
+      }
+
+
+      if (attempts >= maxAttempts) {
+
+        clearInterval(timer);
+
+        reject(
+          new Error(
+            "Firebase could not be initialized."
+          )
+        );
+
+      }
+
+    }, 100);
+
+  });
+
+}
+
+
+/* =========================
+   RENDER TEAMS
+========================= */
+
+function renderTeams(teams) {
+
+  if (!Array.isArray(teams) || teams.length === 0) {
+
+    showEmptyState(
+      teamList,
+      "No Champions League teams have been registered yet."
+    );
+
+    return;
+  }
+
+
+  teamList.innerHTML = "";
+
+
+  teams.forEach((team) => {
+
+    const card =
+      document.createElement("div");
+
+    card.className =
+      "team-card";
+
+
+    const teamName =
+      document.createElement("h3");
+
+    teamName.textContent =
+      team.name || "Unnamed Team";
+
+
+    const playerName =
+      document.createElement("p");
+
+    playerName.textContent =
+      team.player
+        ? `Player: ${team.player}`
+        : "Player not available";
+
+
+    card.appendChild(teamName);
+
+    card.appendChild(playerName);
+
+    teamList.appendChild(card);
+
+  });
+
+}
+
+
+/* =========================
+   LOAD CHAMPIONS LEAGUE
 ========================= */
 
 async function loadChampionsLeague() {
 
   try {
 
-    competitionStatus.textContent =
-      "Loading Champions League...";
+    const db =
+      await waitForFirebase();
 
 
-    /*
-      IMPORTANT:
+    /* =========================
+       CHAMPIONS DOCUMENT
+    ========================= */
 
-      Champions League uses its own Firestore
-      document.
-
-      Existing league data remains in:
-
-      competition/main
-
-      Champions League data uses:
-
-      championsLeague/main
-    */
-
-    const competitionRef =
+    const championsRef =
       doc(
         db,
         "championsLeague",
@@ -105,47 +200,47 @@ async function loadChampionsLeague() {
       );
 
 
-    const competitionSnapshot =
-      await getDoc(competitionRef);
+    const championsSnapshot =
+      await getDoc(championsRef);
 
 
     /* =========================
-       NO CHAMPIONS DATA YET
+       NO COMPETITION YET
     ========================= */
 
-    if (!competitionSnapshot.exists()) {
+    if (!championsSnapshot.exists()) {
 
       competitionStatus.textContent =
-        "Champions League has not been configured yet.";
+        "Champions League has not been started yet.";
 
       showEmptyState(
         teamList,
-        "No participating teams yet."
+        "Teams will appear here when the Champions League is started."
       );
 
       showEmptyState(
-        groupsContainer,
-        "Groups have not been created yet."
+        leagueTableContainer,
+        "League table is not available yet."
       );
 
       showEmptyState(
         fixtureList,
-        "Fixtures have not been created yet."
-      );
-
-      showEmptyState(
-        tablesContainer,
-        "Tables are not available yet."
+        "League-phase fixtures are not available yet."
       );
 
       showEmptyState(
         knockoutContainer,
-        "The knockout stage has not started yet."
+        "Knockout phase has not started."
       );
 
       showEmptyState(
         finalContainer,
-        "The final has not been created yet."
+        "The final has not been created."
+      );
+
+      showEmptyState(
+        winnerContainer,
+        "The champion will appear here after the final."
       );
 
       return;
@@ -153,48 +248,151 @@ async function loadChampionsLeague() {
 
 
     /* =========================
-       DATA FOUND
+       READ DATA
     ========================= */
 
     const data =
-      competitionSnapshot.data();
+      championsSnapshot.data();
 
+
+    /* =========================
+       STATUS
+    ========================= */
 
     competitionStatus.textContent =
       data.status ||
-      "Champions League configured.";
+      "Champions League is active.";
 
+
+    /* =========================
+       TEAMS
+    ========================= */
 
     renderTeams(
-      data.teams || []
+      Array.isArray(data.teams)
+        ? data.teams
+        : []
     );
 
 
-    renderGroups(
-      data.groups || []
-    );
+    /* =========================
+       LEAGUE TABLE
+    ========================= */
+
+    if (
+      Array.isArray(data.tables) &&
+      data.tables.length > 0
+    ) {
+
+      leagueTableContainer.innerHTML =
+        "League table data is available.";
+
+    } else {
+
+      showEmptyState(
+        leagueTableContainer,
+        "League table is not available yet."
+      );
+
+    }
 
 
-    renderFixtures(
-      data.fixtures || []
-    );
+    /* =========================
+       FIXTURES
+    ========================= */
+
+    if (
+      Array.isArray(data.fixtures) &&
+      data.fixtures.length > 0
+    ) {
+
+      fixtureList.innerHTML =
+        "League-phase fixtures are available.";
+
+    } else {
+
+      showEmptyState(
+        fixtureList,
+        "League-phase fixtures are not available yet."
+      );
+
+    }
 
 
-    renderTables(
-      data.tables || []
-    );
+    /* =========================
+       KNOCKOUT
+    ========================= */
+
+    if (data.knockout) {
+
+      knockoutContainer.innerHTML =
+        "Knockout phase information is available.";
+
+    } else {
+
+      showEmptyState(
+        knockoutContainer,
+        "Knockout phase has not started."
+      );
+
+    }
 
 
-    renderKnockout(
-      data.knockout || null
-    );
+    /* =========================
+       FINAL
+    ========================= */
+
+    if (data.final) {
+
+      finalContainer.innerHTML =
+        "Champions League final information is available.";
+
+    } else {
+
+      showEmptyState(
+        finalContainer,
+        "The final has not been created."
+      );
+
+    }
 
 
-    renderFinal(
-      data.final || null,
-      data.champion || null
-    );
+    /* =========================
+       WINNER
+    ========================= */
 
+    if (data.champion) {
+
+      winnerContainer.innerHTML = `
+        <div class="winner-card">
+
+          <div class="trophy">
+            🏆
+          </div>
+
+          <h3>
+            ${data.champion.name || "Champion"}
+          </h3>
+
+          <p>
+            ${
+              data.champion.player
+                ? `Player: ${data.champion.player}`
+                : ""
+            }
+          </p>
+
+        </div>
+      `;
+
+    } else {
+
+      showEmptyState(
+        winnerContainer,
+        "The champion will appear here after the final."
+      );
+
+    }
 
   } catch (error) {
 
@@ -205,426 +403,15 @@ async function loadChampionsLeague() {
 
 
     competitionStatus.textContent =
-      "Unable to load Champions League data.";
+      "Unable to load the Champions League.";
 
 
-    showError(
-      teamList
-    );
-
-    showError(
-      groupsContainer
-    );
-
-    showError(
-      fixtureList
-    );
-
-    showError(
-      tablesContainer
-    );
-
-    showError(
-      knockoutContainer
-    );
-
-    showError(
-      finalContainer
-    );
-
-  }
-
-}
-
-
-/* =========================
-   ERROR DISPLAY
-========================= */
-
-function showError(element) {
-
-  if (!element) {
-    return;
-  }
-
-  element.innerHTML = `
-    <p class="error-message">
-      There was a problem loading this section.
-    </p>
-  `;
-}
-
-
-/* =========================
-   TEAMS
-========================= */
-
-function renderTeams(teams) {
-
-  if (!teams.length) {
-
-    showEmptyState(
+    showErrorState(
       teamList,
-      "No participating teams yet."
+      "There was a problem loading the competition."
     );
 
-    return;
   }
-
-
-  teamList.innerHTML = "";
-
-
-  teams.forEach(team => {
-
-    const card =
-      document.createElement("div");
-
-    card.className =
-      "team-card";
-
-
-    const teamName =
-      team.name || "Unnamed Team";
-
-    const playerName =
-      team.player || "";
-
-
-    card.innerHTML = `
-      <h3>${teamName}</h3>
-      ${
-        playerName
-          ? `<p>${playerName}</p>`
-          : ""
-      }
-    `;
-
-
-    teamList.appendChild(card);
-
-  });
-
-}
-
-
-/* =========================
-   GROUPS
-========================= */
-
-function renderGroups(groups) {
-
-  if (!groups.length) {
-
-    showEmptyState(
-      groupsContainer,
-      "Groups have not been created yet."
-    );
-
-    return;
-  }
-
-
-  groupsContainer.innerHTML = "";
-
-
-  groups.forEach(group => {
-
-    const groupCard =
-      document.createElement("div");
-
-    groupCard.className =
-      "group-card";
-
-
-    const title =
-      group.name || "Group";
-
-
-    groupCard.innerHTML = `
-      <div class="group-title">
-        ${title}
-      </div>
-
-      <div class="group-content">
-        <p class="empty-message">
-          Group information will appear here.
-        </p>
-      </div>
-    `;
-
-
-    groupsContainer.appendChild(
-      groupCard
-    );
-
-  });
-
-}
-
-
-/* =========================
-   FIXTURES
-========================= */
-
-function renderFixtures(fixtures) {
-
-  if (!fixtures.length) {
-
-    showEmptyState(
-      fixtureList,
-      "Fixtures have not been created yet."
-    );
-
-    return;
-  }
-
-
-  fixtureList.innerHTML = "";
-
-
-  fixtures.forEach(fixture => {
-
-    const card =
-      document.createElement("div");
-
-    card.className =
-      "fixture-card";
-
-
-    const home =
-      fixture.home || "Home";
-
-    const away =
-      fixture.away || "Away";
-
-
-    const score =
-      fixture.homeScore !== undefined &&
-      fixture.awayScore !== undefined
-
-        ? `${fixture.homeScore} - ${fixture.awayScore}`
-
-        : "Not played";
-
-
-    card.innerHTML = `
-      <div class="fixture-stage">
-        ${fixture.stage || ""}
-      </div>
-
-      <div class="fixture-teams">
-        ${home} vs ${away}
-      </div>
-
-      <div class="fixture-score">
-        ${score}
-      </div>
-    `;
-
-
-    fixtureList.appendChild(card);
-
-  });
-
-}
-
-
-/* =========================
-   TABLES
-========================= */
-
-function renderTables(tables) {
-
-  if (!tables.length) {
-
-    showEmptyState(
-      tablesContainer,
-      "Tables are not available yet."
-    );
-
-    return;
-  }
-
-
-  tablesContainer.innerHTML = "";
-
-
-  tables.forEach(table => {
-
-    const wrapper =
-      document.createElement("div");
-
-    wrapper.className =
-      "table-wrapper";
-
-
-    const title =
-      document.createElement("h3");
-
-    title.textContent =
-      table.name || "Group";
-
-
-    const html = `
-      <table>
-
-        <thead>
-
-          <tr>
-
-            <th>Team</th>
-            <th>P</th>
-            <th>W</th>
-            <th>D</th>
-            <th>L</th>
-            <th>GF</th>
-            <th>GA</th>
-            <th>GD</th>
-            <th>Pts</th>
-
-          </tr>
-
-        </thead>
-
-        <tbody>
-
-          <tr>
-
-            <td colspan="9">
-              Table data will appear here.
-            </td>
-
-          </tr>
-
-        </tbody>
-
-      </table>
-    `;
-
-
-    wrapper.innerHTML =
-      html;
-
-
-    tablesContainer.appendChild(
-      title
-    );
-
-    tablesContainer.appendChild(
-      wrapper
-    );
-
-  });
-
-}
-
-
-/* =========================
-   KNOCKOUT
-========================= */
-
-function renderKnockout(knockout) {
-
-  if (!knockout) {
-
-    showEmptyState(
-      knockoutContainer,
-      "The knockout stage has not started yet."
-    );
-
-    return;
-  }
-
-
-  knockoutContainer.innerHTML = "";
-
-
-  const message =
-    document.createElement("div");
-
-
-  message.className =
-    "knockout-round";
-
-
-  message.innerHTML = `
-    <h3>
-      ${knockout.stage || "Knockout Stage"}
-    </h3>
-
-    <p>
-      Knockout information will appear here.
-    </p>
-  `;
-
-
-  knockoutContainer.appendChild(
-    message
-  );
-
-}
-
-
-/* =========================
-   FINAL
-========================= */
-
-function renderFinal(finalData, champion) {
-
-  if (!finalData) {
-
-    showEmptyState(
-      finalContainer,
-      "The final has not been created yet."
-    );
-
-    return;
-  }
-
-
-  finalContainer.innerHTML = "";
-
-
-  const finalBox =
-    document.createElement("div");
-
-
-  finalBox.className =
-    "final-box";
-
-
-  finalBox.innerHTML = `
-    <h3>Champions League Final</h3>
-
-    <p>
-      ${
-        finalData.home || "Team 1"
-      }
-
-      vs
-
-      ${
-        finalData.away || "Team 2"
-      }
-    </p>
-
-    ${
-      champion
-        ? `
-          <div class="champion-box">
-            <h3>🏆 ${champion}</h3>
-            <p>Champions League Winner</p>
-          </div>
-        `
-        : ""
-    }
-  `;
-
-
-  finalContainer.appendChild(
-    finalBox
-  );
 
 }
 
