@@ -1,7 +1,7 @@
 /* =========================================================
    DLS CHAMPIONS LEAGUE
    champions-admin.js
-   PART 7F — AUTH + APPROVED TEAMS + SELECTION SETUP
+   PART 7G — RANDOM TEAM SELECTION
    ========================================================= */
 
 import {
@@ -53,7 +53,6 @@ function waitForFirebase() {
       });
 
       return;
-
     }
 
 
@@ -134,7 +133,8 @@ const selectedTeamsList =
 
 function showLoginMessage(message) {
 
-  loginMessage.textContent = message;
+  loginMessage.textContent =
+    message;
 
 }
 
@@ -145,9 +145,13 @@ function showLoginMessage(message) {
 
 function showLogin() {
 
-  loginSection.classList.remove("hidden");
+  loginSection.classList.remove(
+    "hidden"
+  );
 
-  dashboardSection.classList.add("hidden");
+  dashboardSection.classList.add(
+    "hidden"
+  );
 
 }
 
@@ -158,9 +162,13 @@ function showLogin() {
 
 function showDashboard(user) {
 
-  loginSection.classList.add("hidden");
+  loginSection.classList.add(
+    "hidden"
+  );
 
-  dashboardSection.classList.remove("hidden");
+  dashboardSection.classList.remove(
+    "hidden"
+  );
 
 
   const welcome =
@@ -287,7 +295,9 @@ async function loadApprovedTeams() {
     renderAvailableTeams();
 
 
-    if (approvedTeams.length === 0) {
+    if (
+      approvedTeams.length === 0
+    ) {
 
       showTeamMessage(
         "There are no approved teams available yet."
@@ -335,10 +345,13 @@ function renderAvailableTeams() {
   }
 
 
-  availableTeamsList.innerHTML = "";
+  availableTeamsList.innerHTML =
+    "";
 
 
-  if (approvedTeams.length === 0) {
+  if (
+    approvedTeams.length === 0
+  ) {
 
     const emptyMessage =
       document.createElement("p");
@@ -378,7 +391,6 @@ function renderAvailableTeams() {
 
       checkbox.value =
         team.name;
-
 
       checkbox.dataset.index =
         index;
@@ -428,7 +440,8 @@ function renderSelectedTeams() {
   }
 
 
-  selectedTeamsList.innerHTML = "";
+  selectedTeamsList.innerHTML =
+    "";
 
 
   if (
@@ -451,7 +464,7 @@ function renderSelectedTeams() {
 
 
   selectedChampionsTeams.forEach(
-    (team) => {
+    (team, index) => {
 
       const teamCard =
         document.createElement("div");
@@ -461,6 +474,14 @@ function renderSelectedTeams() {
         "selected-team-card";
 
 
+      const number =
+        document.createElement("strong");
+
+
+      number.textContent =
+        `${index + 1}. `;
+
+
       const teamName =
         document.createElement("strong");
 
@@ -468,6 +489,10 @@ function renderSelectedTeams() {
       teamName.textContent =
         team.name;
 
+
+      teamCard.appendChild(
+        number
+      );
 
       teamCard.appendChild(
         teamName
@@ -502,13 +527,102 @@ function renderSelectedTeams() {
 
 
 /* =========================
-   RANDOM SELECTION SETUP
+   RANDOMIZE ARRAY
+========================= */
+
+function shuffleTeams(teams) {
+
+  const shuffled =
+    [...teams];
+
+
+  for (
+    let i = shuffled.length - 1;
+    i > 0;
+    i--
+  ) {
+
+    const randomIndex =
+      Math.floor(
+        Math.random() * (i + 1)
+      );
+
+
+    [
+      shuffled[i],
+      shuffled[randomIndex]
+    ] = [
+      shuffled[randomIndex],
+      shuffled[i]
+    ];
+
+  }
+
+
+  return shuffled;
+
+}
+
+
+/* =========================
+   RANDOM TEAM SELECTION
+========================= */
+
+function performRandomSelection() {
+
+  if (
+    approvedTeams.length === 0
+  ) {
+
+    showTeamMessage(
+      "There are no approved teams to select."
+    );
+
+    return;
+
+  }
+
+
+  const shuffledTeams =
+    shuffleTeams(
+      approvedTeams
+    );
+
+
+  /*
+     TEMPORARY BEHAVIOUR:
+     For now, random selection uses
+     ALL approved teams.
+
+     The number of Champions League
+     teams will be controlled by the
+     competition settings in a later part.
+  */
+
+  selectedChampionsTeams =
+    shuffledTeams;
+
+
+  renderSelectedTeams();
+
+
+  showTeamMessage(
+    `${selectedChampionsTeams.length} team(s) randomly selected.`
+  );
+
+}
+
+
+/* =========================
+   RANDOM SELECTION BUTTON
 ========================= */
 
 if (randomSelectionButton) {
 
-  randomSelectionButton.disabled =
-    true;
+  randomSelectionButton.addEventListener(
+    "click",
+    performRandomSelection
+  );
 
 }
 
