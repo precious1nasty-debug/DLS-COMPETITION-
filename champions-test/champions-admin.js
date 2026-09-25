@@ -99,6 +99,8 @@ async function initializeChampionsAdmin() {
 
   try {
 
+    setupButtons();
+
     if (!window.firebaseReady) {
 
       showMessage(
@@ -122,8 +124,7 @@ async function initializeChampionsAdmin() {
 
     }
 
-    setupButtons();
-
+   
     watchAdminAuth();
 
   } catch (error) {
