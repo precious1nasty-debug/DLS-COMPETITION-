@@ -514,12 +514,14 @@ async function handleAdminAuth(
 
   }
 
+
   const signedInEmail =
     user.email
       ? user.email
           .toLowerCase()
           .trim()
       : "";
+
 
   if (
     signedInEmail !==
@@ -534,19 +536,29 @@ async function handleAdminAuth(
 
   }
 
+
+  /* =========================
+     OPEN DASHBOARD FIRST
+  ========================= */
+
+  adminLogin.classList.add(
+    "hidden"
+  );
+
+  adminDashboard.classList.remove(
+    "hidden"
+  );
+
+
+  /* =========================
+     LOAD ADMIN DATA
+  ========================= */
+
   try {
 
     await loadChampionsData();
 
     await loadApprovedTeams();
-
-    adminLogin.classList.add(
-      "hidden"
-    );
-
-    adminDashboard.classList.remove(
-      "hidden"
-    );
 
     renderApprovedTeams();
 
@@ -563,13 +575,16 @@ async function handleAdminAuth(
       error
     );
 
-    adminLoginMessage.textContent =
-      "Unable to load Champions League data.";
+    if (adminLoginMessage) {
+
+      adminLoginMessage.textContent =
+        "Dashboard opened, but some Champions data could not be loaded.";
+
+    }
 
   }
 
 }
-
 
 /* =========================
    START FIREBASE
