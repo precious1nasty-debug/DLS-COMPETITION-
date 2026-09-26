@@ -4609,14 +4609,10 @@ function renderFixtures() {
 
 
       const homeName =
-        getTeamName(
-          fixture.homeTeam
-        );
+  getFixtureHomeName(fixture);
 
-      const awayName =
-        getTeamName(
-          fixture.awayTeam
-        );
+const awayName =
+  getFixtureAwayName(fixture);
 
 
       const score =
