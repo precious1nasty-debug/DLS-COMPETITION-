@@ -7599,21 +7599,21 @@ renderChampionsResults();
 
 
 // =========================================================
-// CLEAR ALL COMPETITION DATA
+// CLEAR COMPETITION
 // =========================================================
 
 async function clearCompetition() {
 
   const confirmed =
     confirm(
-      "⚠️ CLEAR ENTIRE COMPETITION?\n\n" +
+      "⚠️ CLEAR COMPETITION?\n\n" +
       "This will remove:\n\n" +
-      "• Approved teams\n" +
       "• Fixtures\n" +
       "• Results\n" +
       "• Champions League knockout stages\n" +
       "• Competition winners\n" +
       "• Season settings\n\n" +
+      "✅ Approved teams will NOT be deleted.\n\n" +
       "This action cannot be undone."
     );
 
@@ -7631,7 +7631,9 @@ async function clearCompetition() {
   const finalConfirmed =
     confirm(
       "FINAL CONFIRMATION\n\n" +
-      "Are you sure you want to start a completely new competition?"
+      "Approved teams will remain.\n" +
+      "Only the current competition data will be cleared.\n\n" +
+      "Continue?"
     );
 
 
@@ -7641,10 +7643,11 @@ async function clearCompetition() {
 
 
   /*
-   * Reset all competition data.
+   * Keep approved teams.
+   *
+   * Only competition-specific data
+   * is reset.
    */
-
-  teams = [];
 
   fixtures = [];
 
@@ -7662,13 +7665,9 @@ async function clearCompetition() {
 
 
   /*
-   * Keep registration documents,
-   * but reset the competition itself.
-   *
-   * Existing registration records are
-   * handled separately by the admin.
+   * Save the reset competition while
+   * preserving the existing approved teams.
    */
-
 
   const saved =
     await saveCompetition();
@@ -7680,7 +7679,7 @@ async function clearCompetition() {
 
 
   /*
-   * Refresh the entire dashboard.
+   * Refresh the dashboard.
    */
 
   renderAll();
@@ -7701,12 +7700,14 @@ async function clearCompetition() {
   if (seasonControlMessage) {
 
     seasonControlMessage.textContent =
-      "🟢 Competition cleared. A new season can now be configured.";
+      "🟢 Competition cleared. Approved teams were kept. A new season can now be configured.";
   }
 
 
   alert(
-    "✅ Competition cleared successfully.\n\nYou can now choose League or Champions League for the new season."
+    "✅ Competition cleared successfully.\n\n" +
+    "Approved teams were kept.\n\n" +
+    "You can now choose League or Champions League for the new season."
   );
 }
 
