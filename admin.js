@@ -4485,9 +4485,7 @@ async function saveFixtureResult(
   awayScore
 ) {
 
-  if (
-    !season.started
-  ) {
+  if (!season.started) {
 
     alert(
       "Start the season before entering results."
@@ -4510,22 +4508,35 @@ async function saveFixtureResult(
   }
 
 
-  const fixture =
+  /*
+   * First try the normal fixture ID.
+   */
+
+  let fixture =
     fixtures.find(
       function(item) {
 
         return (
-          item.id ===
-          fixtureId
+          String(item.id || "") ===
+          String(fixtureId || "")
         );
       }
     );
 
 
+  /*
+   * Older fixtures may not have had an ID.
+   *
+   * The renderer now gives those fixtures
+   * a temporary/stable ID before displaying
+   * the Save Result button.
+   */
+
+
   if (!fixture) {
 
     alert(
-      "Fixture not found."
+      "Fixture not found. Please refresh the admin page and try again."
     );
 
     return;
@@ -4555,6 +4566,7 @@ async function saveFixtureResult(
 
 
   renderTable();
+
   renderFixtures();
 
 
@@ -4610,7 +4622,23 @@ function renderFixtures() {
 
 
   sortedFixtures.forEach(
-    function(fixture) {
+  function(fixture, fixtureIndex) {
+
+    /*
+     * Some older fixtures were created without
+     * an ID. Give them one now so their results
+     * can be saved normally.
+     */
+
+    if (!fixture.id) {
+
+      fixture.id =
+        `legacy-${fixture.round || 1}-${fixtureIndex}-${teamKey(
+          getFixtureHomeName(fixture)
+        )}-${teamKey(
+          getFixtureAwayName(fixture)
+        )}`;
+    }
 
       const round =
         Number(
