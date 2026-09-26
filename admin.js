@@ -4063,205 +4063,166 @@ function createEmptyTeamStats(team) {
 // CALCULATE COMPETITION TABLE
 // =========================================================
 
+function getFixtureHomeName(fixture) {
+  if (fixture?.homeTeam) {
+    return getTeamName(fixture.homeTeam);
+  }
+
+  return String(fixture?.home || "").trim();
+}
+
+
+function getFixtureAwayName(fixture) {
+  if (fixture?.awayTeam) {
+    return getTeamName(fixture.awayTeam);
+  }
+
+  return String(fixture?.away || "").trim();
+}
+
+
 function calculateLeagueTable() {
 
   const table = {};
 
+  teams.forEach(function(team) {
 
-  teams.forEach(
-    function(team) {
+    const name = getTeamName(team);
 
-      const name =
-        getTeamName(team);
-
-      if (!name) {
-        return;
-      }
-
-      table[name] =
-        createEmptyTeamStats(team);
+    if (!name) {
+      return;
     }
-  );
+
+    table[name] =
+      createEmptyTeamStats(team);
+  });
 
 
-  fixtures.forEach(
-    function(fixture) {
+  fixtures.forEach(function(fixture) {
 
-      const home =
-        getTeamName(
-          fixture.homeTeam
-        );
+    const home =
+      getFixtureHomeName(fixture);
 
-      const away =
-        getTeamName(
-          fixture.awayTeam
-        );
+    const away =
+      getFixtureAwayName(fixture);
 
 
-      if (
-        !home ||
-        !away
-      ) {
-        return;
-      }
-
-
-      if (
-        !Object.prototype.hasOwnProperty.call(
-          table,
-          home
-        )
-      ) {
-
-        table[home] =
-          createEmptyTeamStats({
-            teamName: home
-          });
-      }
-
-
-      if (
-        !Object.prototype.hasOwnProperty.call(
-          table,
-          away
-        )
-      ) {
-
-        table[away] =
-          createEmptyTeamStats({
-            teamName: away
-          });
-      }
-
-
-      const homeScore =
-        Number(
-          fixture.homeScore
-        );
-
-      const awayScore =
-        Number(
-          fixture.awayScore
-        );
-
-
-      if (
-        !Number.isFinite(homeScore) ||
-        !Number.isFinite(awayScore)
-      ) {
-
-        return;
-      }
-
-
-      table[home].played++;
-      table[away].played++;
-
-
-      table[home].goalsFor +=
-        homeScore;
-
-      table[home].goalsAgainst +=
-        awayScore;
-
-
-      table[away].goalsFor +=
-        awayScore;
-
-      table[away].goalsAgainst +=
-        homeScore;
-
-
-      if (
-        homeScore >
-        awayScore
-      ) {
-
-        table[home].wins++;
-        table[home].points += 3;
-
-        table[away].losses++;
-
-      } else if (
-        homeScore <
-        awayScore
-      ) {
-
-        table[away].wins++;
-        table[away].points += 3;
-
-        table[home].losses++;
-
-      } else {
-
-        table[home].draws++;
-        table[away].draws++;
-
-        table[home].points++;
-        table[away].points++;
-      }
+    if (!home || !away) {
+      return;
     }
-  );
 
 
-  Object.values(table).forEach(
-    function(row) {
-
-      row.goalDifference =
-        row.goalsFor -
-        row.goalsAgainst;
+    if (
+      !Object.prototype.hasOwnProperty.call(
+        table,
+        home
+      )
+    ) {
+      table[home] =
+        createEmptyTeamStats({
+          teamName: home
+        });
     }
-  );
 
 
-  const sorted =
-    Object.values(table).sort(
-      function(a, b) {
-
-        if (
-          b.points !==
-          a.points
-        ) {
-
-          return (
-            b.points -
-            a.points
-          );
-        }
+    if (
+      !Object.prototype.hasOwnProperty.call(
+        table,
+        away
+      )
+    ) {
+      table[away] =
+        createEmptyTeamStats({
+          teamName: away
+        });
+    }
 
 
-        if (
-          b.goalDifference !==
-          a.goalDifference
-        ) {
+    const homeScore =
+      Number(fixture.homeScore);
 
-          return (
-            b.goalDifference -
-            a.goalDifference
-          );
-        }
+    const awayScore =
+      Number(fixture.awayScore);
 
 
-        if (
-          b.goalsFor !==
-          a.goalsFor
-        ) {
-
-          return (
-            b.goalsFor -
-            a.goalsFor
-          );
-        }
+    if (
+      !Number.isFinite(homeScore) ||
+      !Number.isFinite(awayScore)
+    ) {
+      return;
+    }
 
 
-        return a.team.localeCompare(
-          b.team
-        );
-      }
-    );
+    table[home].played++;
+    table[away].played++;
 
 
-  return sorted;
+    table[home].goalsFor +=
+      homeScore;
+
+    table[home].goalsAgainst +=
+      awayScore;
+
+
+    table[away].goalsFor +=
+      awayScore;
+
+    table[away].goalsAgainst +=
+      homeScore;
+
+
+    if (homeScore > awayScore) {
+
+      table[home].wins++;
+      table[home].points += 3;
+
+      table[away].losses++;
+
+    } else if (homeScore < awayScore) {
+
+      table[away].wins++;
+      table[away].points += 3;
+
+      table[home].losses++;
+
+    } else {
+
+      table[home].draws++;
+      table[away].draws++;
+
+      table[home].points++;
+      table[away].points++;
+    }
+  });
+
+
+  Object.values(table).forEach(function(row) {
+
+    row.goalDifference =
+      row.goalsFor -
+      row.goalsAgainst;
+  });
+
+
+  return Object.values(table).sort(function(a, b) {
+
+    if (b.points !== a.points) {
+      return b.points - a.points;
+    }
+
+    if (b.goalDifference !== a.goalDifference) {
+      return (
+        b.goalDifference -
+        a.goalDifference
+      );
+    }
+
+    if (b.goalsFor !== a.goalsFor) {
+      return b.goalsFor - a.goalsFor;
+    }
+
+    return a.team.localeCompare(b.team);
+  });
 }
 
 
