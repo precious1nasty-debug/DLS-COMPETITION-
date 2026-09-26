@@ -1,0 +1,269 @@
+/* =========================================================
+   DLS COMPETITION ADMIN
+   admin.css
+   ========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f4f6f9;
+  color: #172033;
+  line-height: 1.5;
+}
+
+header {
+  background: #101828;
+  color: #ffffff;
+  text-align: center;
+  padding: 24px 15px;
+}
+
+header h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+}
+
+header p {
+  margin: 0;
+  opacity: 0.9;
+}
+
+main {
+  width: min(1100px, 94%);
+  margin: 24px auto 50px;
+}
+
+section {
+  margin-bottom: 22px;
+}
+
+.admin-login,
+.admin-section,
+#adminDashboard > h2 {
+  background: #ffffff;
+  border: 1px solid #d9dee8;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 14px rgba(16, 24, 40, 0.06);
+}
+
+.admin-login {
+  max-width: 520px;
+  margin: 28px auto;
+}
+
+.admin-login h2,
+.admin-section h2,
+#adminDashboard > h2 {
+  margin-top: 0;
+}
+
+input,
+select,
+button {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 8px;
+  font: inherit;
+}
+
+input,
+select {
+  border: 1px solid #cbd3df;
+  background: #ffffff;
+  padding: 10px 12px;
+  margin: 6px 0 14px;
+}
+
+button {
+  border: 0;
+  padding: 10px 14px;
+  background: #1d4ed8;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+button:hover {
+  opacity: 0.92;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.admin-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.admin-buttons button {
+  margin-top: 0;
+}
+
+.danger-zone {
+  border-color: #fecaca;
+}
+
+.danger-zone button:first-of-type {
+  background: #dc2626;
+}
+
+#logoutButton {
+  background: #475569;
+}
+
+#adminLoginMessage,
+#seasonControlMessage,
+#knockoutDrawStatus,
+#knockoutQualificationStatus,
+#matchesPerTeamSuggestion {
+  margin-top: 10px;
+}
+
+#pendingRegistrations,
+#adminTeamList,
+#adminFixtureList,
+#adminKnockoutList,
+#adminChampionsResults {
+  width: 100%;
+}
+
+.season-card,
+.team-card,
+.admin-fixture {
+  background: #f8fafc;
+  border: 1px solid #d9dee8;
+  border-radius: 10px;
+  padding: 14px;
+  margin: 10px 0;
+}
+
+.team-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.team-card button {
+  width: auto;
+  min-width: 120px;
+}
+
+.admin-fixture {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-fixture button {
+  grid-column: 1 / -1;
+}
+
+.fixture-home-score,
+.fixture-away-score,
+.knockout-home-score,
+.knockout-away-score {
+  text-align: center;
+  margin: 0;
+}
+
+.save-fixture-result,
+.save-knockout-match,
+.select-knockout-winner {
+  margin-top: 10px;
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  min-width: 700px;
+  border-collapse: collapse;
+  background: #ffffff;
+}
+
+th,
+td {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 10px 8px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+th {
+  background: #eef2f7;
+  font-weight: 700;
+}
+
+td:nth-child(2),
+th:nth-child(2) {
+  text-align: left;
+}
+
+label {
+  display: block;
+  font-weight: 700;
+  margin-top: 10px;
+}
+
+h3 {
+  margin-bottom: 8px;
+}
+
+p {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 650px) {
+  main {
+    width: 94%;
+    margin-top: 15px;
+  }
+
+  header h1 {
+    font-size: 23px;
+  }
+
+  .admin-login,
+  .admin-section,
+  #adminDashboard > h2 {
+    padding: 15px;
+    border-radius: 10px;
+  }
+
+  .admin-fixture {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .admin-fixture > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  .admin-fixture button {
+    grid-column: 1 / -1;
+  }
+
+  .team-card {
+    align-items: stretch;
+  }
+
+  .team-card button {
+    width: 100%;
+  }
+}
