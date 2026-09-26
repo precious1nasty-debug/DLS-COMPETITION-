@@ -2,165 +2,418 @@
 <html lang="en">
 
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>DLS Competition</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-  <link rel="stylesheet" href="style.css">
+  <meta
+    name="description"
+    content="DLS Competition - League and Champions League"
+  >
+
+  <title>DLS COMPETITION</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
 </head>
+
 
 <body>
 
-<header>
-  <h1>⚽ DLS COMPETITION</h1>
-  <p>Dream League Soccer Tournament</p>
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
+
+<header class="site-header">
+
+  <div class="header-inner">
+
+    <h1>⚽ DLS COMPETITION</h1>
+
+    <nav>
+
+      <a href="#home">
+        Home
+      </a>
+
+      <a href="#teams">
+        Teams
+      </a>
+
+      <a href="#fixtures">
+        Fixtures
+      </a>
+
+      <a href="#table">
+        Table
+      </a>
+
+      <a href="#champions">
+        Champions
+      </a>
+
+      <a href="#register">
+        Register
+      </a>
+
+    </nav>
+
+  </div>
+
 </header>
 
-<nav>
-  <a href="#home">Home</a>
-  <a href="#teams">Teams</a>
-  <a href="#fixtures">Fixtures</a>
-  <a href="#table">Table</a>
-  <a href="#register">Register</a>
-</nav>
 
-<main>
+<!-- =====================================================
+     HOME
+===================================================== -->
 
-<section id="home" class="hero">
+<main id="home">
 
-  <h2>🏆 Welcome to the Competition</h2>
+  <section class="hero">
 
-  <p>
-    Compete • Win • Become Champion
-  </p>
+    <h2>
+      ⚽ DLS COMPETITION
+    </h2>
 
-  <button onclick="showRegister()">
-    📝 Register Your Team
-  </button>
+    <p>
+      Follow the competition, fixtures,
+      results and standings.
+    </p>
 
-</section>
+  </section>
 
 
-<section id="seasonInfo">
+<!-- =====================================================
+     SEASON INFORMATION
+===================================================== -->
 
-  <h2>📅 Season Information</h2>
+  <section class="section">
 
-  <div id="seasonDetails">
-    <p>Season has not started yet.</p>
-  </div>
+    <div class="section-card">
 
-</section>
+      <h2>
+        Current Season
+      </h2>
 
+      <div id="seasonInfo">
 
-<section id="teams">
+        Loading season...
 
-  <h2>👥 Registered Teams</h2>
+      </div>
 
-  <div id="teamList" class="cards">
-    <p>No teams registered yet.</p>
-  </div>
+    </div>
 
-</section>
-
-
-<section id="fixtures">
-
-  <h2>📅 Fixtures</h2>
-
-  <div id="fixtureList">
-    <p>No fixtures available yet.</p>
-  </div>
-
-</section>
+  </section>
 
 
-<section id="table">
+<!-- =====================================================
+     TEAMS
+===================================================== -->
 
-  <h2>🏆 League Table</h2>
+  <section
+    id="teams"
+    class="section"
+  >
 
-  <div class="table-container">
+    <h2>
+      Teams
+    </h2>
 
-    <table>
-
-      <thead>
-
-        <tr>
-          <th>Pos</th>
-          <th>Team</th>
-          <th>P</th>
-          <th>W</th>
-          <th>D</th>
-          <th>L</th>
-          <th>GF</th>
-          <th>GA</th>
-          <th>GD</th>
-          <th>Pts</th>
-        </tr>
-
-      </thead>
-
-      <tbody id="leagueTable">
-
-        <tr>
-          <td colspan="10">
-            No results yet.
-          </td>
-        </tr>
-
-      </tbody>
-
-    </table>
-
-  </div>
-
-</section>
-
-
-<section id="register">
-
-  <h2>📝 Team Registration</h2>
-
-  <form id="registrationForm">
-
-    <input
-      type="text"
-      id="teamName"
-      placeholder="Team Name"
-      required
+    <div
+      id="teamsList"
+      class="teams-grid"
     >
 
-    <input
-      type="text"
-      id="playerName"
-      placeholder="Player Name"
-      required
+      Loading teams...
+
+    </div>
+
+  </section>
+
+
+<!-- =====================================================
+     FIXTURES
+===================================================== -->
+
+  <section
+    id="fixtures"
+    class="section"
+  >
+
+    <h2 id="fixturesTitle">
+      Fixtures
+    </h2>
+
+    <div id="fixturesList">
+
+      Loading fixtures...
+
+    </div>
+
+  </section>
+
+
+<!-- =====================================================
+     LEAGUE TABLE
+===================================================== -->
+
+  <section
+    id="table"
+    class="section"
+  >
+
+    <h2 id="tableTitle">
+      League Table
+    </h2>
+
+    <div
+      id="qualificationLegend"
+      class="qualification-legend"
+    ></div>
+
+    <div class="table-wrapper">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>Pos</th>
+            <th>Team</th>
+            <th>P</th>
+            <th>W</th>
+            <th>D</th>
+            <th>L</th>
+            <th>GF</th>
+            <th>GA</th>
+            <th>GD</th>
+            <th>Pts</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody id="leagueTable">
+
+          <tr>
+
+            <td colspan="10">
+              Loading table...
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+
+<!-- =====================================================
+     CHAMPIONS LEAGUE
+===================================================== -->
+
+  <section
+    id="champions"
+    class="section champions-section"
+  >
+
+    <div class="section-card">
+
+      <h2>
+        🏆 Champions League
+      </h2>
+
+      <div
+        id="championsStatus"
+        class="champions-status"
+      >
+        Loading Champions League...
+      </div>
+
+    </div>
+
+
+    <!-- QUALIFICATION -->
+
+    <div
+      id="championsQualification"
+      class="section-card"
     >
 
-    <button type="submit">
-      ⚽ Register Team
-    </button>
+      <h3>
+        Qualification
+      </h3>
 
-  </form>
+      <div
+        id="championsQualificationList"
+      ></div>
 
-  <p id="registrationMessage"></p>
+    </div>
 
-</section>
+
+    <!-- KNOCKOUT BRACKET -->
+
+    <div
+      id="championsBracket"
+      class="section-card"
+    >
+
+      <h3>
+        Knockout Stage
+      </h3>
+
+      <div
+        id="championsBracketContent"
+        class="bracket-container"
+      >
+
+        Knockout stage will appear here
+        after the draw.
+
+      </div>
+
+    </div>
+
+
+    <!-- PODIUM -->
+
+    <div
+      id="championsPodium"
+      class="section-card"
+    >
+
+      <h3>
+        🏆 Final Results
+      </h3>
+
+      <div
+        id="championsPodiumContent"
+        class="podium"
+      >
+
+        Results will appear here.
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+<!-- =====================================================
+     REGISTRATION
+===================================================== -->
+
+  <section
+    id="register"
+    class="section"
+  >
+
+    <div class="section-card">
+
+      <h2>
+        Register Your Team
+      </h2>
+
+      <p>
+        Enter your team and player details.
+      </p>
+
+
+      <form id="registrationForm">
+
+        <label for="teamName">
+          Team Name
+        </label>
+
+        <input
+          type="text"
+          id="teamName"
+          name="teamName"
+          maxlength="40"
+          required
+        >
+
+
+        <label for="playerName">
+          Player Name
+        </label>
+
+        <input
+          type="text"
+          id="playerName"
+          name="playerName"
+          maxlength="60"
+          required
+        >
+
+
+        <button
+          type="submit"
+        >
+          Submit Registration
+        </button>
+
+      </form>
+
+
+      <div
+        id="registrationMessage"
+        class="registration-message"
+      ></div>
+
+    </div>
+
+  </section>
 
 </main>
 
 
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
 <footer>
 
   <p>
-    © 2026 DLS Competition
+    © DLS COMPETITION
   </p>
 
 </footer>
 
 
-<script type="module" src="firebase.js"></script>
-<script type="module" src="script.js?v=4"></script>
+<!-- =====================================================
+     FIREBASE
+===================================================== -->
+
+<script
+  type="module"
+  src="firebase.js"
+></script>
+
+
+<!-- =====================================================
+     PUBLIC SCRIPT
+===================================================== -->
+
+<script
+  type="module"
+  src="script.js?v=5"
+></script>
+
 
 </body>
 
