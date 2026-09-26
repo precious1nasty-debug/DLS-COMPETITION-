@@ -1715,13 +1715,52 @@ function renderEverything() {
 
   renderTableTitles();
 
-  renderChampionsStatus();
+  /*
+   * Champions League should only be visible
+   * when Champions format is selected.
+   */
 
-  renderChampionsQualification();
+  const championsSection =
+    document.getElementById("champions");
 
-  renderChampionsBracket();
+  const championsNav =
+    document.querySelector(
+      'a[href="#champions"]'
+    );
 
-  renderChampionsPodium();
+
+  const championsActive =
+    season.format === "champions";
+
+
+  if (championsSection) {
+
+    championsSection.style.display =
+      championsActive
+        ? ""
+        : "none";
+  }
+
+
+  if (championsNav) {
+
+    championsNav.style.display =
+      championsActive
+        ? ""
+        : "none";
+  }
+
+
+  if (championsActive) {
+
+    renderChampionsStatus();
+
+    renderChampionsQualification();
+
+    renderChampionsBracket();
+
+    renderChampionsPodium();
+  }
 }
 
 
