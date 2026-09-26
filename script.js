@@ -1,127 +1,203 @@
+// =========================================================
+// DLS COMPETITION
+// PUBLIC SCRIPT
+// PART 24 — LEAGUE + CHAMPIONS DISPLAY
+// =========================================================
+
 import {
   doc,
   getDoc,
   setDoc
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
+
+// =========================================================
+// GLOBAL DATA
+// =========================================================
+
 let teams = [];
 let fixtures = [];
 
 let season = {
+  format: "league",
   started: false,
+  formatLocked: false,
+  phase: "registration",
   startDate: "",
   endDate: "",
-  legs: 1
+  legs: 1,
+  matchesPerTeam: 4,
+  knockoutLegs: 1,
+  qualificationCount: 0
 };
 
-const form =
-  document.getElementById("registrationForm");
+let knockout = {
+  enabled: false,
+  qualificationCount: 0,
+  drawLocked: false,
+  roundOf16: [],
+  quarterFinals: [],
+  semiFinals: [],
+  thirdPlace: null,
+  final: null
+};
 
-const teamList =
-  document.getElementById("teamList");
+let champions = {
+  champion: "",
+  runnerUp: "",
+  thirdPlace: ""
+};
 
-const fixtureList =
-  document.getElementById("fixtureList");
+
+// =========================================================
+// DOM
+// =========================================================
+
+const seasonInfo =
+  document.getElementById("seasonInfo");
+
+const teamsList =
+  document.getElementById("teamsList");
+
+const fixturesList =
+  document.getElementById("fixturesList");
 
 const leagueTable =
   document.getElementById("leagueTable");
 
+const fixturesTitle =
+  document.getElementById("fixturesTitle");
+
+const tableTitle =
+  document.getElementById("tableTitle");
+
+const qualificationLegend =
+  document.getElementById(
+    "qualificationLegend"
+  );
+
+const championsStatus =
+  document.getElementById(
+    "championsStatus"
+  );
+
+const championsQualificationList =
+  document.getElementById(
+    "championsQualificationList"
+  );
+
+const championsBracketContent =
+  document.getElementById(
+    "championsBracketContent"
+  );
+
+const championsPodiumContent =
+  document.getElementById(
+    "championsPodiumContent"
+  );
+
+const registrationForm =
+  document.getElementById(
+    "registrationForm"
+  );
+
 const registrationMessage =
-  document.getElementById("registrationMessage");
+  document.getElementById(
+    "registrationMessage"
+  );
 
-const seasonDetails =
-  document.getElementById("seasonDetails");
 
-
-/* =========================
-   HELPERS
-========================= */
-
-function normalizeTeamName(name) {
-
-  return String(name || "")
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
-
-}
-
-function teamKey(name) {
-
-  return normalizeTeamName(name)
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .substring(0, 80);
-
-}
+// =========================================================
+// HELPERS
+// =========================================================
 
 function escapeHTML(value) {
 
-  const div =
-    document.createElement("div");
-
-  div.textContent =
-    String(value ?? "");
-
-  return div.innerHTML;
-
+  return String(
+    value ?? ""
+  )
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
+
 
 function getTeamName(team) {
 
-  return team.teamName ||
-    team.name ||
-    "";
-
-}
-
-function getPlayerName(team) {
-
-  return team.playerName ||
-    team.player ||
-    "";
-
-}
-
-function formatDate(date) {
-
-  if (!date) {
-    return "Date not set";
+  if (typeof team === "string") {
+    return team;
   }
 
-  const parts =
-    date.split("-");
-
-  if (parts.length !== 3) {
-    return date;
-  }
-
-  const formatted =
-    new Date(
-      `${date}T00:00:00`
-    );
-
-  return formatted.toLocaleDateString(
-    "en-GB",
-    {
-      day: "numeric",
-      month: "long",
-      year: "numeric"
-    }
+  return (
+    team?.teamName ||
+    team?.name ||
+    ""
   );
-
 }
 
 
-/* =========================
-   LOAD COMPETITION
-========================= */
+function getFixtureResult(fixture) {
+
+  if (
+    fixture &&
+    fixture.homeScore !== undefined &&
+    fixture.awayScore !== undefined
+  ) {
+
+    return {
+      home:
+        Number(fixture.homeScore),
+
+      away:
+        Number(fixture.awayScore)
+    };
+  }
+
+
+  if (
+    fixture?.result &&
+    fixture.result.homeGoals !== undefined &&
+    fixture.result.awayGoals !== undefined
+  ) {
+
+    return {
+      home:
+        Number(
+          fixture.result.homeGoals
+        ),
+
+      away:
+        Number(
+          fixture.result.awayGoals
+        )
+    };
+  }
+
+
+  return null;
+}
+
+
+function hasResult(fixture) {
+
+  const result =
+    getFixtureResult(fixture);
+
+  return !!(
+    result &&
+    Number.isFinite(result.home) &&
+    Number.isFinite(result.away)
+  );
+}
+
+
+// =========================================================
+// LOAD COMPETITION
+// =========================================================
 
 async function loadCompetition() {
-
-  if (!window.db) {
-    return;
-  }
 
   try {
 
@@ -137,163 +213,1393 @@ async function loadCompetition() {
         competitionRef
       );
 
+
     if (!snapshot.exists()) {
 
-      teams = [];
-      fixtures = [];
+      renderEverything();
 
-      season = {
-        started: false,
-        startDate: "",
-        endDate: "",
-        legs: 1
-      };
-
-    } else {
-
-      const data =
-        snapshot.data();
-
-      teams =
-        Array.isArray(data.teams)
-          ? data.teams
-          : [];
-
-      fixtures =
-        Array.isArray(data.fixtures)
-          ? data.fixtures
-          : [];
-
-      if (data.season) {
-
-        season = {
-
-          started:
-            data.season.started || false,
-
-          startDate:
-            data.season.startDate || "",
-
-          endDate:
-            data.season.endDate || "",
-
-          legs:
-            data.season.legs || 1
-
-        };
-
-      } else {
-
-        season = {
-
-          started:
-            data.seasonStarted || false,
-
-          startDate:
-            data.seasonStart || "",
-
-          endDate:
-            data.seasonEnd || "",
-
-          legs:
-            data.legFormat || 1
-
-        };
-
-      }
-
+      return;
     }
 
-    displayTeams();
-    displayTable();
-    displayFixtures();
-    displaySeason();
-    updateRegistrationStatus();
+
+    const data =
+      snapshot.data();
+
+
+    teams =
+      Array.isArray(data.teams)
+        ? data.teams
+        : [];
+
+
+    fixtures =
+      Array.isArray(data.fixtures)
+        ? data.fixtures
+        : [];
+
+
+    if (
+      data.season &&
+      typeof data.season === "object"
+    ) {
+
+      season = {
+        ...season,
+        ...data.season
+      };
+    }
+
+
+    if (
+      data.knockout &&
+      typeof data.knockout === "object"
+    ) {
+
+      knockout = {
+        ...knockout,
+        ...data.knockout
+      };
+    }
+
+
+    if (
+      data.champions &&
+      typeof data.champions === "object"
+    ) {
+
+      champions = {
+        ...champions,
+        ...data.champions
+      };
+    }
+
+
+    renderEverything();
 
   } catch (error) {
 
     console.error(
-      "Competition load failed:",
+      "Unable to load competition:",
       error
     );
 
+    if (seasonInfo) {
+
+      seasonInfo.innerHTML =
+        "<p>Unable to load competition data.</p>";
+    }
+  }
+}
+
+
+// =========================================================
+// SEASON DISPLAY
+// =========================================================
+
+function renderSeason() {
+
+  if (!seasonInfo) {
+    return;
   }
 
-}
+
+  if (!season.started) {
+
+    seasonInfo.innerHTML = `
+      <p>Registration is open.</p>
+      <p>
+        Competition format:
+        <strong>
+          ${escapeHTML(
+            season.format === "champions"
+              ? "Champions League"
+              : "League"
+          )}
+        </strong>
+      </p>
+    `;
+
+    return;
+  }
 
 
-/* =========================
-   CHECK APPROVED TEAM
-========================= */
+  const formatName =
+    season.format === "champions"
+      ? "Champions League"
+      : "League";
 
-function checkApprovedTeam(teamName) {
 
-  const cleanName =
-    normalizeTeamName(teamName);
+  let status =
+    "Active";
 
-  return teams.some(
-    function(team) {
 
-      return normalizeTeamName(
-        getTeamName(team)
-      ) === cleanName;
+  if (
+    season.phase === "completed"
+  ) {
 
+    status =
+      "Completed";
+
+  } else if (
+    season.phase === "knockout"
+  ) {
+
+    status =
+      "Knockout Stage";
+  }
+
+
+  seasonInfo.innerHTML = `
+
+    <p>
+      <strong>Format:</strong>
+      ${escapeHTML(formatName)}
+    </p>
+
+    <p>
+      <strong>Status:</strong>
+      ${escapeHTML(status)}
+    </p>
+
+    ${
+      season.startDate
+        ? `
+          <p>
+            <strong>Start:</strong>
+            ${escapeHTML(
+              season.startDate
+            )}
+          </p>
+        `
+        : ""
     }
-  );
 
+    ${
+      season.endDate
+        ? `
+          <p>
+            <strong>End:</strong>
+            ${escapeHTML(
+              season.endDate
+            )}
+          </p>
+        `
+        : ""
+    }
+
+  `;
 }
 
 
-/* =========================
-   REGISTRATION
-========================= */
+// =========================================================
+// TEAMS
+// =========================================================
 
-if (form) {
+function renderTeams() {
 
-  form.addEventListener(
+  if (!teamsList) {
+    return;
+  }
+
+
+  if (!teams.length) {
+
+    teamsList.innerHTML =
+      "<p>No approved teams yet.</p>";
+
+    return;
+  }
+
+
+  teamsList.innerHTML =
+    teams
+      .map(
+        (team, index) => `
+          <div class="team-card">
+
+            <strong>
+              ${index + 1}.
+              ${escapeHTML(
+                getTeamName(team)
+              )}
+            </strong>
+
+          </div>
+        `
+      )
+      .join("");
+}
+
+
+// =========================================================
+// TABLE CALCULATION
+// =========================================================
+
+function createTeamStats(name) {
+
+  return {
+    team:
+      name,
+
+    played: 0,
+    wins: 0,
+    draws: 0,
+    losses: 0,
+    goalsFor: 0,
+    goalsAgainst: 0,
+    goalDifference: 0,
+    points: 0
+  };
+}
+
+
+function calculateTable() {
+
+  const stats = {};
+
+
+  teams.forEach(team => {
+
+    const name =
+      getTeamName(team);
+
+    stats[name] =
+      createTeamStats(name);
+  });
+
+
+  fixtures.forEach(fixture => {
+
+    if (!hasResult(fixture)) {
+      return;
+    }
+
+
+    const home =
+      fixture.homeTeam ||
+      fixture.home ||
+      "";
+
+
+    const away =
+      fixture.awayTeam ||
+      fixture.away ||
+      "";
+
+
+    if (
+      !stats[home] ||
+      !stats[away]
+    ) {
+      return;
+    }
+
+
+    const result =
+      getFixtureResult(
+        fixture
+      );
+
+
+    stats[home].played++;
+    stats[away].played++;
+
+
+    stats[home].goalsFor +=
+      result.home;
+
+    stats[home].goalsAgainst +=
+      result.away;
+
+
+    stats[away].goalsFor +=
+      result.away;
+
+    stats[away].goalsAgainst +=
+      result.home;
+
+
+    if (
+      result.home >
+      result.away
+    ) {
+
+      stats[home].wins++;
+      stats[away].losses++;
+
+      stats[home].points += 3;
+
+    } else if (
+      result.home <
+      result.away
+    ) {
+
+      stats[away].wins++;
+      stats[home].losses++;
+
+      stats[away].points += 3;
+
+    } else {
+
+      stats[home].draws++;
+      stats[away].draws++;
+
+      stats[home].points++;
+      stats[away].points++;
+    }
+  });
+
+
+  return Object.values(stats)
+    .map(team => {
+
+      team.goalDifference =
+        team.goalsFor -
+        team.goalsAgainst;
+
+      return team;
+    })
+    .sort((a, b) => {
+
+      if (
+        b.points !==
+        a.points
+      ) {
+
+        return (
+          b.points -
+          a.points
+        );
+      }
+
+
+      if (
+        b.goalDifference !==
+        a.goalDifference
+      ) {
+
+        return (
+          b.goalDifference -
+          a.goalDifference
+        );
+      }
+
+
+      if (
+        b.goalsFor !==
+        a.goalsFor
+      ) {
+
+        return (
+          b.goalsFor -
+          a.goalsFor
+        );
+      }
+
+
+      return a.team.localeCompare(
+        b.team
+      );
+    });
+}
+
+
+// =========================================================
+// TABLE DISPLAY
+// =========================================================
+
+function renderTable() {
+
+  if (!leagueTable) {
+    return;
+  }
+
+
+  const table =
+    calculateTable();
+
+
+  if (!table.length) {
+
+    leagueTable.innerHTML = `
+      <tr>
+        <td colspan="10">
+          No teams yet.
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+
+  const qualificationCount =
+    season.format === "champions"
+      ? Number(
+          season.qualificationCount ||
+          knockout.qualificationCount ||
+          0
+        )
+      : 0;
+
+
+  leagueTable.innerHTML =
+    table
+      .map((team, index) => {
+
+        const position =
+          index + 1;
+
+
+        let cutoff = "";
+
+
+        if (
+          season.format === "champions" &&
+          qualificationCount > 0 &&
+          position === qualificationCount
+        ) {
+
+          cutoff = `
+            <tr class="qualification-cutoff">
+              <td colspan="10">
+                Champions League qualification cutoff
+              </td>
+            </tr>
+          `;
+        }
+
+
+        return `
+
+          ${cutoff}
+
+          <tr>
+
+            <td>
+              ${position}
+            </td>
+
+            <td>
+              <strong>
+                ${escapeHTML(
+                  team.team
+                )}
+              </strong>
+            </td>
+
+            <td>
+              ${team.played}
+            </td>
+
+            <td>
+              ${team.wins}
+            </td>
+
+            <td>
+              ${team.draws}
+            </td>
+
+            <td>
+              ${team.losses}
+            </td>
+
+            <td>
+              ${team.goalsFor}
+            </td>
+
+            <td>
+              ${team.goalsAgainst}
+            </td>
+
+            <td>
+              ${team.goalDifference}
+            </td>
+
+            <td>
+              <strong>
+                ${team.points}
+              </strong>
+            </td>
+
+          </tr>
+
+        `;
+      })
+      .join("");
+}
+
+
+// =========================================================
+// TABLE TITLES
+// =========================================================
+
+function renderTableTitles() {
+
+  if (!tableTitle) {
+    return;
+  }
+
+
+  if (
+    season.format === "champions"
+  ) {
+
+    tableTitle.textContent =
+      "Champions League Table";
+
+
+    if (qualificationLegend) {
+
+      const count =
+        Number(
+          season.qualificationCount ||
+          knockout.qualificationCount ||
+          0
+        );
+
+
+      qualificationLegend.textContent =
+        count
+          ? `Top ${count} teams qualify for the knockout stage.`
+          : "";
+    }
+
+  } else {
+
+    tableTitle.textContent =
+      "League Table";
+
+
+    if (qualificationLegend) {
+
+      qualificationLegend.textContent =
+        "";
+    }
+  }
+}
+
+
+// =========================================================
+// FIXTURE DISPLAY
+// =========================================================
+
+function renderFixtures() {
+
+  if (!fixturesList) {
+    return;
+  }
+
+
+  if (!fixtures.length) {
+
+    fixturesList.innerHTML =
+      "<p>No fixtures generated yet.</p>";
+
+    return;
+  }
+
+
+  const grouped = {};
+
+
+  fixtures.forEach(fixture => {
+
+    const round =
+      fixture.round ||
+      fixture.matchDay ||
+      "Fixtures";
+
+
+    if (!grouped[round]) {
+      grouped[round] = [];
+    }
+
+
+    grouped[round].push(
+      fixture
+    );
+  });
+
+
+  fixturesList.innerHTML =
+    Object.entries(grouped)
+      .map(
+        ([round, roundFixtures]) => `
+
+          <div class="fixture-round">
+
+            <h3>
+              ${escapeHTML(
+                round
+              )}
+            </h3>
+
+            <div class="fixture-list">
+
+              ${roundFixtures
+                .map(
+                  fixture => {
+
+                    const result =
+                      getFixtureResult(
+                        fixture
+                      );
+
+
+                    const home =
+                      fixture.homeTeam ||
+                      fixture.home ||
+                      "TBD";
+
+
+                    const away =
+                      fixture.awayTeam ||
+                      fixture.away ||
+                      "TBD";
+
+
+                    const score =
+                      result
+                        ? `${result.home} - ${result.away}`
+                        : "vs";
+
+
+                    return `
+
+                      <div class="fixture-card">
+
+                        <span>
+                          ${escapeHTML(
+                            home
+                          )}
+                        </span>
+
+                        <strong>
+                          ${score}
+                        </strong>
+
+                        <span>
+                          ${escapeHTML(
+                            away
+                          )}
+                        </span>
+
+                      </div>
+
+                    `;
+                  }
+                )
+                .join("")}
+
+            </div>
+
+          </div>
+
+        `
+      )
+      .join("");
+}
+
+
+// =========================================================
+// CHAMPIONS STATUS
+// =========================================================
+
+function renderChampionsStatus() {
+
+  if (!championsStatus) {
+    return;
+  }
+
+
+  if (
+    season.format !==
+    "champions"
+  ) {
+
+    championsStatus.innerHTML =
+      "<p>Champions League is not active for this season.</p>";
+
+    return;
+  }
+
+
+  if (!season.started) {
+
+    championsStatus.innerHTML =
+      "<p>Champions League registration is open.</p>";
+
+    return;
+  }
+
+
+  if (
+    season.phase ===
+    "completed"
+  ) {
+
+    championsStatus.innerHTML =
+      "<p><strong>Champions League completed.</strong></p>";
+
+    return;
+  }
+
+
+  if (
+    season.phase ===
+    "knockout"
+  ) {
+
+    championsStatus.innerHTML =
+      "<p><strong>Knockout stage is in progress.</strong></p>";
+
+    return;
+  }
+
+
+  const count =
+    Number(
+      season.qualificationCount ||
+      knockout.qualificationCount ||
+      0
+    );
+
+
+  championsStatus.innerHTML = `
+
+    <p>
+      League phase in progress.
+    </p>
+
+    <p>
+      Top
+      <strong>${count}</strong>
+      teams qualify for the knockout stage.
+    </p>
+
+  `;
+}
+
+
+// =========================================================
+// QUALIFIED TEAMS
+// =========================================================
+
+function getQualifiedTeams() {
+
+  const table =
+    calculateTable();
+
+
+  const count =
+    Number(
+      season.qualificationCount ||
+      knockout.qualificationCount ||
+      0
+    );
+
+
+  if (!count) {
+    return [];
+  }
+
+
+  return table
+    .slice(0, count)
+    .map(team => team.team);
+}
+
+
+// =========================================================
+// QUALIFICATION DISPLAY
+// =========================================================
+
+function renderChampionsQualification() {
+
+  if (
+    !championsQualificationList
+  ) {
+    return;
+  }
+
+
+  if (
+    season.format !==
+    "champions"
+  ) {
+
+    championsQualificationList.innerHTML =
+      "<p>Not active.</p>";
+
+    return;
+  }
+
+
+  const qualified =
+    getQualifiedTeams();
+
+
+  if (!qualified.length) {
+
+    championsQualificationList.innerHTML =
+      "<p>Qualification positions will appear as results are recorded.</p>";
+
+    return;
+  }
+
+
+  championsQualificationList.innerHTML = `
+
+    <div class="qualified-grid">
+
+      ${qualified
+        .map(
+          (team, index) => `
+
+            <div class="qualified-team">
+
+              <span>
+                ${index + 1}
+              </span>
+
+              <strong>
+                ${escapeHTML(team)}
+              </strong>
+
+            </div>
+
+          `
+        )
+        .join("")}
+
+    </div>
+
+  `;
+}
+
+
+// =========================================================
+// KNOCKOUT ROUND NAME
+// =========================================================
+
+function getRoundTitle(
+  roundArray,
+  fallback
+) {
+
+  if (
+    Array.isArray(roundArray) &&
+    roundArray.length
+  ) {
+
+    const first =
+      roundArray[0];
+
+
+    if (
+      first &&
+      first.round
+    ) {
+
+      return first.round;
+    }
+  }
+
+
+  return fallback;
+}
+
+
+// =========================================================
+// GET KNOCKOUT TIES
+// =========================================================
+
+function getKnockoutRounds() {
+
+  const rounds = [];
+
+
+  if (
+    Array.isArray(
+      knockout.roundOf16
+    ) &&
+    knockout.roundOf16.length
+  ) {
+
+    rounds.push({
+      title:
+        "Round of 16",
+
+      ties:
+        knockout.roundOf16
+    });
+  }
+
+
+  if (
+    Array.isArray(
+      knockout.quarterFinals
+    ) &&
+    knockout.quarterFinals.length
+  ) {
+
+    rounds.push({
+      title:
+        "Quarter-Finals",
+
+      ties:
+        knockout.quarterFinals
+    });
+  }
+
+
+  if (
+    Array.isArray(
+      knockout.semiFinals
+    ) &&
+    knockout.semiFinals.length
+  ) {
+
+    rounds.push({
+      title:
+        "Semi-Finals",
+
+      ties:
+        knockout.semiFinals
+    });
+  }
+
+
+  if (
+    Array.isArray(
+      knockout.final
+    ) &&
+    knockout.final.length
+  ) {
+
+    rounds.push({
+      title:
+        "Final",
+
+      ties:
+        knockout.final
+    });
+  }
+
+
+  return rounds;
+}
+
+
+// =========================================================
+// RENDER A KNOCKOUT TIE
+// =========================================================
+
+function renderTie(
+  tie
+) {
+
+  if (!tie) {
+    return "";
+  }
+
+
+  const matches =
+    Array.isArray(
+      tie.matches
+    )
+      ? tie.matches
+      : [];
+
+
+  const home =
+    tie.homeTeam ||
+    tie.home ||
+    "TBD";
+
+
+  const away =
+    tie.awayTeam ||
+    tie.away ||
+    "TBD";
+
+
+  let aggregateHome = 0;
+  let aggregateAway = 0;
+
+
+  matches.forEach(match => {
+
+    const result =
+      getFixtureResult(
+        match
+      );
+
+
+    if (!result) {
+      return;
+    }
+
+
+    aggregateHome +=
+      result.home;
+
+    aggregateAway +=
+      result.away;
+  });
+
+
+  const winner =
+    tie.winner ||
+    "";
+
+
+  return `
+
+    <div class="knockout-tie">
+
+      <div class="knockout-team">
+
+        <span>
+          ${escapeHTML(home)}
+        </span>
+
+        <strong>
+          ${aggregateHome}
+        </strong>
+
+      </div>
+
+
+      <div class="knockout-team">
+
+        <span>
+          ${escapeHTML(away)}
+        </span>
+
+        <strong>
+          ${aggregateAway}
+        </strong>
+
+      </div>
+
+
+      ${
+        winner
+          ? `
+            <div class="knockout-winner">
+              ✓ ${escapeHTML(winner)}
+            </div>
+          `
+          : ""
+      }
+
+    </div>
+
+  `;
+}
+
+
+// =========================================================
+// THIRD PLACE
+// =========================================================
+
+function renderThirdPlace() {
+
+  if (
+    !knockout.thirdPlace
+  ) {
+
+    return "";
+  }
+
+
+  const tie =
+    knockout.thirdPlace;
+
+
+  return `
+
+    <div class="third-place-card">
+
+      <h3>
+        🥉 Third-Place Match
+      </h3>
+
+      ${renderTie(tie)}
+
+    </div>
+
+  `;
+}
+
+
+// =========================================================
+// BRACKET DISPLAY
+// =========================================================
+
+function renderChampionsBracket() {
+
+  if (
+    !championsBracketContent
+  ) {
+    return;
+  }
+
+
+  if (
+    season.format !==
+    "champions"
+  ) {
+
+    championsBracketContent.innerHTML =
+      "<p>Champions League bracket is not active.</p>";
+
+    return;
+  }
+
+
+  const rounds =
+    getKnockoutRounds();
+
+
+  if (!rounds.length) {
+
+    championsBracketContent.innerHTML =
+      "<p>The knockout bracket will appear after the draw.</p>";
+
+    return;
+  }
+
+
+  championsBracketContent.innerHTML = `
+
+    <div class="bracket">
+
+      ${rounds
+        .map(
+          round => `
+
+            <div class="bracket-round">
+
+              <h3>
+                ${escapeHTML(
+                  round.title
+                )}
+              </h3>
+
+              <div class="bracket-ties">
+
+                ${round.ties
+                  .map(
+                    tie =>
+                      renderTie(tie)
+                  )
+                  .join("")}
+
+              </div>
+
+            </div>
+
+          `
+        )
+        .join("")}
+
+    </div>
+
+    ${renderThirdPlace()}
+
+  `;
+}
+
+
+// =========================================================
+// PODIUM
+// =========================================================
+
+function renderChampionsPodium() {
+
+  if (
+    !championsPodiumContent
+  ) {
+    return;
+  }
+
+
+  if (
+    season.format !==
+    "champions"
+  ) {
+
+    championsPodiumContent.innerHTML =
+      "<p>Champions results are not active.</p>";
+
+    return;
+  }
+
+
+  const champion =
+    champions.champion ||
+    "";
+
+
+  const runnerUp =
+    champions.runnerUp ||
+    "";
+
+
+  const third =
+    champions.thirdPlace ||
+    "";
+
+
+  if (
+    !champion &&
+    !runnerUp &&
+    !third
+  ) {
+
+    championsPodiumContent.innerHTML =
+      "<p>Final results will appear here.</p>";
+
+    return;
+  }
+
+
+  championsPodiumContent.innerHTML = `
+
+    <div class="podium-place gold">
+
+      <div class="podium-medal">
+        🥇
+      </div>
+
+      <h3>
+        Champion
+      </h3>
+
+      <strong>
+        ${escapeHTML(
+          champion || "TBD"
+        )}
+      </strong>
+
+    </div>
+
+
+    <div class="podium-place silver">
+
+      <div class="podium-medal">
+        🥈
+      </div>
+
+      <h3>
+        Runner-Up
+      </h3>
+
+      <strong>
+        ${escapeHTML(
+          runnerUp || "TBD"
+        )}
+      </strong>
+
+    </div>
+
+
+    <div class="podium-place bronze">
+
+      <div class="podium-medal">
+        🥉
+      </div>
+
+      <h3>
+        Third Place
+      </h3>
+
+      <strong>
+        ${escapeHTML(
+          third || "TBD"
+        )}
+      </strong>
+
+    </div>
+
+  `;
+}
+
+
+// =========================================================
+// REGISTRATION
+// =========================================================
+
+function createTeamKey(
+  teamName
+) {
+
+  return teamName
+    .trim()
+    .toLowerCase()
+    .replace(
+      /[^a-z0-9]+/g,
+      "-"
+    )
+    .replace(
+      /^-+|-+$/g,
+      ""
+    );
+}
+
+
+if (registrationForm) {
+
+  registrationForm.addEventListener(
     "submit",
-    async function(event) {
+    async event => {
 
       event.preventDefault();
 
-      if (!window.db) {
-
-        registrationMessage.textContent =
-          "❌ Database is unavailable.";
-
-        return;
-
-      }
-
-      if (season.started) {
-
-        registrationMessage.textContent =
-          "🔒 Registration is closed.";
-
-        return;
-
-      }
 
       const teamName =
         document
-          .getElementById("teamName")
+          .getElementById(
+            "teamName"
+          )
           ?.value
-          .trim() || "";
+          .trim();
+
 
       const playerName =
         document
-          .getElementById("playerName")
+          .getElementById(
+            "playerName"
+          )
           ?.value
-          .trim() || "";
+          .trim();
 
-      if (!teamName || !playerName) {
+
+      if (
+        !teamName ||
+        !playerName
+      ) {
 
         registrationMessage.textContent =
-          "⚠️ Please fill in all fields.";
+          "Please complete all fields.";
 
         return;
-
       }
+
+
+      if (
+        season.started
+      ) {
+
+        registrationMessage.textContent =
+          "Registration is closed for this season.";
+
+        return;
+      }
+
 
       if (
         teamName.length < 2 ||
@@ -301,11 +1607,11 @@ if (form) {
       ) {
 
         registrationMessage.textContent =
-          "⚠️ Team name must be 2-40 characters.";
+          "Team name must be 2–40 characters.";
 
         return;
-
       }
+
 
       if (
         playerName.length < 2 ||
@@ -313,870 +1619,134 @@ if (form) {
       ) {
 
         registrationMessage.textContent =
-          "⚠️ Player name must be 2-60 characters.";
+          "Player name must be 2–60 characters.";
 
         return;
-
       }
 
-      registrationMessage.textContent =
-        "⏳ Submitting registration...";
 
       try {
 
-        if (
-          checkApprovedTeam(
+        const id =
+          createTeamKey(
             teamName
-          )
-        ) {
+          );
+
+
+        if (!id) {
 
           registrationMessage.textContent =
-            "⚠️ This team name is already registered or waiting for approval.";
+            "Please enter a valid team name.";
 
           return;
-
         }
 
-        const registrationId =
-          teamKey(teamName);
-
-        if (!registrationId) {
-
-          registrationMessage.textContent =
-            "⚠️ Please enter a valid team name.";
-
-          return;
-
-        }
 
         const registrationRef =
           doc(
             window.db,
             "registrations",
-            registrationId
+            id
           );
+
+
+        const existing =
+          await getDoc(
+            registrationRef
+          );
+
+
+        if (existing.exists()) {
+
+          registrationMessage.textContent =
+            "This team has already registered.";
+
+          return;
+        }
+
 
         await setDoc(
           registrationRef,
           {
-            teamName:
-              teamName,
-
-            playerName:
-              playerName,
-
+            teamName,
+            playerName,
             createdAt:
               Date.now(),
-
             status:
               "pending"
           }
         );
 
-        registrationMessage.textContent =
-          "✅ Registration submitted! Waiting for admin approval.";
 
-        form.reset();
+        registrationForm.reset();
+
+
+        registrationMessage.textContent =
+          "Registration submitted successfully.";
 
       } catch (error) {
 
         console.error(
-          "Registration failed:",
+          "Registration error:",
           error
         );
 
-        if (
-          error.code ===
-            "permission-denied" ||
-          error.code ===
-            "already-exists"
-        ) {
-
-          registrationMessage.textContent =
-            "⚠️ This team name is already registered or waiting for approval.";
-
-        } else {
-
-          registrationMessage.textContent =
-            "❌ Registration failed: " +
-            (
-              error.message ||
-              "Please try again."
-            );
-
-        }
-
+        registrationMessage.textContent =
+          "Registration failed. Please try again.";
       }
-
     }
   );
-
 }
 
 
-/* =========================
-   DISPLAY TEAMS
-========================= */
+// =========================================================
+// RENDER EVERYTHING
+// =========================================================
 
-function displayTeams() {
+function renderEverything() {
 
-  if (!teamList) {
-    return;
-  }
+  renderSeason();
 
-  teamList.innerHTML = "";
+  renderTeams();
 
-  if (teams.length === 0) {
+  renderFixtures();
 
-    teamList.innerHTML =
-      "<p>No approved teams yet.</p>";
+  renderTable();
 
-    return;
+  renderTableTitles();
 
-  }
+  renderChampionsStatus();
 
-  teams.forEach(
-    function(team) {
+  renderChampionsQualification();
 
-      const card =
-        document.createElement("div");
+  renderChampionsBracket();
 
-      card.className =
-        "team-card";
-
-      const title =
-        document.createElement("h3");
-
-      title.textContent =
-        "⚽ " +
-        getTeamName(team);
-
-      const player =
-        document.createElement("p");
-
-      player.textContent =
-        getPlayerName(team);
-
-      card.appendChild(
-        title
-      );
-
-      card.appendChild(
-        player
-      );
-
-      teamList.appendChild(
-        card
-      );
-
-    }
-  );
-
-}
-
-/* =========================
-   SEASON DISPLAY
-========================= */
-
-function displaySeason() {
-
-  if (!seasonDetails) {
-    return;
-  }
-
-  if (!season.startDate || !season.endDate) {
-
-    seasonDetails.innerHTML =
-      "<p>📅 Season dates have not been set yet.</p>";
-
-    return;
-
-  }
-
-  const status =
-    season.started
-      ? "🟢 Season is currently active."
-      : "🟡 Season has not started yet.";
-
-  const legText =
-    Number(season.legs) === 2
-      ? "2 Legs"
-      : "1 Leg";
-
-  seasonDetails.innerHTML = `
-    <div class="season-card">
-
-      <p>
-        <strong>Status:</strong>
-        ${status}
-      </p>
-
-      <p>
-        <strong>Start:</strong>
-        ${escapeHTML(
-          formatDate(season.startDate)
-        )}
-      </p>
-
-      <p>
-        <strong>End:</strong>
-        ${escapeHTML(
-          formatDate(season.endDate)
-        )}
-      </p>
-
-      <p>
-        <strong>Format:</strong>
-        ${legText}
-      </p>
-
-    </div>
-  `;
-
+  renderChampionsPodium();
 }
 
 
-/* =========================
-   REGISTRATION STATUS
-========================= */
+// =========================================================
+// FIREBASE READY
+// =========================================================
 
-function updateRegistrationStatus() {
-
-  if (!form) {
-    return;
-  }
-
-  const inputs =
-    form.querySelectorAll(
-      "input, button"
-    );
-
-  if (season.started) {
-
-    inputs.forEach(
-      function(element) {
-        element.disabled = true;
-      }
-    );
-
-    if (registrationMessage) {
-
-      registrationMessage.textContent =
-        "🔒 Registration is closed because the season has started.";
-
-    }
-
-  } else {
-
-    inputs.forEach(
-      function(element) {
-        element.disabled = false;
-      }
-    );
-
-  }
-
-}
-
-
-/* =========================
-   SHOW REGISTRATION
-========================= */
-
-window.showRegister =
-  function() {
-
-    const registerSection =
-      document.getElementById(
-        "register"
-      );
-
-    if (!registerSection) {
-      return;
-    }
-
-    registerSection.scrollIntoView({
-      behavior: "smooth"
-    });
-
-  };
-
-
-/* =========================
-   FIXTURE HELPERS
-========================= */
-
-function getFixtureHome(fixture) {
-
-  return fixture.home ||
-    fixture.homeTeam ||
-    fixture.team1 ||
-    "";
-
-}
-
-function getFixtureAway(fixture) {
-
-  return fixture.away ||
-    fixture.awayTeam ||
-    fixture.team2 ||
-    "";
-
-}
-
-function getFixtureDate(fixture) {
-
-  return fixture.date ||
-    fixture.matchDate ||
-    "";
-
-}
-
-function getFixtureResult(fixture) {
+function startPublicApp() {
 
   if (
-    fixture.result &&
-    typeof fixture.result === "object"
-  ) {
-    return fixture.result;
-  }
-
-  if (
-    fixture.homeScore !== null &&
-    fixture.homeScore !== undefined &&
-    fixture.awayScore !== null &&
-    fixture.awayScore !== undefined
-  ) {
-    return {
-      homeGoals: fixture.homeScore,
-      awayGoals: fixture.awayScore
-    };
-  }
-
-  return null;
-}
-
-
-/* =========================
-   DISPLAY FIXTURES
-========================= */
-
-function displayFixtures() {
-
-  if (!fixtureList) {
-    return;
-  }
-
-  fixtureList.innerHTML = "";
-
-  if (fixtures.length === 0) {
-
-    fixtureList.innerHTML =
-      "<p>📅 No fixtures available yet.</p>";
-
-    return;
-
-  }
-
-  const groupedFixtures = {};
-
-  fixtures.forEach(
-    function(fixture) {
-
-      const date =
-        getFixtureDate(fixture) ||
-        "No Date";
-
-      if (
-        !groupedFixtures[date]
-      ) {
-
-        groupedFixtures[date] = [];
-
-      }
-
-      groupedFixtures[date].push(
-        fixture
-      );
-
-    }
-  );
-
-  Object.keys(
-    groupedFixtures
-  ).forEach(
-    function(date) {
-
-      const day =
-        document.createElement("div");
-
-      day.className =
-        "fixture-day";
-
-      const heading =
-        document.createElement("h3");
-
-      heading.textContent =
-        "📅 " +
-        formatDate(date);
-
-      day.appendChild(
-        heading
-      );
-
-      const matches =
-        groupedFixtures[date];
-
-      matches.forEach(
-        function(fixture) {
-
-          const home =
-            getFixtureHome(fixture);
-
-          const away =
-            getFixtureAway(fixture);
-
-          const result =
-            getFixtureResult(
-              fixture
-            );
-
-          const match =
-            document.createElement("div");
-
-          match.className =
-            "fixture-card";
-
-          let resultText =
-            "⏳ Not played";
-
-          if (result) {
-
-            resultText =
-              `${result.homeGoals} - ${result.awayGoals}`;
-
-          }
-
-          match.innerHTML = `
-            <div class="fixture-teams">
-
-              <strong>
-                ${escapeHTML(home)}
-              </strong>
-
-              <span>vs</span>
-
-              <strong>
-                ${escapeHTML(away)}
-              </strong>
-
-            </div>
-
-            <div class="fixture-result">
-              ${escapeHTML(resultText)}
-            </div>
-          `;
-
-          day.appendChild(
-            match
-          );
-
-        }
-      );
-
-      fixtureList.appendChild(
-        day
-      );
-
-    }
-  );
-
-}
-
-
-/* =========================
-   CREATE EMPTY TABLE
-========================= */
-
-function createTableData() {
-
-  const table = {};
-
-  teams.forEach(
-    function(team) {
-
-      const name =
-        getTeamName(team);
-
-      if (!name) {
-        return;
-      }
-
-      table[name] = {
-
-        team:
-          name,
-
-        played:
-          0,
-
-        wins:
-          0,
-
-        draws:
-          0,
-
-        losses:
-          0,
-
-        gf:
-          0,
-
-        ga:
-          0,
-
-        gd:
-          0,
-
-        points:
-          0
-
-      };
-
-    }
-  );
-
-  return table;
-
-}
-
-
-/* =========================
-   APPLY MATCH RESULT
-========================= */
-
-function applyResult(
-  table,
-  fixture
-) {
-
-  const home =
-    getFixtureHome(fixture);
-
-  const away =
-    getFixtureAway(fixture);
-
-  const result =
-    getFixtureResult(fixture);
-
-  if (
-    !home ||
-    !away ||
-    !result
+    !window.firebaseReady ||
+    !window.db
   ) {
 
-    return;
-
-  }
-
-  const homeGoals =
-    Number(
-      result.homeGoals
+    setTimeout(
+      startPublicApp,
+      200
     );
 
-  const awayGoals =
-    Number(
-      result.awayGoals
-    );
-
-  if (
-    !Number.isFinite(homeGoals) ||
-    !Number.isFinite(awayGoals) ||
-    homeGoals < 0 ||
-    awayGoals < 0
-  ) {
-
     return;
-
   }
 
-  if (
-    !table[home] ||
-    !table[away]
-  ) {
 
-    return;
-
-  }
-
-  table[home].played++;
-  table[away].played++;
-
-  table[home].gf += homeGoals;
-  table[home].ga += awayGoals;
-
-  table[away].gf += awayGoals;
-  table[away].ga += homeGoals;
-
-  if (
-    homeGoals > awayGoals
-  ) {
-
-    table[home].wins++;
-    table[away].losses++;
-
-    table[home].points += 3;
-
-  } else if (
-    homeGoals < awayGoals
-  ) {
-
-    table[away].wins++;
-    table[home].losses++;
-
-    table[away].points += 3;
-
-  } else {
-
-    table[home].draws++;
-    table[away].draws++;
-
-    table[home].points++;
-    table[away].points++;
-
-  }
-
+  loadCompetition();
 }
 
 
-/* =========================
-   SORT TABLE
-========================= */
-
-function sortTable(table) {
-
-  return Object.values(table)
-    .map(
-      function(team) {
-
-        team.gd =
-          team.gf - team.ga;
-
-        return team;
-
-      }
-    )
-    .sort(
-      function(a, b) {
-
-        if (
-          b.points !==
-          a.points
-        ) {
-
-          return (
-            b.points -
-            a.points
-          );
-
-        }
-
-        if (
-          b.gd !==
-          a.gd
-        ) {
-
-          return (
-            b.gd -
-            a.gd
-          );
-
-        }
-
-        if (
-          b.gf !==
-          a.gf
-        ) {
-
-          return (
-            b.gf -
-            a.gf
-          );
-
-        }
-
-        return a.team.localeCompare(
-          b.team
-        );
-
-      }
-    );
-
-}
-
-
-/* =========================
-   DISPLAY LEAGUE TABLE
-========================= */
-
-function displayTable() {
-
-  if (!leagueTable) {
-    return;
-  }
-
-  const table =
-    createTableData();
-
-  fixtures.forEach(
-    function(fixture) {
-
-      applyResult(
-        table,
-        fixture
-      );
-
-    }
-  );
-
-  const standings =
-    sortTable(table);
-
-  leagueTable.innerHTML = "";
-
-  if (
-    standings.length === 0
-  ) {
-
-    leagueTable.innerHTML = `
-      <tr>
-        <td colspan="10">
-          No teams available yet.
-        </td>
-      </tr>
-    `;
-
-    return;
-
-  }
-
-  standings.forEach(
-    function(team, index) {
-
-      const row =
-        document.createElement("tr");
-
-      row.innerHTML = `
-
-        <td>
-          ${index + 1}
-        </td>
-
-        <td>
-          ⚽ ${escapeHTML(team.team)}
-        </td>
-
-        <td>
-          ${team.played}
-        </td>
-
-        <td>
-          ${team.wins}
-        </td>
-
-        <td>
-          ${team.draws}
-        </td>
-
-        <td>
-          ${team.losses}
-        </td>
-
-        <td>
-          ${team.gf}
-        </td>
-
-        <td>
-          ${team.ga}
-        </td>
-
-        <td>
-          ${team.gd}
-        </td>
-
-        <td>
-          <strong>
-            ${team.points}
-          </strong>
-        </td>
-
-      `;
-
-      leagueTable.appendChild(
-        row
-      );
-
-    }
-  );
-
-}
-
-/* =========================
-   WAIT FOR FIREBASE
-========================= */
-
-function waitForFirebase() {
-
-  if (window.firebaseReady) {
-
-    loadCompetition();
-
-    return;
-
-  }
-
-  let attempts = 0;
-
-  const timer =
-    setInterval(
-      function() {
-
-        attempts++;
-
-        if (window.firebaseReady) {
-
-          clearInterval(timer);
-
-          loadCompetition();
-
-        }
-
-        if (attempts >= 100) {
-
-          clearInterval(timer);
-
-          console.error(
-            "Firebase failed to initialize."
-          );
-
-          if (registrationMessage) {
-
-            registrationMessage.textContent =
-              "❌ Database connection failed.";
-
-          }
-
-        }
-
-      },
-      100
-    );
-
-}
-
-
-/* =========================
-   PAGE START
-========================= */
-
-waitForFirebase();
+startPublicApp(); 
