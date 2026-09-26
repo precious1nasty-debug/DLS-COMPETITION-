@@ -1750,3 +1750,130 @@ function startPublicApp() {
 
 
 startPublicApp(); 
+
+// =========================================================
+// DLS COMPETITION
+// PUBLIC SCRIPT
+// PART 27 — KNOCKOUT DATA COMPATIBILITY
+// =========================================================
+
+function normalizePublicKnockoutData() {
+
+  if (
+    !knockout ||
+    typeof knockout !== "object"
+  ) {
+
+    knockout = {
+      enabled: false,
+      qualificationCount: 0,
+      drawLocked: false,
+      roundOf16: [],
+      quarterFinals: [],
+      semiFinals: [],
+      thirdPlace: null,
+      final: null
+    };
+  }
+
+
+  if (
+    !Array.isArray(
+      knockout.roundOf16
+    )
+  ) {
+
+    knockout.roundOf16 = [];
+  }
+
+
+  if (
+    !Array.isArray(
+      knockout.quarterFinals
+    )
+  ) {
+
+    knockout.quarterFinals = [];
+  }
+
+
+  if (
+    !Array.isArray(
+      knockout.semiFinals
+    )
+  ) {
+
+    knockout.semiFinals = [];
+  }
+
+
+  if (
+    knockout.final !== null &&
+    !Array.isArray(
+      knockout.final
+    )
+  ) {
+
+    knockout.final = [];
+  }
+}
+
+
+// =========================================================
+// NORMALIZE CHAMPIONS DATA
+// =========================================================
+
+function normalizePublicChampionsData() {
+
+  if (
+    !champions ||
+    typeof champions !== "object"
+  ) {
+
+    champions = {
+      champion: "",
+      runnerUp: "",
+      thirdPlace: ""
+    };
+
+    return;
+  }
+
+
+  champions = {
+
+    champion:
+      champions.champion ||
+      "",
+
+    runnerUp:
+      champions.runnerUp ||
+      "",
+
+    thirdPlace:
+      champions.thirdPlace ||
+      ""
+  };
+}
+
+
+// =========================================================
+// RUN NORMALIZATION
+// =========================================================
+
+normalizePublicKnockoutData();
+
+normalizePublicChampionsData();
+
+
+// =========================================================
+// RE-RENDER AFTER NORMALIZATION
+// =========================================================
+
+renderChampionsStatus();
+
+renderChampionsQualification();
+
+renderChampionsBracket();
+
+renderChampionsPodium();
