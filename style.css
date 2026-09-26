@@ -1,6 +1,10 @@
+/* =========================================================
+   DLS COMPETITION
+   PUBLIC STYLE
+   PART 25 — LEAGUE + CHAMPIONS UI
+========================================================= */
+
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
 }
 
@@ -9,344 +13,475 @@ html {
 }
 
 body {
-  font-family: Arial, sans-serif;
-  background: #061a10;
-  color: white;
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f4f6f9;
+  color: #172033;
   line-height: 1.5;
 }
 
-header {
-  text-align: center;
-  padding: 40px 15px;
-  background: linear-gradient(135deg, #00c853, #087f23);
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-header h1 {
-  font-size: 32px;
-  margin-bottom: 8px;
+button,
+input {
+  font: inherit;
 }
 
-header p {
-  font-size: 16px;
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.site-header {
+  background: #101828;
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-inner {
+  max-width: 1200px;
+  margin: auto;
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.header-inner h1 {
+  margin: 0;
+  font-size: 22px;
 }
 
 nav {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-
   display: flex;
-  justify-content: center;
   flex-wrap: wrap;
   gap: 8px;
-
-  padding: 14px;
-
-  background: #04100a;
-  border-bottom: 1px solid #176b3b;
 }
 
 nav a {
+  padding: 8px 10px;
+  border-radius: 7px;
   color: white;
-  text-decoration: none;
-
-  padding: 10px 15px;
-
-  border-radius: 20px;
-
-  background: #124d2c;
 }
 
 nav a:hover {
-  background: #00c853;
+  background: #24324a;
 }
 
-main {
-  max-width: 1100px;
-  margin: auto;
-  padding: 20px;
-}
 
-section {
-  margin-bottom: 25px;
-
-  padding: 25px;
-
-  border-radius: 18px;
-
-  background: #0b2819;
-
-  border: 1px solid #176b3b;
-}
-
-section h2 {
-  color: #00ff73;
-  margin-bottom: 20px;
-}
+/* =========================================================
+   HERO
+========================================================= */
 
 .hero {
+  background: linear-gradient(
+    135deg,
+    #172554,
+    #1d4ed8
+  );
+  color: white;
   text-align: center;
-
   padding: 70px 20px;
-
-  background:
-    linear-gradient(
-      135deg,
-      #087f23,
-      #00c853
-    );
 }
 
 .hero h2 {
-  color: white;
-  font-size: 38px;
+  margin: 0 0 10px;
+  font-size: 42px;
 }
 
 .hero p {
-  margin: 15px 0 25px;
-  font-size: 19px;
+  margin: 0;
+  font-size: 18px;
 }
 
-button {
-  border: none;
 
-  cursor: pointer;
+/* =========================================================
+   SECTIONS
+========================================================= */
 
-  padding: 13px 22px;
-
-  border-radius: 25px;
-
-  color: white;
-
-  font-weight: bold;
-
-  background: #00c853;
+.section {
+  max-width: 1200px;
+  margin: auto;
+  padding: 45px 20px;
 }
 
-button:hover {
-  background: #00ff73;
-  color: #062015;
+.section > h2 {
+  margin-top: 0;
+  text-align: center;
 }
 
-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
+.section-card {
+  background: white;
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 25px;
+  box-shadow:
+    0 5px 20px rgba(0, 0, 0, 0.07);
 }
 
-.cards {
+
+/* =========================================================
+   TEAMS
+========================================================= */
+
+.teams-grid {
   display: grid;
-
   grid-template-columns:
-    repeat(
-      auto-fit,
-      minmax(180px, 1fr)
-    );
-
+    repeat(auto-fit, minmax(180px, 1fr));
   gap: 15px;
 }
 
 .team-card {
-  padding: 20px;
-
-  text-align: center;
-
-  border-radius: 15px;
-
-  background: #123d28;
-
-  border: 1px solid #00c853;
-}
-
-.team-card h3 {
-  color: #00ff73;
-}
-
-.fixture {
-  display: flex;
-
-  justify-content: space-between;
-
-  align-items: center;
-
-  gap: 15px;
-
-  margin-bottom: 12px;
-
-  padding: 15px;
-
+  background: white;
+  padding: 18px;
   border-radius: 12px;
-
-  background: #123d28;
-
-  border-left:
-    5px solid #00e676;
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.06);
+  text-align: center;
 }
 
-.fixture .teams {
-  font-weight: bold;
+
+/* =========================================================
+   FIXTURES
+========================================================= */
+
+.fixture-round {
+  background: white;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.06);
 }
 
-.match-day {
-  margin-top: 20px;
-  margin-bottom: 12px;
+.fixture-round h3 {
+  margin-top: 0;
+}
 
-  padding: 12px;
+.fixture-list {
+  display: grid;
+  gap: 10px;
+}
 
+.fixture-card {
+  display: grid;
+  grid-template-columns:
+    1fr auto 1fr;
+  align-items: center;
+  gap: 15px;
+  padding: 14px;
+  border: 1px solid #e4e7ec;
   border-radius: 10px;
-
-  background: #087f23;
-
-  color: white;
+  background: #fafafa;
 }
 
-.completed {
-  color: #69f0ae;
-  font-weight: bold;
+.fixture-card span:last-child {
+  text-align: right;
 }
 
-.table-container {
-  width: 100%;
+.fixture-card strong {
+  min-width: 60px;
+  text-align: center;
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.table-wrapper {
   overflow-x: auto;
+  background: white;
+  border-radius: 14px;
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.06);
 }
 
 table {
   width: 100%;
-  min-width: 700px;
-
+  min-width: 720px;
   border-collapse: collapse;
 }
 
-th {
-  background: #00a844;
-  padding: 12px;
-}
-
+th,
 td {
-  padding: 12px;
-
+  padding: 12px 10px;
   text-align: center;
-
-  border-bottom:
-    1px solid #1c4d32;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-tbody tr:hover {
-  background: #123d28;
-}
-
-form {
-  display: grid;
-  gap: 15px;
-}
-
-input,
-select {
-  width: 100%;
-
-  padding: 14px;
-
-  border:
-    1px solid #216b43;
-
-  border-radius: 10px;
-
-  background: #071a10;
-
+th {
+  background: #101828;
   color: white;
 }
 
-input:focus,
-select:focus {
-  border-color: #00e676;
+td:nth-child(2),
+th:nth-child(2) {
+  text-align: left;
+}
+
+.qualification-cutoff td {
+  background: #fff4cc;
+  color: #8a5a00;
+  font-weight: bold;
+  text-align: center;
+}
+
+.qualification-legend {
+  text-align: center;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+
+/* =========================================================
+   CHAMPIONS
+========================================================= */
+
+.champions-section {
+  background: #eef2ff;
+  max-width: none;
+}
+
+.champions-section > * {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.champions-status {
+  padding: 10px 0;
+}
+
+.qualified-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.qualified-team {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f8fafc;
+  border: 1px solid #dbe3ef;
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.qualified-team span {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #172554;
+  color: white;
+  font-weight: bold;
+}
+
+
+/* =========================================================
+   KNOCKOUT BRACKET
+========================================================= */
+
+.bracket-container {
+  overflow-x: auto;
+  padding-bottom: 15px;
+}
+
+.bracket {
+  display: flex;
+  gap: 25px;
+  min-width: max-content;
+  align-items: flex-start;
+}
+
+.bracket-round {
+  width: 230px;
+}
+
+.bracket-round h3 {
+  text-align: center;
+  margin-top: 0;
+}
+
+.bracket-ties {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.knockout-tie {
+  background: #ffffff;
+  border: 1px solid #dbe3ef;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.knockout-team {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 5px;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.knockout-team:last-of-type {
+  border-bottom: none;
+}
+
+.knockout-winner {
+  margin-top: 8px;
+  padding: 7px;
+  border-radius: 7px;
+  background: #ecfdf3;
+  color: #087443;
+  font-weight: bold;
+  text-align: center;
+}
+
+.third-place-card {
+  margin-top: 30px;
+  max-width: 350px;
+}
+
+.third-place-card h3 {
+  margin-bottom: 10px;
+}
+
+
+/* =========================================================
+   PODIUM
+========================================================= */
+
+.podium {
+  display: grid;
+  grid-template-columns:
+    repeat(3, 1fr);
+  gap: 20px;
+  align-items: end;
+}
+
+.podium-place {
+  text-align: center;
+  padding: 25px 15px;
+  border-radius: 14px;
+  background: white;
+  border: 1px solid #e1e5eb;
+}
+
+.podium-medal {
+  font-size: 42px;
+  margin-bottom: 8px;
+}
+
+.podium-place h3 {
+  margin: 5px 0;
+}
+
+.gold {
+  border-top: 6px solid #d4a900;
+}
+
+.silver {
+  border-top: 6px solid #9aa4b2;
+}
+
+.bronze {
+  border-top: 6px solid #a65f32;
+}
+
+
+/* =========================================================
+   REGISTRATION
+========================================================= */
+
+form {
+  display: grid;
+  gap: 10px;
+  max-width: 550px;
+}
+
+label {
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
   outline: none;
 }
 
-#registrationMessage {
+input:focus {
+  border-color: #2563eb;
+}
+
+button {
+  border: none;
+  border-radius: 8px;
+  padding: 12px 18px;
+  background: #1d4ed8;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1e40af;
+}
+
+.registration-message {
   margin-top: 15px;
-  color: #69f0ae;
+  font-weight: bold;
 }
 
-#admin {
-  text-align: center;
-}
 
-.admin-box {
-  margin-top: 20px;
-
-  padding: 20px;
-
-  border-radius: 15px;
-
-  background: #123d28;
-
-  border: 1px solid #00c853;
-}
-
-.admin-box > * {
-  margin-bottom: 12px;
-}
-
-.admin-buttons {
-  display: grid;
-
-  gap: 10px;
-
-  margin-top: 15px;
-}
-
-.season-status {
-  padding: 15px;
-
-  margin-bottom: 15px;
-
-  border-radius: 12px;
-
-  background: #071a10;
-}
-
-.success {
-  color: #69f0ae;
-}
-
-.warning {
-  color: #ffd740;
-}
-
-.error {
-  color: #ff5252;
-}
+/* =========================================================
+   FOOTER
+========================================================= */
 
 footer {
+  background: #101828;
+  color: white;
   text-align: center;
-
-  padding: 25px;
-
-  background: #040d08;
-
-  color: #9db5a7;
+  padding: 25px 20px;
 }
 
-@media (max-width: 600px) {
 
-  header h1 {
-    font-size: 25px;
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+
+  .header-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-inner h1 {
+    text-align: center;
   }
 
   nav {
-    gap: 5px;
+    justify-content: center;
   }
 
   nav a {
-    font-size: 13px;
-    padding: 8px 10px;
-  }
-
-  main {
-    padding: 10px;
-  }
-
-  section {
-    padding: 18px;
+    font-size: 14px;
   }
 
   .hero {
@@ -354,15 +489,138 @@ footer {
   }
 
   .hero h2 {
-    font-size: 28px;
+    font-size: 30px;
   }
 
-  .fixture {
-    flex-direction: column;
-    text-align: center;
+  .section {
+    padding: 35px 12px;
   }
 
-  table {
-    font-size: 12px;
+  .section-card {
+    padding: 18px;
+  }
+
+  .fixture-card {
+    grid-template-columns:
+      1fr auto 1fr;
+    gap: 8px;
+    font-size: 14px;
+  }
+
+  .podium {
+    grid-template-columns: 1fr;
+  }
+
+  .bracket-round {
+    width: 210px;
+  }
+}
+
+/* =========================================================
+   PART 26 — CHAMPIONS LEAGUE TREE
+========================================================= */
+
+.champions-section {
+  overflow: hidden;
+}
+
+.bracket-container {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 15px 5px 25px;
+}
+
+.bracket {
+  display: flex;
+  align-items: stretch;
+  gap: 30px;
+  min-width: max-content;
+}
+
+.bracket-round {
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+}
+
+.bracket-round h3 {
+  background: #101828;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.bracket-ties {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 25px;
+}
+
+.knockout-tie {
+  position: relative;
+  width: 100%;
+  background: white;
+  border: 1px solid #cfd7e3;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.knockout-team {
+  min-height: 42px;
+  padding: 9px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: #fff;
+}
+
+.knockout-team:first-child {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.knockout-team strong {
+  min-width: 25px;
+  text-align: right;
+}
+
+.knockout-winner {
+  margin: 0;
+  border-radius: 0;
+  background: #ecfdf3;
+  border-top: 1px solid #ccebd9;
+}
+
+.third-place-card {
+  width: 100%;
+  max-width: 400px;
+  margin: 35px auto 0;
+}
+
+
+/* =========================================================
+   MOBILE BRACKET
+========================================================= */
+
+@media (max-width: 700px) {
+
+  .bracket {
+    gap: 20px;
+  }
+
+  .bracket-round {
+    width: 210px;
+  }
+
+  .bracket-round h3 {
+    font-size: 15px;
+  }
+
+  .knockout-team {
+    font-size: 14px;
   }
 }
