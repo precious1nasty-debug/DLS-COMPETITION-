@@ -4173,19 +4173,38 @@ function calculateLeagueTable() {
     }
 
 
-    const homeScore =
-      Number(fixture.homeScore);
+    const hasHomeScore =
+  fixture.homeScore !== null &&
+  fixture.homeScore !== undefined &&
+  fixture.homeScore !== "";
 
-    const awayScore =
-      Number(fixture.awayScore);
+const hasAwayScore =
+  fixture.awayScore !== null &&
+  fixture.awayScore !== undefined &&
+  fixture.awayScore !== "";
 
 
-    if (
-      !Number.isFinite(homeScore) ||
-      !Number.isFinite(awayScore)
-    ) {
-      return;
-    }
+if (
+  !hasHomeScore ||
+  !hasAwayScore
+) {
+  return;
+}
+
+
+const homeScore =
+  Number(fixture.homeScore);
+
+const awayScore =
+  Number(fixture.awayScore);
+
+
+if (
+  !Number.isFinite(homeScore) ||
+  !Number.isFinite(awayScore)
+) {
+  return;
+}
 
 
     table[home].played++;
