@@ -3958,33 +3958,50 @@ if (reopenRegistrationButton) {
     async function() {
 
       /*
-       * A started competition cannot have
-       * new teams added to its existing
-       * fixture schedule.
+       * A season that has actually started
+       * must remain locked.
        */
 
       if (season.started) {
 
         alert(
-          "🔒 Registration cannot be reopened during an active season. The current format and fixture schedule are locked."
+          "🔒 Registration cannot be reopened during an active season."
         );
 
         return;
       }
 
 
-      if (season.formatLocked) {
+      /*
+       * A completed season must be cleared
+       * before a new registration period.
+       */
+
+      if (isSeasonCompleted()) {
 
         alert(
-          "🔒 The competition format is locked."
+          "🔒 This season is completed. Clear the competition before starting a new registration period."
         );
 
         return;
       }
 
+
+      /*
+       * Reopening registration before the
+       * season starts is allowed.
+       */
 
       season.phase =
         "registration";
+
+
+      /*
+       * Unlock the pre-season controls.
+       */
+
+      season.formatLocked =
+        false;
 
 
       const saved =
@@ -3996,7 +4013,25 @@ if (reopenRegistrationButton) {
       }
 
 
+      /*
+       * Refresh the dashboard so the
+       * registration state and controls
+       * immediately update.
+       */
+
       renderAll();
+
+      refreshAdminDashboard();
+
+
+      if (seasonControlMessage) {
+
+        seasonControlMessage.textContent =
+          "🔓 Registration is open. You can add or approve teams before starting the season.";
+
+        seasonControlMessage.style.display =
+          "block";
+      }
 
 
       alert(
