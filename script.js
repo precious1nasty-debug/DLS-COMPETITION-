@@ -1687,8 +1687,8 @@ function renderChampionsBracket() {
         ${renderVisualTie(
           leftSF,
           "SF-1",
-          getBracketPlaceholder("QF", 1),
-          getBracketPlaceholder("QF", 2)
+          getBracketPlaceholder("QF", 0),
+          getBracketPlaceholder("QF", 1)
         )}
       </div>
     </div>
@@ -1741,8 +1741,8 @@ function renderChampionsBracket() {
         ${renderVisualTie(
           rightSF,
           "SF-2",
-          getBracketPlaceholder("QF", 3),
-          getBracketPlaceholder("QF", 4)
+          getBracketPlaceholder("QF", 2),
+          getBracketPlaceholder("QF", 3)
         )}
       </div>
     </div>
