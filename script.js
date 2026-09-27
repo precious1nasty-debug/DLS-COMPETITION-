@@ -1672,10 +1672,11 @@ function renderChampionsBracket() {
     renderBracketColumn(
       "QUARTER-FINALS",
       leftQF,
-      leftQFPlaceholders,
-      leftQFPlaceholders,
+      leftQFPlaceholdersA,
+      leftQFPlaceholdersB,
       "left",
-      "round-qf"
+      "round-qf",
+      2
     )
   );
 
@@ -1751,10 +1752,11 @@ function renderChampionsBracket() {
     renderBracketColumn(
       "QUARTER-FINALS",
       rightQF,
-      rightQFPlaceholders,
-      rightQFPlaceholders,
+      rightQFPlaceholdersA,
+      rightQFPlaceholdersB,
       "right",
-      "round-qf"
+      "round-qf",
+      2
     )
   );
 
