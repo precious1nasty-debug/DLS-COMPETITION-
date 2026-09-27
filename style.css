@@ -624,3 +624,230 @@ footer {
     font-size: 14px;
   }
 }
+
+/* =========================================================
+   CHAMPIONS TREE — PUBLIC DASHBOARD
+========================================================= */
+
+.league-table-dropdown {
+  background: white;
+  border-radius: 14px;
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.league-table-dropdown summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 18px 22px;
+  font-size: 22px;
+  font-weight: 800;
+  background: #101828;
+  color: white;
+}
+
+.league-table-dropdown summary::-webkit-details-marker {
+  display: none;
+}
+
+.league-table-dropdown summary::after {
+  content: "▾";
+  float: right;
+  transition: transform 0.2s ease;
+}
+
+.league-table-dropdown[open] summary::after {
+  transform: rotate(180deg);
+}
+
+.league-table-dropdown .qualification-legend,
+.league-table-dropdown .table-wrapper {
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+.league-table-dropdown .qualification-legend {
+  padding-top: 15px;
+}
+
+.league-table-dropdown .table-wrapper {
+  margin-bottom: 20px;
+}
+
+/* Champions bracket board */
+
+.champions-tree-wrap {
+  background:
+    radial-gradient(circle at center, #2d2357 0%, #171334 55%, #0c0b1d 100%);
+  color: white;
+  border-radius: 18px;
+  padding: 22px;
+  overflow-x: auto;
+}
+
+.champions-tree-title {
+  text-align: center;
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+  font-size: 18px;
+}
+
+.champions-tree-title span {
+  display: block;
+  font-size: 42px;
+  margin-bottom: 5px;
+}
+
+.champions-tree {
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) minmax(210px, 260px) minmax(300px, 1fr);
+  gap: 18px;
+  min-width: 980px;
+  align-items: center;
+}
+
+.champions-tree-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.champions-tree-right {
+  direction: rtl;
+}
+
+.champions-tree-right .visual-bracket-round,
+.champions-tree-right .visual-bracket-tie,
+.champions-tree-right .visual-bracket-team,
+.champions-tree-right h4 {
+  direction: ltr;
+}
+
+.visual-bracket-round {
+  position: relative;
+}
+
+.visual-bracket-round h4 {
+  margin: 0 0 8px;
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: #dbe4ff;
+}
+
+.visual-bracket-ties {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.visual-bracket-tie {
+  background: rgba(255,255,255,0.96);
+  color: #172033;
+  border-radius: 7px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.7);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+}
+
+.visual-bracket-tie.placeholder {
+  opacity: 0.88;
+}
+
+.visual-bracket-label {
+  padding: 3px 7px;
+  font-size: 9px;
+  font-weight: 800;
+  background: #dbe4ff;
+  color: #27345a;
+  text-transform: uppercase;
+}
+
+.visual-bracket-team {
+  min-height: 30px;
+  padding: 5px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 12px;
+}
+
+.visual-bracket-team:last-child {
+  border-bottom: 0;
+}
+
+.visual-bracket-team.is-winner {
+  background: #e8fff1;
+  font-weight: 800;
+}
+
+.visual-bracket-team strong {
+  min-width: 18px;
+  text-align: right;
+}
+
+.r16-ties {
+  gap: 11px;
+}
+
+.qf-ties {
+  gap: 35px;
+  padding-top: 25px;
+}
+
+.semi-ties {
+  gap: 70px;
+}
+
+.champions-tree-center {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 28px;
+}
+
+.champions-trophy {
+  text-align: center;
+  font-size: 62px;
+  line-height: 1;
+}
+
+.champions-trophy span {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  letter-spacing: 2px;
+  font-weight: 800;
+}
+
+.final-round {
+  max-width: 240px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.third-place-card {
+  margin-top: 25px;
+}
+
+@media (max-width: 700px) {
+
+  .league-table-dropdown summary {
+    font-size: 18px;
+  }
+
+  .champions-tree-wrap {
+    padding: 15px;
+  }
+
+  .champions-tree {
+    min-width: 920px;
+  }
+
+  .champions-tree-title {
+    font-size: 15px;
+  }
+}
