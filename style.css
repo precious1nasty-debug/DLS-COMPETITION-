@@ -1926,3 +1926,141 @@ footer {
     line-height:13px !important;
   }
 }
+
+
+/* =========================================================
+   FINAL MOBILE KNOCKOUT COMPACT HEIGHT
+========================================================= */
+@media (max-width:700px) {
+  .champions-skeleton-scroll {
+    padding: 6px 4px 10px !important;
+    overflow-x: hidden !important;
+  }
+
+  .champions-skeleton-grid,
+  .champions-skeleton-grid.qf-only {
+    height: 300px !important;
+    min-height: 300px !important;
+  }
+
+  .skeleton-round-title {
+    height: 20px !important;
+    font-size: 5px !important;
+  }
+
+  .skeleton-round-title::after {
+    top: 19px !important;
+    height: 1px !important;
+    width: 30px !important;
+  }
+
+  .skeleton-round-body {
+    height: calc(100% - 20px) !important;
+  }
+
+  .visual-bracket-label {
+    margin-bottom: 1px !important;
+    font-size: 4px !important;
+  }
+
+  .visual-bracket-team {
+    height: 13px !important;
+    min-height: 13px !important;
+    max-height: 13px !important;
+    margin: 0 !important;
+    padding: 0 2px !important;
+    font-size: 5px !important;
+    line-height: 11px !important;
+  }
+
+  .visual-bracket-team strong {
+    min-width: 9px !important;
+    padding-left: 1px !important;
+    font-size: 5px !important;
+    line-height: 11px !important;
+  }
+
+  .skeleton-final-column {
+    padding: 0 1px !important;
+  }
+
+  .skeleton-trophy {
+    padding: 10px 0 3px !important;
+  }
+
+  .trophy-icon {
+    font-size: 22px !important;
+  }
+
+  .trophy-label {
+    margin-top: 2px !important;
+    font-size: 5px !important;
+  }
+
+  .skeleton-final-tie {
+    top: 150px !important;
+    width: calc(100% - 2px) !important;
+  }
+
+  .skeleton-final-tie .visual-bracket-team {
+    height: 14px !important;
+    min-height: 14px !important;
+    max-height: 14px !important;
+    font-size: 5px !important;
+  }
+
+  .skeleton-champion {
+    top: 190px !important;
+    width: 65px !important;
+    padding: 3px !important;
+    border-width: 1px !important;
+    border-radius: 3px !important;
+  }
+
+  .skeleton-champion span {
+    font-size: 9px !important;
+  }
+
+  .skeleton-champion strong {
+    margin: 0 0 1px !important;
+    font-size: 4px !important;
+  }
+
+  .skeleton-champion div {
+    font-size: 4px !important;
+  }
+
+  .skeleton-third-place {
+    bottom: 1px !important;
+    width: 80px !important;
+    padding-top: 2px !important;
+  }
+
+  .third-place-title {
+    margin-bottom: 1px !important;
+    font-size: 4px !important;
+  }
+
+  .third-place-team {
+    max-width: 80px !important;
+    padding: 3px !important;
+    border-width: 1px !important;
+    border-radius: 3px !important;
+    font-size: 4px !important;
+  }
+
+  .champions-bracket-lines path {
+    stroke-width: 1px !important;
+  }
+}
+
+@media (max-width:390px) {
+  .champions-skeleton-grid,
+  .champions-skeleton-grid.qf-only {
+    height: 270px !important;
+    min-height: 270px !important;
+  }
+
+  .skeleton-final-tie { top: 135px !important; }
+  .skeleton-champion { top: 170px !important; }
+}
