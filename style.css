@@ -807,16 +807,13 @@ footer {
 }
 
 .skeleton-round-body {
+  position: relative;
   height: calc(100% - 34px);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  gap: 16px;
-  padding: 18px 8px 8px;
+  padding: 0 8px;
 }
 
 .skeleton-round-body.single-tie {
-  justify-content: center;
+  padding: 0 8px;
 }
 
 .visual-bracket-tie {
@@ -881,35 +878,169 @@ footer {
 
 
 /* =========================
-   LEFT/RIGHT CONNECTORS
+   TRUE 2D TREE CONNECTORS
 ========================= */
 
-.champions-skeleton-grid > .left .visual-bracket-tie::after {
-  right: -18px;
+/*
+ * Each round is positioned on a fixed vertical rhythm:
+ *
+ * R16:  4 ties  ->  12.5 / 37.5 / 62.5 / 87.5%
+ * QF:   2 ties  ->  25 / 75%
+ * SF:   1 tie   ->  50%
+ *
+ * This creates a real knockout-tree shape instead of
+ * simply stacking cards in columns.
+ */
+
+.round-r16 .skeleton-round-body > .visual-bracket-tie,
+.round-qf .skeleton-round-body > .visual-bracket-tie,
+.sf-column .skeleton-round-body > .visual-bracket-tie {
+  position: absolute;
+  width: calc(100% - 10px);
+  margin: 0;
+  transform: translateY(-50%);
 }
 
+/* R16 vertical positions */
+.round-r16 .skeleton-round-body > .visual-bracket-tie:nth-child(1) {
+  top: 12.5%;
+}
+
+.round-r16 .skeleton-round-body > .visual-bracket-tie:nth-child(2) {
+  top: 37.5%;
+}
+
+.round-r16 .skeleton-round-body > .visual-bracket-tie:nth-child(3) {
+  top: 62.5%;
+}
+
+.round-r16 .skeleton-round-body > .visual-bracket-tie:nth-child(4) {
+  top: 87.5%;
+}
+
+/* QF vertical positions */
+.round-qf .skeleton-round-body > .visual-bracket-tie:nth-child(1) {
+  top: 25%;
+}
+
+.round-qf .skeleton-round-body > .visual-bracket-tie:nth-child(2) {
+  top: 75%;
+}
+
+/* SF vertical position */
+.sf-column .skeleton-round-body > .visual-bracket-tie {
+  top: 50%;
+}
+
+
+/* -------------------------
+   BASIC HORIZONTAL LINKS
+------------------------- */
+
+.champions-skeleton-grid > .left .visual-bracket-tie::after,
 .champions-skeleton-grid > .right .visual-bracket-tie::before {
-  left: -18px;
+  width: 35px;
+  height: 2px;
+  background: #eef2ff;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
-.round-r16.left .visual-bracket-tie::after,
-.round-r16.right .visual-bracket-tie::before {
-  width: 18px;
+/* Left side flows: R16 -> QF -> SF -> FINAL */
+.champions-skeleton-grid > .left .visual-bracket-tie::after {
+  right: -35px;
 }
 
-.round-qf.left .visual-bracket-tie::after,
-.round-qf.right .visual-bracket-tie::before {
-  width: 18px;
+/* Right side flows: FINAL <- SF <- QF <- R16 */
+.champions-skeleton-grid > .right .visual-bracket-tie::before {
+  left: -35px;
 }
 
-.sf-column.left .visual-bracket-tie::after {
-  right: -18px;
+
+/* -------------------------
+   PAIRING BRIDGES
+------------------------- */
+
+/*
+ * On the left, each QF receives two R16 ties.
+ * The bridge is an L-shape:
+ * vertical segment + horizontal segment into the QF.
+ */
+.round-qf.left .visual-bracket-tie::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: -35px;
+  top: 50%;
+  width: 35px;
+  height: 25%;
+  transform: translateY(-50%);
+  background:
+    linear-gradient(#eef2ff, #eef2ff) right top / 2px 100% no-repeat,
+    linear-gradient(#eef2ff, #eef2ff) right center / 35px 2px no-repeat;
 }
 
-.sf-column.right .visual-bracket-tie::before {
-  left: -18px;
+/*
+ * On the right, each QF receives two R16 ties.
+ */
+.round-qf.right .visual-bracket-tie::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: -35px;
+  top: 50%;
+  width: 35px;
+  height: 25%;
+  transform: translateY(-50%);
+  background:
+    linear-gradient(#eef2ff, #eef2ff) left top / 2px 100% no-repeat,
+    linear-gradient(#eef2ff, #eef2ff) left center / 35px 2px no-repeat;
 }
 
+
+/*
+ * SF receives the two QF winners.
+ * The vertical bridge spans the two QF positions.
+ */
+.sf-column.left .visual-bracket-tie::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: -35px;
+  top: 50%;
+  width: 35px;
+  height: 50%;
+  transform: translateY(-50%);
+  background:
+    linear-gradient(#eef2ff, #eef2ff) right top / 2px 100% no-repeat,
+    linear-gradient(#eef2ff, #eef2ff) right center / 35px 2px no-repeat;
+}
+
+.sf-column.right .visual-bracket-tie::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: -35px;
+  top: 50%;
+  width: 35px;
+  height: 50%;
+  transform: translateY(-50%);
+  background:
+    linear-gradient(#eef2ff, #eef2ff) left top / 2px 100% no-repeat,
+    linear-gradient(#eef2ff, #eef2ff) left center / 35px 2px no-repeat;
+}
+
+
+/* -------------------------
+   FINAL CONNECTIONS
+------------------------- */
+
+.skeleton-final-tie::before,
+.skeleton-final-tie::after {
+  width: 35px;
+  height: 2px;
+  background: #eef2ff;
+}
 
 /* =========================
    FINAL / TROPHY
@@ -1029,13 +1160,13 @@ footer {
 
 .champions-skeleton-grid:not(:has(.round-r16)) {
   grid-template-columns:
-    minmax(165px, 1fr)
-    minmax(165px, 1fr)
-    minmax(220px, 1.4fr)
-    minmax(165px, 1fr)
-    minmax(165px, 1fr);
+    minmax(170px, 1fr)
+    minmax(170px, 1fr)
+    minmax(230px, 1.4fr)
+    minmax(170px, 1fr)
+    minmax(170px, 1fr);
 
-  min-width: 820px;
+  min-width: 880px;
 }
 
 
