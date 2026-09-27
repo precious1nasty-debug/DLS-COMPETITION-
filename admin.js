@@ -1154,6 +1154,64 @@ if (matchesPerTeam) {
       }
 
 
+      const newValue =
+        Number(
+          matchesPerTeam.value
+        );
+
+
+      /*
+       * Changing matches per team after
+       * fixtures have already been generated
+       * would make the settings disagree
+       * with those fixtures.
+       */
+
+      if (
+        fixtures.length > 0 &&
+        season.format === "champions" &&
+        newValue !== Number(
+          season.matchesPerTeam || 4
+        )
+      ) {
+
+        const confirmed =
+          confirm(
+            "⚠️ CHANGE MATCHES PER TEAM?\n\n" +
+            "Champions League fixtures have already been generated.\n\n" +
+            "Changing this setting will clear the existing fixtures and results.\n\n" +
+            "Approved teams will NOT be deleted.\n\n" +
+            "Continue?"
+          );
+
+
+        if (!confirmed) {
+
+          matchesPerTeam.value =
+            String(
+              season.matchesPerTeam || 4
+            );
+
+          return;
+        }
+
+
+        fixtures = [];
+
+        knockout =
+          createDefaultKnockout();
+
+        champions =
+          createDefaultChampions();
+
+        season.qualificationCount =
+          0;
+
+        season.phase =
+          "registration";
+      }
+
+
       updateMatchesPerTeamSuggestion();
     }
   );
@@ -1179,6 +1237,63 @@ if (knockoutLegFormat) {
           String(
             season.knockoutLegs || 1
           );
+
+        return;
+      }
+
+
+      const newValue =
+        Number(
+          knockoutLegFormat.value
+        );
+
+
+      /*
+       * Existing knockout data must not
+       * use a different number of legs.
+       */
+
+      const knockoutExists =
+        knockout.roundOf16.length > 0 ||
+        knockout.quarterFinals.length > 0 ||
+        knockout.semiFinals.length > 0 ||
+        knockout.final !== null ||
+        knockout.thirdPlace !== null;
+
+
+      if (
+        knockoutExists &&
+        newValue !== Number(
+          season.knockoutLegs || 1
+        )
+      ) {
+
+        const confirmed =
+          confirm(
+            "⚠️ CHANGE KNOCKOUT LEGS?\n\n" +
+            "Existing knockout data uses the current leg setting.\n\n" +
+            "Changing this setting will clear the existing knockout stage.\n\n" +
+            "League-phase fixtures and approved teams will NOT be deleted.\n\n" +
+            "Continue?"
+          );
+
+
+        if (!confirmed) {
+
+          knockoutLegFormat.value =
+            String(
+              season.knockoutLegs || 1
+            );
+
+          return;
+        }
+
+
+        knockout =
+          createDefaultKnockout();
+
+        champions =
+          createDefaultChampions();
       }
     }
   );
