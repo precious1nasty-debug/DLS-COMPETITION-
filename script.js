@@ -1479,6 +1479,47 @@ function getBracketPlaceholder(
 // CHAMPIONS LEAGUE TREE
 // =========================================================
 
+function renderBracketColumn(
+  title,
+  ties,
+  placeholdersA,
+  placeholdersB,
+  side,
+  roundClass
+) {
+
+  const list =
+    Array.isArray(ties)
+      ? ties
+      : [];
+
+  return `
+    <div class="skeleton-round ${side} ${roundClass}">
+      <div class="skeleton-round-title">
+        ${escapeHTML(title)}
+      </div>
+
+      <div class="skeleton-round-body">
+        ${list.map((tie, index) =>
+          renderVisualTie(
+            tie || null,
+            tie?.round
+              ? `${tie.round}`
+              : `${title} ${index + 1}`,
+            placeholdersA?.[index] || "TBD",
+            placeholdersB?.[index] || "TBD"
+          )
+        ).join("")}
+      </div>
+    </div>
+  `;
+}
+
+
+// =========================================================
+// CHAMPIONS LEAGUE 2D SKELETON BRACKET
+// =========================================================
+
 function renderChampionsBracket() {
 
   if (!championsBracketContent) {
@@ -1493,10 +1534,7 @@ function renderChampionsBracket() {
     return;
   }
 
-  const hasDraw =
-    knockout.drawLocked === true;
-
-  if (!hasDraw) {
+  if (knockout.drawLocked !== true) {
 
     championsBracketContent.innerHTML =
       "<p>The Champions League bracket will appear after the knockout draw.</p>";
@@ -1524,16 +1562,14 @@ function renderChampionsBracket() {
       ? knockout.final
       : [];
 
-  const startRound =
-    r16.length
-      ? "R16"
-      : "QF";
+  const isR16 =
+    r16.length > 0;
 
   const leftR16 =
-    r16.slice(0, 4);
+    isR16 ? r16.slice(0, 4) : [];
 
   const rightR16 =
-    r16.slice(4, 8);
+    isR16 ? r16.slice(4, 8) : [];
 
   const leftQF =
     qf.slice(0, 2);
@@ -1542,207 +1578,165 @@ function renderChampionsBracket() {
     qf.slice(2, 4);
 
   const leftSF =
-    sf.length > 0
-      ? sf[0]
-      : null;
+    sf[0] || null;
 
   const rightSF =
-    sf.length > 1
-      ? sf[1]
-      : null;
+    sf[1] || null;
 
   const finalTie =
-    final.length
-      ? final[0]
-      : null;
+    final[0] || null;
 
-  const leftSide = [];
+  const leftQFPlaceholders = [
+    isR16 ? getBracketPlaceholder("R16", 1) : "Qualified team",
+    isR16 ? getBracketPlaceholder("R16", 2) : "Qualified team"
+  ];
 
-  if (r16.length) {
+  const rightQFPlaceholders = [
+    isR16 ? getBracketPlaceholder("R16", 3) : "Qualified team",
+    isR16 ? getBracketPlaceholder("R16", 4) : "Qualified team"
+  ];
 
-    leftSide.push(`
-      <div class="visual-bracket-round">
-        <h4>Round of 16</h4>
-        <div class="visual-bracket-ties r16-ties">
-          ${Array.from(
-            { length: 4 },
-            (_, index) =>
-              renderVisualTie(
-                leftR16[index] || null,
-                `R16-${index + 1}`,
-                "Qualified team",
-                "Qualified team"
-              )
-          ).join("")}
-        </div>
-      </div>
-    `);
+  const bracketColumns = [];
+
+  if (isR16) {
+
+    bracketColumns.push(
+      renderBracketColumn(
+        "ROUND OF 16",
+        leftR16,
+        ["Qualified team", "Qualified team", "Qualified team", "Qualified team"],
+        ["Qualified team", "Qualified team", "Qualified team", "Qualified team"],
+        "left",
+        "round-r16"
+      )
+    );
   }
 
-  if (qf.length || r16.length) {
+  bracketColumns.push(
+    renderBracketColumn(
+      "QUARTER-FINALS",
+      leftQF,
+      leftQFPlaceholders,
+      leftQFPlaceholders,
+      "left",
+      "round-qf"
+    )
+  );
 
-    leftSide.push(`
-      <div class="visual-bracket-round">
-        <h4>Quarter-Finals</h4>
-        <div class="visual-bracket-ties qf-ties">
-          ${Array.from(
-            { length: 2 },
-            (_, index) =>
-              renderVisualTie(
-                leftQF[index] || null,
-                `QF-${index + 1}`,
-                r16.length
-                  ? getBracketPlaceholder("R16", index * 2 + 1)
-                  : getBracketPlaceholder("QF", index * 2 + 1),
-                r16.length
-                  ? getBracketPlaceholder("R16", index * 2 + 2)
-                  : getBracketPlaceholder("QF", index * 2 + 2)
-              )
-          ).join("")}
+  bracketColumns.push(`
+    <div class="skeleton-round left sf-column">
+      <div class="skeleton-round-title">SEMI-FINALS</div>
+      <div class="skeleton-round-body single-tie">
+        ${renderVisualTie(
+          leftSF,
+          "SF-1",
+          getBracketPlaceholder("QF", 1),
+          getBracketPlaceholder("QF", 2)
+        )}
+      </div>
+    </div>
+  `);
+
+  bracketColumns.push(`
+    <div class="skeleton-final-column">
+
+      <div class="skeleton-round-title">FINAL</div>
+
+      <div class="skeleton-trophy">
+        <div class="trophy-icon">🏆</div>
+        <div class="trophy-label">CHAMPIONS</div>
+      </div>
+
+      <div class="skeleton-final-tie">
+        ${renderVisualTie(
+          finalTie,
+          "FINAL",
+          "Winner SF-1",
+          "Winner SF-2"
+        )}
+      </div>
+
+      <div class="skeleton-champion">
+        <span>♛</span>
+        <strong>CHAMPION</strong>
+        <div>
+          ${escapeHTML(champions.champion || "TBD")}
         </div>
       </div>
-    `);
-  }
 
-  const rightSide = [];
-
-  if (qf.length || r16.length) {
-
-    rightSide.push(`
-      <div class="visual-bracket-round">
-        <h4>Quarter-Finals</h4>
-        <div class="visual-bracket-ties qf-ties">
-          ${Array.from(
-            { length: 2 },
-            (_, index) => {
-              const actualIndex =
-                index + 2;
-
-              return renderVisualTie(
-                qf[actualIndex] || null,
-                `QF-${actualIndex + 1}`,
-                r16.length
-                  ? getBracketPlaceholder("R16", actualIndex * 2 + 1)
-                  : getBracketPlaceholder("QF", actualIndex * 2 + 1),
-                r16.length
-                  ? getBracketPlaceholder("R16", actualIndex * 2 + 2)
-                  : getBracketPlaceholder("QF", actualIndex * 2 + 2)
-              );
-            }
-          ).join("")}
+      <div class="skeleton-third-place">
+        <div class="third-place-title">3RD PLACE</div>
+        <div class="third-place-team">
+          ${escapeHTML(
+            champions.thirdPlace ||
+            "Winner SF-1 / SF-2"
+          )}
         </div>
       </div>
-    `);
-  }
 
-  if (r16.length) {
+    </div>
+  `);
 
-    rightSide.unshift(`
-      <div class="visual-bracket-round">
-        <h4>Round of 16</h4>
-        <div class="visual-bracket-ties r16-ties">
-          ${Array.from(
-            { length: 4 },
-            (_, index) => {
-              const actualIndex =
-                index + 4;
-
-              return renderVisualTie(
-                r16[actualIndex] || null,
-                `R16-${actualIndex + 1}`,
-                "Qualified team",
-                "Qualified team"
-              );
-            }
-          ).join("")}
-        </div>
+  bracketColumns.push(`
+    <div class="skeleton-round right sf-column">
+      <div class="skeleton-round-title">SEMI-FINALS</div>
+      <div class="skeleton-round-body single-tie">
+        ${renderVisualTie(
+          rightSF,
+          "SF-2",
+          getBracketPlaceholder("QF", 3),
+          getBracketPlaceholder("QF", 4)
+        )}
       </div>
-    `);
+    </div>
+  `);
+
+  bracketColumns.push(
+    renderBracketColumn(
+      "QUARTER-FINALS",
+      rightQF,
+      rightQFPlaceholders,
+      rightQFPlaceholders,
+      "right",
+      "round-qf"
+    )
+  );
+
+  if (isR16) {
+
+    bracketColumns.push(
+      renderBracketColumn(
+        "ROUND OF 16",
+        rightR16,
+        ["Qualified team", "Qualified team", "Qualified team", "Qualified team"],
+        ["Qualified team", "Qualified team", "Qualified team", "Qualified team"],
+        "right",
+        "round-r16"
+      )
+    );
   }
-
-  const leftSemiPlaceholderA =
-    r16.length
-      ? getBracketPlaceholder("QF", 1)
-      : getBracketPlaceholder("QF", 1);
-
-  const leftSemiPlaceholderB =
-    r16.length
-      ? getBracketPlaceholder("QF", 2)
-      : getBracketPlaceholder("QF", 2);
-
-  const rightSemiPlaceholderA =
-    getBracketPlaceholder("QF", 3);
-
-  const rightSemiPlaceholderB =
-    getBracketPlaceholder("QF", 4);
-
-  const finalPlaceholderA =
-    "Winner SF-1";
-
-  const finalPlaceholderB =
-    "Winner SF-2";
 
   championsBracketContent.innerHTML = `
-    <div class="champions-tree-wrap">
+    <div class="champions-skeleton-shell">
 
-      <div class="champions-tree-title">
-        <span>🏆</span>
-        <strong>ROAD TO THE FINAL</strong>
+      <div class="champions-skeleton-heading">
+        <div class="champions-skeleton-title">
+          <span>🏆</span>
+          <div>
+            <strong>CHAMPIONS LEAGUE</strong>
+            <small>ROAD TO THE FINAL</small>
+          </div>
+        </div>
+
+        <div class="bracket-scroll-note">
+          Swipe left/right on mobile to view the full bracket
+        </div>
       </div>
 
-      <div class="champions-tree">
-
-        <div class="champions-tree-side champions-tree-left">
-          ${leftSide.join("")}
+      <div class="champions-skeleton-scroll">
+        <div class="champions-skeleton-grid">
+          ${bracketColumns.join("")}
         </div>
-
-        <div class="champions-tree-center">
-
-          <div class="visual-bracket-round semi-round">
-            <h4>Semi-Finals</h4>
-
-            <div class="visual-bracket-ties semi-ties">
-
-              ${renderVisualTie(
-                leftSF,
-                "SF-1",
-                leftSemiPlaceholderA,
-                leftSemiPlaceholderB
-              )}
-
-              ${renderVisualTie(
-                rightSF,
-                "SF-2",
-                rightSemiPlaceholderA,
-                rightSemiPlaceholderB
-              )}
-
-            </div>
-          </div>
-
-          <div class="champions-trophy">
-            🏆
-            <span>FINAL</span>
-          </div>
-
-          <div class="visual-bracket-round final-round">
-            <h4>Final</h4>
-            <div class="visual-bracket-ties">
-              ${renderVisualTie(
-                finalTie,
-                "FINAL",
-                finalPlaceholderA,
-                finalPlaceholderB
-              )}
-            </div>
-          </div>
-
-        </div>
-
-        <div class="champions-tree-side champions-tree-right">
-          ${rightSide.join("")}
-        </div>
-
       </div>
 
     </div>
