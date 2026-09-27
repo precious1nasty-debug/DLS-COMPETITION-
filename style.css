@@ -1349,3 +1349,316 @@ footer {
     min-width: 910px;
   }
 }
+
+
+/* =========================================================
+   FINAL MOBILE REFINEMENT
+   Keeps desktop design unchanged.
+========================================================= */
+
+@media (max-width: 700px) {
+
+  body {
+    font-size: 14px;
+    overflow-x: hidden;
+  }
+
+  .header-inner {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .header-inner h1 {
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
+  nav {
+    gap: 4px;
+  }
+
+  nav a {
+    padding: 6px 7px;
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  .hero {
+    padding: 34px 14px;
+  }
+
+  .hero h2 {
+    font-size: 25px;
+    line-height: 1.15;
+    margin-bottom: 7px;
+  }
+
+  .hero p {
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  .section {
+    padding: 25px 10px;
+  }
+
+  .section > h2 {
+    font-size: 21px;
+    line-height: 1.2;
+    margin-bottom: 14px;
+  }
+
+  .section-card {
+    padding: 14px;
+    border-radius: 11px;
+    margin-bottom: 16px;
+  }
+
+  .team-card {
+    padding: 13px;
+    font-size: 13px;
+  }
+
+  .teams-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 9px;
+  }
+
+  .fixture-round {
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+  }
+
+  .fixture-round h3 {
+    font-size: 16px;
+  }
+
+  .fixture-list {
+    gap: 7px;
+  }
+
+  .fixture-card {
+    gap: 5px;
+    padding: 9px 7px;
+    font-size: 12px;
+    line-height: 1.25;
+  }
+
+  .fixture-card strong {
+    min-width: 38px;
+  }
+
+  .qualified-grid {
+    grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+    gap: 8px;
+  }
+
+  .qualified-team {
+    gap: 8px;
+    padding: 9px;
+    font-size: 12px;
+  }
+
+  .qualified-team span {
+    width: 25px;
+    height: 25px;
+    flex: 0 0 25px;
+    font-size: 11px;
+  }
+
+  .league-table-dropdown {
+    border-radius: 10px;
+  }
+
+  .league-table-dropdown summary {
+    padding: 13px 14px;
+    font-size: 17px;
+  }
+
+  .league-table-dropdown .qualification-legend,
+  .league-table-dropdown .table-wrapper {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  .qualification-legend {
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  th,
+  td {
+    padding: 8px 7px;
+    font-size: 11px;
+  }
+
+  .table-wrapper {
+    border-radius: 10px;
+  }
+
+  .podium-place {
+    padding: 17px 12px;
+  }
+
+  .podium-medal {
+    font-size: 32px;
+  }
+
+  .podium-place h3 {
+    font-size: 16px;
+  }
+
+  form {
+    gap: 8px;
+  }
+
+  label {
+    font-size: 13px;
+  }
+
+  input {
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  button {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  footer {
+    padding: 18px 12px;
+    font-size: 12px;
+  }
+
+  /* Keep the approved bracket geometry intact, but make its
+     contents lighter and easier to read on a phone. */
+  .champions-skeleton-heading {
+    padding: 12px;
+  }
+
+  .champions-skeleton-title {
+    gap: 9px;
+  }
+
+  .champions-skeleton-title > span {
+    font-size: 24px;
+  }
+
+  .champions-skeleton-title strong {
+    font-size: 15px;
+  }
+
+  .champions-skeleton-title small {
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+
+  .bracket-scroll-note {
+    font-size: 9px;
+  }
+
+  .champions-skeleton-scroll {
+    padding: 14px 8px 20px;
+  }
+
+  .visual-bracket-team {
+    min-height: 32px;
+    padding: 5px 6px;
+    font-size: 9px;
+    line-height: 1.05;
+  }
+
+  .visual-bracket-team strong {
+    min-width: 22px;
+    padding-left: 5px;
+    font-size: 10px;
+  }
+
+  .visual-bracket-label {
+    font-size: 6px;
+    padding: 0 5px;
+  }
+
+  .skeleton-round-title {
+    font-size: 8px;
+    letter-spacing: .5px;
+  }
+
+  .trophy-icon {
+    font-size: 46px;
+  }
+
+  .trophy-label {
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+
+  .skeleton-final-tie .visual-bracket-team {
+    min-height: 38px;
+    font-size: 11px;
+  }
+
+  .skeleton-champion {
+    width: 120px;
+    padding: 8px;
+  }
+
+  .skeleton-champion span {
+    font-size: 18px;
+  }
+
+  .skeleton-champion strong {
+    font-size: 9px;
+  }
+
+  .skeleton-champion div {
+    font-size: 9px;
+  }
+
+  .third-place-title {
+    font-size: 10px;
+  }
+
+  .third-place-team {
+    font-size: 10px;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 390px) {
+
+  .header-inner h1 {
+    font-size: 17px;
+  }
+
+  nav a {
+    padding: 5px 6px;
+    font-size: 11px;
+  }
+
+  .hero h2 {
+    font-size: 23px;
+  }
+
+  .section > h2 {
+    font-size: 19px;
+  }
+
+  .fixture-card {
+    font-size: 11px;
+  }
+
+  .qualified-team {
+    font-size: 11px;
+  }
+
+  .visual-bracket-team {
+    font-size: 8px;
+  }
+
+  .visual-bracket-team strong {
+    font-size: 9px;
+  }
+}
