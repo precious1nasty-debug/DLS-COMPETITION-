@@ -277,6 +277,16 @@ async function loadCompetition() {
     }
 
 
+    /*
+     * Normalize the Firestore knockout data after
+     * the competition document has been loaded.
+     * This is important because the public page
+     * initially starts with empty local defaults.
+     */
+    normalizePublicKnockoutData();
+    normalizePublicChampionsData();
+
+
     renderEverything();
 
   } catch (error) {
@@ -1542,7 +1552,35 @@ function renderChampionsBracket() {
     return;
   }
 
-  if (knockout.drawLocked !== true) {
+  const hasKnockoutData =
+    (
+      Array.isArray(knockout.roundOf16) &&
+      knockout.roundOf16.length > 0
+    ) ||
+    (
+      Array.isArray(knockout.quarterFinals) &&
+      knockout.quarterFinals.length > 0
+    ) ||
+    (
+      Array.isArray(knockout.semiFinals) &&
+      knockout.semiFinals.length > 0
+    ) ||
+    (
+      Array.isArray(knockout.final) &&
+      knockout.final.length > 0
+    );
+
+  /*
+   * The draw lock is the normal trigger.
+   * The data check also makes the public page
+   * resilient if an older competition document
+   * contains the knockout arrays but is missing
+   * the drawLocked flag.
+   */
+  if (
+    knockout.drawLocked !== true &&
+    !hasKnockoutData
+  ) {
 
     championsBracketContent.innerHTML =
       "<p>The Champions League bracket will appear after the knockout draw.</p>";
