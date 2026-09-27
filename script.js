@@ -1485,13 +1485,20 @@ function renderBracketColumn(
   placeholdersA,
   placeholdersB,
   side,
-  roundClass
+  roundClass,
+  expectedCount
 ) {
 
   const list =
     Array.isArray(ties)
       ? ties
       : [];
+
+  const count =
+    Math.max(
+      expectedCount || 0,
+      list.length
+    );
 
   return `
     <div class="skeleton-round ${side} ${roundClass}">
@@ -1500,15 +1507,16 @@ function renderBracketColumn(
       </div>
 
       <div class="skeleton-round-body">
-        ${list.map((tie, index) =>
-          renderVisualTie(
-            tie || null,
-            tie?.round
-              ? `${tie.round}`
-              : `${title} ${index + 1}`,
-            placeholdersA?.[index] || "TBD",
-            placeholdersB?.[index] || "TBD"
-          )
+        ${Array.from(
+          { length: count },
+          (_, index) =>
+            renderVisualTie(
+              list[index] || null,
+              list[index]?.round ||
+                `${title} ${index + 1}`,
+              placeholdersA?.[index] || "TBD",
+              placeholdersB?.[index] || "TBD"
+            )
         ).join("")}
       </div>
     </div>
@@ -1586,14 +1594,24 @@ function renderChampionsBracket() {
   const finalTie =
     final[0] || null;
 
-  const leftQFPlaceholders = [
+  const leftQFPlaceholdersA = [
     isR16 ? getBracketPlaceholder("R16", 1) : "Qualified team",
-    isR16 ? getBracketPlaceholder("R16", 2) : "Qualified team"
+    isR16 ? getBracketPlaceholder("R16", 3) : "Qualified team"
   ];
 
-  const rightQFPlaceholders = [
-    isR16 ? getBracketPlaceholder("R16", 3) : "Qualified team",
+  const leftQFPlaceholdersB = [
+    isR16 ? getBracketPlaceholder("R16", 2) : "Qualified team",
     isR16 ? getBracketPlaceholder("R16", 4) : "Qualified team"
+  ];
+
+  const rightQFPlaceholdersA = [
+    isR16 ? getBracketPlaceholder("R16", 5) : "Qualified team",
+    isR16 ? getBracketPlaceholder("R16", 7) : "Qualified team"
+  ];
+
+  const rightQFPlaceholdersB = [
+    isR16 ? getBracketPlaceholder("R16", 6) : "Qualified team",
+    isR16 ? getBracketPlaceholder("R16", 8) : "Qualified team"
   ];
 
   const bracketColumns = [];
