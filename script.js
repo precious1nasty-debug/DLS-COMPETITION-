@@ -1547,32 +1547,25 @@ function renderChampionsBracketConnectors(isR16) {
            preserveAspectRatio="none"
            aria-hidden="true">
 
-        <!-- LEFT R16 -> QF -->
         <path d="M200 105 H220 V175 H246" />
         <path d="M200 245 H220 V175" />
         <path d="M200 385 H220 V455 H246" />
         <path d="M200 525 H220 V455" />
 
-        <!-- LEFT QF -> SF -->
         <path d="M416 175 H436 V315 H462" />
         <path d="M416 455 H436 V315" />
 
-        <!-- LEFT SF -> FINAL -->
-        <path d="M612 315 H668" />
+        <path d="M622 315 H668" />
 
+        <path d="M1346 105 H1336 V175 H1300" />
+        <path d="M1346 245 H1336 V175" />
+        <path d="M1346 385 H1336 V455 H1300" />
+        <path d="M1346 525 H1336 V455" />
 
-        <!-- RIGHT R16 -> QF -->
-        <path d="M1356 105 H1336 V175 H1310" />
-        <path d="M1356 245 H1336 V175" />
-        <path d="M1356 385 H1336 V455 H1310" />
-        <path d="M1356 525 H1336 V455" />
+        <path d="M1300 175 H1100 V315 H1084" />
+        <path d="M1300 455 H1100 V315" />
 
-        <!-- RIGHT QF -> SF -->
-        <path d="M1120 175 H1100 V315 H1094" />
-        <path d="M1120 455 H1100 V315" />
-
-        <!-- RIGHT SF -> FINAL -->
-        <path d="M1094 315 H888" />
+        <path d="M924 315 H878" />
 
       </svg>
     `;
@@ -1584,19 +1577,15 @@ function renderChampionsBracketConnectors(isR16) {
          preserveAspectRatio="none"
          aria-hidden="true">
 
-      <!-- LEFT QF -> SF -->
-      <path d="M416 167 H436 V310 H462" />
-      <path d="M416 453 H436 V310" />
+      <path d="M245 167 H265 V310 H281" />
+      <path d="M245 453 H265 V310" />
 
-      <!-- LEFT SF -> FINAL -->
-      <path d="M612 310 H654" />
+      <path d="M441 310 H462" />
 
-      <!-- RIGHT QF -> SF -->
-      <path d="M678 167 H658 V310 H632" />
-      <path d="M678 453 H658 V310" />
+      <path d="M849 167 H829 V310 H813" />
+      <path d="M849 453 H829 V310" />
 
-      <!-- RIGHT SF -> FINAL -->
-      <path d="M632 310 H654" />
+      <path d="M633 310 H612" />
 
     </svg>
   `;
