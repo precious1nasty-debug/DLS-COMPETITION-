@@ -878,33 +878,36 @@ footer {
 
 
 /* =========================
-   SVG BRACKET CONNECTORS
+   APPROVED CHAMPIONS LEAGUE 2D DIAGRAM
 ========================= */
+
+.champions-skeleton-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  padding: 28px 18px 34px;
+}
 
 .champions-skeleton-grid {
   position: relative;
+  display: grid;
   grid-template-columns:
-    145px
-    145px
-    145px
-    205px
-    145px
-    145px
-    145px;
-  width: 1075px;
-  min-width: 1075px;
-  min-height: 570px;
+    210px 190px 180px 230px 180px 190px 210px;
+  column-gap: 26px;
+  width: 1556px;
+  min-width: 1556px;
+  height: 620px;
+  min-height: 620px;
 }
 
 .champions-skeleton-grid.qf-only {
   grid-template-columns:
-    170px
-    170px
-    230px
-    170px
-    170px;
-  width: 910px;
-  min-width: 910px;
+    210px 190px 230px 190px 210px;
+  width: 1094px;
+  min-width: 1094px;
 }
 
 .champions-bracket-lines {
@@ -914,151 +917,202 @@ footer {
   height: 100%;
   z-index: 1;
   pointer-events: none;
-  overflow: visible;
 }
 
 .champions-bracket-lines path {
   fill: none;
-  stroke: #eef2ff;
-  stroke-width: 2;
+  stroke: #f4f7ff;
+  stroke-width: 3;
   stroke-linecap: square;
   stroke-linejoin: miter;
 }
 
 .champions-skeleton-grid > .skeleton-round,
 .champions-skeleton-grid > .skeleton-final-column {
+  position: relative;
   z-index: 2;
+  min-width: 0;
 }
 
+.skeleton-round-title {
+  height: 34px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  color: #f5f7ff;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .8px;
+  text-align: center;
+  text-transform: uppercase;
+}
 
-/* =========================
-   EXACT 2D TREE POSITIONS
-========================= */
+.skeleton-round-title::after {
+  content: "";
+  position: absolute;
+  top: 31px;
+  left: 50%;
+  width: 92px;
+  height: 3px;
+  transform: translateX(-50%);
+  background: #6688ff;
+  border-radius: 3px;
+}
 
 .skeleton-round-body {
   position: relative;
   height: calc(100% - 34px);
-  padding: 0 8px;
+  padding: 0;
 }
 
 .skeleton-round-body.single-tie {
-  padding: 0 8px;
+  padding: 0;
 }
 
 .round-r16 .skeleton-round-body > .visual-bracket-tie,
 .round-qf .skeleton-round-body > .visual-bracket-tie,
 .sf-column .skeleton-round-body > .visual-bracket-tie {
   position: absolute;
-  width: calc(100% - 16px);
+  left: 50%;
+  width: calc(100% - 20px);
   margin: 0;
-  transform: translateY(-50%);
+  transform: translate(-50%, -50%);
 }
 
-.round-r16 .skeleton-round-body > .visual-bracket-tie:nth-child(1) {
-  top: 12.5%;
-}
+.round-r16 .skeleton-round-body > .visual-bracket-tie:nth-child(1) { top: 15%; }
+.round-r16 .skeleton-round-body > .visual-bracket-tie:nth-child(2) { top: 38.9%; }
+.round-r16 .skeleton-round-body > .visual-bracket-tie:nth-child(3) { top: 62.8%; }
+.round-r16 .skeleton-round-body > .visual-bracket-tie:nth-child(4) { top: 86.7%; }
 
-.round-r16 .skeleton-round-body > .visual-bracket-tie:nth-child(2) {
-  top: 37.5%;
-}
-
-.round-r16 .skeleton-round-body > .visual-bracket-tie:nth-child(3) {
-  top: 62.5%;
-}
-
-.round-r16 .skeleton-round-body > .visual-bracket-tie:nth-child(4) {
-  top: 87.5%;
-}
-
-.round-qf .skeleton-round-body > .visual-bracket-tie:nth-child(1) {
-  top: 25%;
-}
-
-.round-qf .skeleton-round-body > .visual-bracket-tie:nth-child(2) {
-  top: 75%;
-}
+.round-qf .skeleton-round-body > .visual-bracket-tie:nth-child(1) { top: 26.9%; }
+.round-qf .skeleton-round-body > .visual-bracket-tie:nth-child(2) { top: 74.7%; }
 
 .sf-column .skeleton-round-body > .visual-bracket-tie {
   top: 50%;
 }
 
-
-/* SVG supplies every connector.
-   Disable the old pseudo-line system completely. */
+.visual-bracket-tie {
+  position: relative;
+  z-index: 2;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  box-shadow: none;
+}
 
 .visual-bracket-tie::before,
 .visual-bracket-tie::after {
   content: none !important;
 }
 
-.skeleton-final-tie::before,
-.skeleton-final-tie::after {
-  content: none !important;
+.visual-bracket-label {
+  margin: 0 0 4px;
+  padding: 0 7px;
+  color: #aebdff;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .7px;
+  text-transform: uppercase;
+  background: transparent;
+  border: 0;
 }
 
-/* =========================
-   FINAL / TROPHY
-========================= */
+.visual-bracket-team {
+  min-height: 40px;
+  margin: 3px 0;
+  padding: 7px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 2px solid #168fff;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #10295d, #071a45);
+  color: #f8fbff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.1;
+  box-sizing: border-box;
+}
+
+.visual-bracket-team:last-child {
+  border-bottom: 2px solid #168fff;
+}
+
+.visual-bracket-team.is-winner {
+  background: linear-gradient(90deg, #087a68, #095a63);
+  color: #d8fff6;
+  font-weight: 900;
+}
+
+.visual-bracket-team strong {
+  min-width: 28px;
+  padding-left: 7px;
+  text-align: center;
+  color: white;
+  font-size: 15px;
+  border-left: 1px solid rgba(255,255,255,.22);
+}
+
+
+/* FINAL COLUMN */
 
 .skeleton-final-column {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  padding: 0 8px;
+  padding: 0 10px;
+}
+
+.skeleton-final-column .skeleton-round-title {
+  flex: 0 0 34px;
 }
 
 .skeleton-trophy {
   text-align: center;
-  padding: 38px 0 15px;
+  padding: 42px 0 14px;
 }
 
 .trophy-icon {
-  font-size: 64px;
+  font-size: 78px;
   line-height: 1;
-  filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.4));
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,.4));
 }
 
 .trophy-label {
   margin-top: 8px;
   color: #ffd33d;
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 900;
   letter-spacing: 1.5px;
 }
 
 .skeleton-final-tie {
   position: relative;
-  margin: 0 auto;
   width: 100%;
   max-width: 210px;
+  margin: 0 auto;
 }
 
 .skeleton-final-tie::before,
 .skeleton-final-tie::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  width: 35px;
-  height: 2px;
-  background: #eef2ff;
+  content: none !important;
 }
 
-.skeleton-final-tie::before {
-  left: -35px;
-}
-
-.skeleton-final-tie::after {
-  right: -35px;
+.skeleton-final-tie .visual-bracket-team {
+  min-height: 48px;
+  font-size: 15px;
 }
 
 .skeleton-champion {
-  width: 150px;
-  margin: 25px auto 0;
+  width: 155px;
+  margin: 18px auto 0;
   padding: 10px;
   text-align: center;
-  border: 1px solid #00d9ff;
-  border-radius: 7px;
-  background: rgba(5, 12, 46, 0.72);
+  border: 2px solid #00d9ff;
+  border-radius: 9px;
+  background: rgba(5,12,46,.72);
   color: white;
 }
 
@@ -1091,29 +1145,116 @@ footer {
 .third-place-title {
   margin-bottom: 7px;
   color: white;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 900;
   letter-spacing: 1px;
 }
 
 .third-place-team {
-  max-width: 190px;
+  max-width: 300px;
   margin: auto;
-  padding: 8px;
-  border: 1px solid #6b80bd;
-  border-radius: 7px;
+  padding: 10px;
+  border: 2px solid #3e83ff;
+  border-radius: 9px;
   color: white;
-  background: #17204b;
-  font-size: 10px;
+  background: #102454;
+  font-size: 13px;
 }
 
 
 /* =========================
-   8-TEAM QF LAYOUT
+   8-TEAM QF-ONLY DIAGRAM
 ========================= */
 
-/* QF-only dimensions are defined in the SVG bracket block above. */
+.qf-only .round-qf .skeleton-round-body > .visual-bracket-tie:nth-child(1) {
+  top: 27%;
+}
 
+.qf-only .round-qf .skeleton-round-body > .visual-bracket-tie:nth-child(2) {
+  top: 73%;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 700px) {
+
+  .champions-skeleton-heading {
+    display: block;
+    padding: 16px;
+  }
+
+  .champions-skeleton-title > span {
+    font-size: 30px;
+  }
+
+  .champions-skeleton-title strong {
+    font-size: 19px;
+  }
+
+  .champions-skeleton-title small {
+    font-size: 11px;
+  }
+
+  .bracket-scroll-note {
+    margin-top: 10px;
+    text-align: left;
+    font-size: 11px;
+  }
+
+  .champions-skeleton-scroll {
+    padding: 22px 10px 28px;
+    touch-action: pan-x;
+  }
+
+  .champions-skeleton-grid {
+    width: 1556px;
+    min-width: 1556px;
+    height: 620px;
+    min-height: 620px;
+  }
+
+  .champions-skeleton-grid.qf-only {
+    width: 1094px;
+    min-width: 1094px;
+  }
+
+  .visual-bracket-team {
+    min-height: 38px;
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .visual-bracket-team strong {
+    font-size: 13px;
+  }
+
+  .visual-bracket-label {
+    font-size: 8px;
+  }
+
+  .skeleton-round-title {
+    font-size: 10px;
+  }
+
+  .trophy-icon {
+    font-size: 62px;
+  }
+}
+
+@media (max-width: 390px) {
+  .champions-skeleton-grid {
+    width: 1556px;
+    min-width: 1556px;
+  }
+
+  .champions-skeleton-grid.qf-only {
+    width: 1094px;
+    min-width: 1094px;
+  }
+}
 
 /* =========================
    ANDROID + IPHONE
