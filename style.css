@@ -1662,3 +1662,199 @@ footer {
     font-size: 9px;
   }
 }
+
+
+/* =========================================================
+   MOBILE KNOCKOUT — FIT INSIDE PHONE SCREEN
+   No horizontal bracket scrolling on phones.
+========================================================= */
+
+@media (max-width: 700px) {
+
+  .champions-skeleton-scroll {
+    overflow-x: hidden;
+    padding: 10px 6px 16px;
+  }
+
+  .champions-skeleton-grid,
+  .champions-skeleton-grid.qf-only {
+    width: 100%;
+    min-width: 0;
+    height: 480px;
+    min-height: 480px;
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, .9fr)
+      minmax(0, .85fr)
+      minmax(0, 1.05fr)
+      minmax(0, .85fr)
+      minmax(0, .9fr)
+      minmax(0, 1fr);
+    column-gap: 0;
+  }
+
+  .champions-skeleton-grid.qf-only {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, .9fr)
+      minmax(0, 1.05fr)
+      minmax(0, .9fr)
+      minmax(0, 1fr);
+  }
+
+  .round-r16 .skeleton-round-body > .visual-bracket-tie,
+  .round-qf .skeleton-round-body > .visual-bracket-tie,
+  .sf-column .skeleton-round-body > .visual-bracket-tie {
+    width: calc(100% - 4px);
+  }
+
+  .visual-bracket-team {
+    min-height: 27px;
+    margin: 2px 0;
+    padding: 4px 4px;
+    font-size: 7px;
+    line-height: 1.05;
+    gap: 3px;
+    border-width: 1px;
+    border-radius: 5px;
+  }
+
+  .visual-bracket-team strong {
+    min-width: 14px;
+    padding-left: 3px;
+    font-size: 7px;
+  }
+
+  .visual-bracket-label {
+    margin-bottom: 2px;
+    padding: 0 2px;
+    font-size: 5px;
+    letter-spacing: .3px;
+  }
+
+  .skeleton-round-title {
+    height: 27px;
+    font-size: 6px;
+    letter-spacing: .3px;
+  }
+
+  .skeleton-round-title::after {
+    top: 25px;
+    width: 45px;
+    height: 2px;
+  }
+
+  .skeleton-final-column {
+    padding: 0 2px;
+  }
+
+  .skeleton-trophy {
+    padding: 25px 0 8px;
+  }
+
+  .trophy-icon {
+    font-size: 34px;
+  }
+
+  .trophy-label {
+    margin-top: 4px;
+    font-size: 7px;
+    letter-spacing: .5px;
+  }
+
+  .skeleton-final-tie {
+    width: calc(100% - 4px);
+    max-width: none;
+    top: 245px;
+  }
+
+  .skeleton-final-tie .visual-bracket-team {
+    min-height: 30px;
+    font-size: 7px;
+  }
+
+  .skeleton-champion {
+    top: 295px;
+    width: 82px;
+    padding: 5px;
+    border-width: 1px;
+    border-radius: 5px;
+  }
+
+  .skeleton-champion span {
+    font-size: 14px;
+  }
+
+  .skeleton-champion strong {
+    margin: 1px 0 3px;
+    font-size: 6px;
+    letter-spacing: .5px;
+  }
+
+  .skeleton-champion div {
+    font-size: 6px;
+  }
+
+  .skeleton-third-place {
+    bottom: 2px;
+    width: 105px;
+    padding-top: 6px;
+  }
+
+  .third-place-title {
+    margin-bottom: 3px;
+    font-size: 6px;
+    letter-spacing: .4px;
+  }
+
+  .third-place-team {
+    max-width: 105px;
+    padding: 5px;
+    border-width: 1px;
+    border-radius: 5px;
+    font-size: 6px;
+  }
+
+  .champions-bracket-lines path {
+    stroke-width: 1.5;
+  }
+
+  .qf-only .round-qf .skeleton-round-body > .visual-bracket-tie:nth-child(1) {
+    top: 27%;
+  }
+
+  .qf-only .round-qf .skeleton-round-body > .visual-bracket-tie:nth-child(2) {
+    top: 73%;
+  }
+}
+
+@media (max-width: 390px) {
+
+  .champions-skeleton-grid,
+  .champions-skeleton-grid.qf-only {
+    height: 440px;
+    min-height: 440px;
+  }
+
+  .visual-bracket-team {
+    font-size: 6.5px;
+    padding-left: 3px;
+    padding-right: 3px;
+  }
+
+  .visual-bracket-team strong {
+    font-size: 6.5px;
+  }
+
+  .skeleton-round-title {
+    font-size: 5.5px;
+  }
+
+  .skeleton-final-tie {
+    top: 225px;
+  }
+
+  .skeleton-champion {
+    top: 270px;
+  }
+}
