@@ -3958,51 +3958,45 @@ if (reopenRegistrationButton) {
     async function() {
 
       /*
-       * A season that has actually started
-       * must remain locked.
+       * Reopening registration is allowed even
+       * after the season has started.
+       *
+       * Existing teams and fixtures are kept.
        */
 
-      if (season.started) {
-
-        alert(
-          "🔒 Registration cannot be reopened during an active season."
+      const confirmed =
+        confirm(
+          "🔓 REOPEN REGISTRATION?\n\n" +
+          "This will unlock the season settings again.\n\n" +
+          "✅ Approved teams will remain.\n" +
+          "✅ Existing fixtures will remain.\n" +
+          "✅ Existing results will remain.\n\n" +
+          "Continue?"
         );
 
+
+      if (!confirmed) {
         return;
       }
 
 
       /*
-       * A completed season must be cleared
-       * before a new registration period.
+       * Unlock the season controls.
        */
 
-      if (isSeasonCompleted()) {
+      season.started =
+        false;
 
-        alert(
-          "🔒 This season is completed. Clear the competition before starting a new registration period."
-        );
-
-        return;
-      }
-
-
-      /*
-       * Reopening registration before the
-       * season starts is allowed.
-       */
+      season.formatLocked =
+        false;
 
       season.phase =
         "registration";
 
 
       /*
-       * Unlock the pre-season controls.
+       * Save the unlocked state.
        */
-
-      season.formatLocked =
-        false;
-
 
       const saved =
         await saveCompetition();
@@ -4014,9 +4008,8 @@ if (reopenRegistrationButton) {
 
 
       /*
-       * Refresh the dashboard so the
-       * registration state and controls
-       * immediately update.
+       * Refresh the dashboard so all
+       * controls immediately update.
        */
 
       renderAll();
@@ -4024,10 +4017,20 @@ if (reopenRegistrationButton) {
       refreshAdminDashboard();
 
 
+      /*
+       * Explicitly restore the editable
+       * season controls.
+       */
+
+      updateSeasonControlState();
+
+      enforceFormatLock();
+
+
       if (seasonControlMessage) {
 
         seasonControlMessage.textContent =
-          "🔓 Registration is open. You can add or approve teams before starting the season.";
+          "🔓 Registration reopened. Season settings are unlocked. Existing teams, fixtures and results were kept.";
 
         seasonControlMessage.style.display =
           "block";
@@ -4035,7 +4038,9 @@ if (reopenRegistrationButton) {
 
 
       alert(
-        "🔓 Registration is open."
+        "🔓 Registration reopened successfully.\n\n" +
+        "Season settings are unlocked.\n\n" +
+        "Existing teams, fixtures and results were kept."
       );
     }
   );
