@@ -170,53 +170,60 @@
     class="section"
   >
 
-    <h2 id="tableTitle">
-      League Table
-    </h2>
+    <details
+      id="leagueTableDropdown"
+      class="league-table-dropdown"
+    >
 
-    <div
-      id="qualificationLegend"
-      class="qualification-legend"
-    ></div>
+      <summary id="tableTitle">
+        League Table
+      </summary>
 
-    <div class="table-wrapper">
+      <div
+        id="qualificationLegend"
+        class="qualification-legend"
+      ></div>
 
-      <table>
+      <div class="table-wrapper">
 
-        <thead>
+        <table>
 
-          <tr>
+          <thead>
 
-            <th>Pos</th>
-            <th>Team</th>
-            <th>P</th>
-            <th>W</th>
-            <th>D</th>
-            <th>L</th>
-            <th>GF</th>
-            <th>GA</th>
-            <th>GD</th>
-            <th>Pts</th>
+            <tr>
 
-          </tr>
+              <th>Pos</th>
+              <th>Team</th>
+              <th>P</th>
+              <th>W</th>
+              <th>D</th>
+              <th>L</th>
+              <th>GF</th>
+              <th>GA</th>
+              <th>GD</th>
+              <th>Pts</th>
 
-        </thead>
+            </tr>
 
-        <tbody id="leagueTable">
+          </thead>
 
-          <tr>
+          <tbody id="leagueTable">
 
-            <td colspan="10">
-              Loading table...
-            </td>
+            <tr>
 
-          </tr>
+              <td colspan="10">
+                Loading table...
+              </td>
 
-        </tbody>
+            </tr>
 
-      </table>
+          </tbody>
 
-    </div>
+        </table>
+
+      </div>
+
+    </details>
 
   </section>
 
