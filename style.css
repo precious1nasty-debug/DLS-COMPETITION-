@@ -1858,3 +1858,33 @@ footer {
     top: 270px;
   }
 }
+
+
+/* =========================================================
+   MOBILE KNOCKOUT — SHORT RECTANGULAR TEAM BOXES
+========================================================= */
+
+@media (max-width: 700px) {
+  .visual-bracket-team {
+    min-height: 20px;
+    height: 20px;
+    padding: 2px 4px;
+    border-radius: 2px;
+    line-height: 1;
+  }
+
+  .visual-bracket-team strong {
+    min-width: 12px;
+    padding-left: 2px;
+    font-size: 6.5px;
+  }
+}
+
+@media (max-width: 390px) {
+  .visual-bracket-team {
+    min-height: 19px;
+    height: 19px;
+    padding: 2px 3px;
+    border-radius: 2px;
+  }
+}
