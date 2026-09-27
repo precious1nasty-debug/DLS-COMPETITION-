@@ -1540,81 +1540,67 @@ function renderBracketColumn(
 
 function renderChampionsBracketConnectors(isR16) {
 
-  /*
-   * The public bracket uses a real SVG tree for the connector lines.
-   * This keeps every vertical and horizontal line locked to the
-   * actual 2D bracket geometry on desktop and mobile.
-   */
-
   if (isR16) {
-
     return `
-      <svg
-        class="champions-bracket-lines"
-        viewBox="0 0 1075 570"
-        preserveAspectRatio="none"
-        aria-hidden="true"
-      >
+      <svg class="champions-bracket-lines"
+           viewBox="0 0 1556 620"
+           preserveAspectRatio="none"
+           aria-hidden="true">
 
-        <!-- R16 -> QF : LEFT -->
-        <path d="M137 101 H145 V235 H137" />
-        <path d="M145 168 H153" />
+        <!-- LEFT R16 -> QF -->
+        <path d="M200 105 H220 V175 H246" />
+        <path d="M200 245 H220 V175" />
+        <path d="M200 385 H220 V455 H246" />
+        <path d="M200 525 H220 V455" />
 
-        <path d="M137 369 H145 V503 H137" />
-        <path d="M145 436 H153" />
+        <!-- LEFT QF -> SF -->
+        <path d="M416 175 H436 V315 H462" />
+        <path d="M416 455 H436 V315" />
 
-        <!-- QF -> SF : LEFT -->
-        <path d="M282 168 H290 V436 H282" />
-        <path d="M290 302 H298" />
-
-        <!-- SF -> FINAL : LEFT -->
-        <path d="M427 302 H443" />
+        <!-- LEFT SF -> FINAL -->
+        <path d="M612 315 H668" />
 
 
-        <!-- R16 -> QF : RIGHT -->
-        <path d="M938 101 H930 V235 H938" />
-        <path d="M930 168 H922" />
+        <!-- RIGHT R16 -> QF -->
+        <path d="M1356 105 H1336 V175 H1310" />
+        <path d="M1356 245 H1336 V175" />
+        <path d="M1356 385 H1336 V455 H1310" />
+        <path d="M1356 525 H1336 V455" />
 
-        <path d="M938 369 H930 V503 H938" />
-        <path d="M930 436 H922" />
+        <!-- RIGHT QF -> SF -->
+        <path d="M1120 175 H1100 V315 H1094" />
+        <path d="M1120 455 H1100 V315" />
 
-        <!-- QF -> SF : RIGHT -->
-        <path d="M793 168 H785 V436 H793" />
-        <path d="M785 302 H777" />
-
-        <!-- SF -> FINAL : RIGHT -->
-        <path d="M648 302 H632" />
+        <!-- RIGHT SF -> FINAL -->
+        <path d="M1094 315 H888" />
 
       </svg>
     `;
   }
 
   return `
-    <svg
-      class="champions-bracket-lines"
-      viewBox="0 0 910 570"
-      preserveAspectRatio="none"
-      aria-hidden="true"
-    >
+    <svg class="champions-bracket-lines"
+         viewBox="0 0 1094 620"
+         preserveAspectRatio="none"
+         aria-hidden="true">
 
-      <!-- QF -> SF : LEFT -->
-      <path d="M332 168 H340 V436 H332" />
-      <path d="M340 302 H348" />
+      <!-- LEFT QF -> SF -->
+      <path d="M416 167 H436 V310 H462" />
+      <path d="M416 453 H436 V310" />
 
-      <!-- SF -> FINAL : LEFT -->
-      <path d="M562 302 H578" />
+      <!-- LEFT SF -> FINAL -->
+      <path d="M612 310 H654" />
 
-      <!-- QF -> SF : RIGHT -->
-      <path d="M748 168 H740 V436 H748" />
-      <path d="M740 302 H732" />
+      <!-- RIGHT QF -> SF -->
+      <path d="M678 167 H658 V310 H632" />
+      <path d="M678 453 H658 V310" />
 
-      <!-- SF -> FINAL : RIGHT -->
-      <path d="M578 302 H562" />
+      <!-- RIGHT SF -> FINAL -->
+      <path d="M632 310 H654" />
 
     </svg>
   `;
 }
-
 
 function renderChampionsBracket() {
 
