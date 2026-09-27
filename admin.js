@@ -1004,7 +1004,7 @@ function updateFormatSettings() {
 
 
 // =========================================================
-// FORMAT SELECTOR
+// COMPETITION FORMAT SELECTOR
 // =========================================================
 
 if (competitionFormat) {
@@ -1013,7 +1013,10 @@ if (competitionFormat) {
     "change",
     function() {
 
-      if (season.started || season.formatLocked) {
+      if (
+        season.started ||
+        season.formatLocked
+      ) {
 
         competitionFormat.value =
           season.format;
@@ -1030,29 +1033,98 @@ if (competitionFormat) {
       }
 
 
-      updateFormatSettings();
-
-      season.format =
+      const newFormat =
         competitionFormat.value;
 
 
+      /*
+       * If existing fixtures/results belong
+       * to the current competition, do not
+       * silently switch formats.
+       */
+
       if (
-        season.format === "champions"
+        fixtures.length > 0 &&
+        newFormat !== season.format
       ) {
 
-        season.phase =
-          "registration";
+        const confirmed =
+          confirm(
+            "⚠️ CHANGE COMPETITION FORMAT?\n\n" +
+            "Existing fixtures and results belong to the current " +
+            (season.format === "champions"
+              ? "Champions League"
+              : "League") +
+            " competition.\n\n" +
+            "Changing the format will clear the existing fixtures " +
+            "and results.\n\n" +
+            "Approved teams will NOT be deleted.\n\n" +
+            "Continue?"
+          );
 
-      } else {
+
+        if (!confirmed) {
+
+          competitionFormat.value =
+            season.format;
+
+          updateFormatSettings();
+
+          return;
+        }
+
+
+        /*
+         * Clear only competition-specific
+         * data before changing format.
+         */
+
+        fixtures = [];
+
+        knockout =
+          createDefaultKnockout();
+
+        champions =
+          createDefaultChampions();
+
+        season.qualificationCount =
+          0;
 
         season.phase =
           "registration";
       }
 
 
+      /*
+       * Apply the new format.
+       */
+
+      season.format =
+        newFormat;
+
+
+      season.phase =
+        "registration";
+
+
+      updateFormatSettings();
+
       updateMatchesPerTeamSuggestion();
 
       updateChampionsQualificationInfo();
+
+
+      if (seasonControlMessage) {
+
+        seasonControlMessage.textContent =
+          "🟢 " +
+          (
+            season.format === "champions"
+              ? "Champions League"
+              : "League"
+          ) +
+          " selected. Configure the new season settings before starting.";
+      }
     }
   );
 }
