@@ -1530,26 +1530,16 @@ function renderChampionsBracket() {
       : "QF";
 
   const leftR16 =
-    r16.slice(
-      0,
-      Math.ceil(r16.length / 2)
-    );
+    r16.slice(0, 4);
 
   const rightR16 =
-    r16.slice(
-      Math.ceil(r16.length / 2)
-    );
+    r16.slice(4, 8);
 
   const leftQF =
-    qf.slice(
-      0,
-      Math.ceil(qf.length / 2)
-    );
+    qf.slice(0, 2);
 
   const rightQF =
-    qf.slice(
-      Math.ceil(qf.length / 2)
-    );
+    qf.slice(2, 4);
 
   const leftSF =
     sf.length > 0
@@ -1575,7 +1565,7 @@ function renderChampionsBracket() {
         <h4>Round of 16</h4>
         <div class="visual-bracket-ties r16-ties">
           ${Array.from(
-            { length: 8 },
+            { length: 4 },
             (_, index) =>
               renderVisualTie(
                 leftR16[index] || null,
@@ -1596,7 +1586,7 @@ function renderChampionsBracket() {
         <h4>Quarter-Finals</h4>
         <div class="visual-bracket-ties qf-ties">
           ${Array.from(
-            { length: 4 },
+            { length: 2 },
             (_, index) =>
               renderVisualTie(
                 leftQF[index] || null,
@@ -1623,12 +1613,10 @@ function renderChampionsBracket() {
         <h4>Quarter-Finals</h4>
         <div class="visual-bracket-ties qf-ties">
           ${Array.from(
-            { length: 4 },
+            { length: 2 },
             (_, index) => {
               const actualIndex =
-                Math.floor(
-                  qf.length / 2
-                ) + index;
+                index + 2;
 
               return renderVisualTie(
                 qf[actualIndex] || null,
@@ -1654,12 +1642,10 @@ function renderChampionsBracket() {
         <h4>Round of 16</h4>
         <div class="visual-bracket-ties r16-ties">
           ${Array.from(
-            { length: 8 },
+            { length: 4 },
             (_, index) => {
               const actualIndex =
-                Math.floor(
-                  r16.length / 2
-                ) + index;
+                index + 4;
 
               return renderVisualTie(
                 r16[actualIndex] || null,
