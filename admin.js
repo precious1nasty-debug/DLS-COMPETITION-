@@ -4140,20 +4140,12 @@ function createChampionsLeagueFixtures() {
    */
 
   if (
-  generatedMatches.length !==
-  (
-    teamCount *
-    matchesPerTeam
-  ) / 2
-) {
-
-  return {
-    success: false,
-
-    message:
-      "Fixture validation failed because the total number of generated matches is incorrect."
-  };
-}
+    generatedMatches.length !==
+    (
+      teamCount *
+      matchesPerTeam
+    ) / 2
+  ) {
 
     return {
       success: false,
