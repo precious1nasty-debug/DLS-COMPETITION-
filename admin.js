@@ -2979,12 +2979,10 @@ function createChampionsLeagueFixtures() {
   const teamCount =
     teams.length;
 
-
   const matchesPerTeam =
     Number(
       season.matchesPerTeam
     );
-
 
   if (
     teamCount < 9 ||
@@ -2999,7 +2997,6 @@ function createChampionsLeagueFixtures() {
     };
   }
 
-
   if (
     !isMatchesPerTeamPossible(
       teamCount,
@@ -3013,7 +3010,6 @@ function createChampionsLeagueFixtures() {
         matchesPerTeam
       );
 
-
     return {
       success: false,
 
@@ -3024,163 +3020,107 @@ function createChampionsLeagueFixtures() {
     };
   }
 
-
   /*
-   * We repeatedly shuffle the teams and
-   * choose valid unused opponents.
+   * Champions League match-day generator.
    *
-   * The algorithm records every pairing,
-   * so the same two teams are not selected
-   * twice during the league phase.
+   * Every team plays at most once per
+   * match day.
+   *
+   * Even number of teams:
+   * every team plays.
+   *
+   * Odd number of teams:
+   * one team has a rotating bye.
+   *
+   * The circle method prevents repeated
+   * opponents.
    */
 
   const teamNames =
-    teams.map(
-      function(team) {
-        return getTeamName(team);
-      }
+    shuffleArray(
+      teams.map(
+        function(team) {
+          return getTeamName(team);
+        }
+      )
     );
 
+  /*
+   * Add a BYE slot when the number of
+   * teams is odd.
+   */
 
-  const opponents =
-    {};
+  const scheduleTeams =
+    teamNames.slice();
 
+  if (
+    scheduleTeams.length % 2 !== 0
+  ) {
 
-  teamNames.forEach(
-    function(teamName) {
+    scheduleTeams.push(null);
+  }
 
-      opponents[teamName] =
-        new Set();
-    }
-  );
+  const teamSlots =
+    scheduleTeams.length;
 
+  const rounds =
+    teamSlots - 1;
 
-  const appearances =
-    {};
-
-
-  teamNames.forEach(
-    function(teamName) {
-
-      appearances[teamName] = 0;
-    }
-  );
-
+  const matchesPerRound =
+    teamSlots / 2;
 
   const generatedMatches = [];
 
-  const totalMatches =
-    (
-      teamCount *
-      matchesPerTeam
-    ) / 2;
+  let current =
+    scheduleTeams.slice();
 
+  /*
+   * Generate complete match days.
+   */
 
-  let safety =
-    0;
-
-
-  while (
-    generatedMatches.length <
-      totalMatches &&
-    safety < 100000
+  for (
+    let roundIndex = 0;
+    roundIndex < rounds;
+    roundIndex++
   ) {
 
-    safety++;
-
-
-    const candidates =
-      shuffleArray(
-        teamNames
-      );
-
-
-    let matchCreated =
-      false;
-
+    const roundMatches = [];
 
     for (
       let i = 0;
-      i < candidates.length;
+      i < matchesPerRound;
       i++
     ) {
 
       const teamA =
-        candidates[i];
+        current[i];
 
-
-      if (
-        appearances[teamA] >=
-        matchesPerTeam
-      ) {
-
-        continue;
-      }
-
-
-      const possibleOpponents =
-        candidates.filter(
-          function(teamB) {
-
-            return (
-              teamB !== teamA &&
-
-              appearances[teamB] <
-                matchesPerTeam &&
-
-              !opponents[teamA].has(
-                teamB
-              )
-            );
-          }
-        );
-
-
-      if (
-        possibleOpponents.length === 0
-      ) {
-
-        continue;
-      }
-
-
-      /*
-       * Prefer an opponent with the
-       * lowest number of appearances.
-       */
-
-      possibleOpponents.sort(
-        function(a, b) {
-
-          return (
-            appearances[a] -
-            appearances[b]
-          );
-        }
-      );
-
-
-      const opponent =
-        possibleOpponents[
-          Math.floor(
-            Math.random() *
-            Math.min(
-              possibleOpponents.length,
-              4
-            )
-          )
+      const teamB =
+        current[
+          teamSlots - 1 - i
         ];
 
+      /*
+       * A null slot represents the
+       * rotating bye.
+       */
+
+      if (
+        teamA === null ||
+        teamB === null
+      ) {
+
+        continue;
+      }
 
       let home =
         teamA;
 
       let away =
-        opponent;
-
+        teamB;
 
       /*
-       * Randomly decide home advantage.
+       * Randomize home advantage.
        */
 
       if (
@@ -3188,14 +3128,13 @@ function createChampionsLeagueFixtures() {
       ) {
 
         home =
-          opponent;
+          teamB;
 
         away =
           teamA;
       }
 
-
-      generatedMatches.push({
+      roundMatches.push({
 
         home,
 
@@ -3211,83 +3150,104 @@ function createChampionsLeagueFixtures() {
           false,
 
         round:
-          Math.floor(
-            generatedMatches.length /
-              Math.max(
-                1,
-                Math.floor(
-                  teamCount / 2
-                )
-              )
-          ) + 1
+          roundIndex + 1
       });
-
-
-      appearances[teamA]++;
-      appearances[opponent]++;
-
-
-      opponents[teamA].add(
-        opponent
-      );
-
-      opponents[opponent].add(
-        teamA
-      );
-
-
-      matchCreated =
-        true;
-
-      break;
     }
 
+    /*
+     * Shuffle matches inside the match
+     * day without changing the pairings.
+     */
 
-    if (!matchCreated) {
+    const shuffledRound =
+      shuffleArray(
+        roundMatches
+      );
 
-      /*
-       * Restart the generation if the
-       * random arrangement reached a dead end.
-       */
+    generatedMatches.push(
+      ...shuffledRound
+    );
 
-      if (
-        safety < 90000
-      ) {
+    /*
+     * Circle rotation.
+     *
+     * The first team remains fixed.
+     */
 
-        generatedMatches.length = 0;
-
-
-        teamNames.forEach(
-          function(teamName) {
-
-            appearances[teamName] =
-              0;
-
-            opponents[teamName] =
-              new Set();
-          }
-        );
-      }
-    }
+    current =
+      [
+        current[0],
+        current[teamSlots - 1],
+        ...current.slice(
+          1,
+          teamSlots - 1
+        )
+      ];
   }
-
-
-  if (
-    generatedMatches.length !==
-    totalMatches
-  ) {
-
-    return {
-      success: false,
-
-      message:
-        "The fixture generator could not create a complete schedule. Please try generating again."
-    };
-  }
-
 
   /*
-   * Verify every team has exactly the
+   * Only use the number of match days
+   * required by matchesPerTeam.
+   */
+
+  const requiredRounds =
+    matchesPerTeam;
+
+  const selectedMatches =
+    generatedMatches.filter(
+      function(match) {
+
+        return (
+          match.round <=
+          requiredRounds
+        );
+      }
+    );
+
+  /*
+   * Count appearances for every team.
+   */
+
+  const appearances =
+    {};
+
+  teamNames.forEach(
+    function(teamName) {
+
+      appearances[teamName] =
+        0;
+    }
+  );
+
+  const opponents =
+    {};
+
+  teamNames.forEach(
+    function(teamName) {
+
+      opponents[teamName] =
+        new Set();
+    }
+  );
+
+  for (
+    const match of selectedMatches
+  ) {
+
+    appearances[match.home]++;
+    appearances[match.away]++;
+
+    opponents[match.home].add(
+      match.away
+    );
+
+    opponents[match.away].add(
+      match.home
+    );
+  }
+
+  /*
+   * Every team must have exactly the
    * selected number of matches.
    */
 
@@ -3304,17 +3264,74 @@ function createChampionsLeagueFixtures() {
         success: false,
 
         message:
-          `Fixture validation failed for ${teamName}. Please generate again.`
+          `Fixture validation failed for ${teamName}. It received ${appearances[teamName]} matches instead of ${matchesPerTeam}.`
       };
     }
   }
 
+  /*
+   * Final match-day validation.
+   *
+   * No team can appear twice on the
+   * same match day.
+   */
+
+  for (
+    let round = 1;
+    round <= requiredRounds;
+    round++
+  ) {
+
+    const teamsThisRound =
+      new Set();
+
+    const roundFixtures =
+      selectedMatches.filter(
+        function(match) {
+
+          return (
+            match.round ===
+            round
+          );
+        }
+      );
+
+    for (
+      const match of roundFixtures
+    ) {
+
+      if (
+        teamsThisRound.has(
+          match.home
+        ) ||
+        teamsThisRound.has(
+          match.away
+        )
+      ) {
+
+        return {
+          success: false,
+
+          message:
+            `Match-day validation failed on Match Day ${round}. A team was scheduled more than once.`
+        };
+      }
+
+      teamsThisRound.add(
+        match.home
+      );
+
+      teamsThisRound.add(
+        match.away
+      );
+    }
+  }
 
   return {
     success: true,
 
     fixtures:
-      generatedMatches
+      selectedMatches
   };
 }
 
