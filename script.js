@@ -1839,9 +1839,6 @@ function renderChampionsBracket() {
           </div>
         </div>
 
-        <div class="bracket-scroll-note">
-          Swipe left/right on mobile to view the full bracket
-        </div>
       </div>
 
       <div class="champions-skeleton-scroll">
