@@ -626,7 +626,7 @@ footer {
 }
 
 /* =========================================================
-   CHAMPIONS TREE — PUBLIC DASHBOARD
+   CHAMPIONS LEAGUE — 2D SKELETON BRACKET
 ========================================================= */
 
 .league-table-dropdown {
@@ -654,7 +654,6 @@ footer {
 .league-table-dropdown summary::after {
   content: "▾";
   float: right;
-  transition: transform 0.2s ease;
 }
 
 .league-table-dropdown[open] summary::after {
@@ -675,104 +674,193 @@ footer {
   margin-bottom: 20px;
 }
 
-/* Champions bracket board */
 
-.champions-tree-wrap {
-  background:
-    radial-gradient(circle at center, #2d2357 0%, #171334 55%, #0c0b1d 100%);
-  color: white;
+/* =========================
+   BRACKET OUTER SHELL
+========================= */
+
+.champions-skeleton-shell {
+  width: 100%;
   border-radius: 18px;
-  padding: 22px;
-  overflow-x: auto;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 50% 45%,
+      rgba(57, 35, 120, 0.42),
+      transparent 42%
+    ),
+    linear-gradient(
+      135deg,
+      #080b28,
+      #11164a 52%,
+      #080b28
+    );
+  border: 1px solid rgba(100, 126, 255, 0.45);
+  box-shadow:
+    0 12px 35px rgba(0, 0, 0, 0.28);
 }
 
-.champions-tree-title {
-  text-align: center;
-  margin-bottom: 20px;
-  letter-spacing: 2px;
-  font-size: 18px;
-}
-
-.champions-tree-title span {
-  display: block;
-  font-size: 42px;
-  margin-bottom: 5px;
-}
-
-.champions-tree {
-  display: grid;
-  grid-template-columns: minmax(300px, 1fr) minmax(210px, 260px) minmax(300px, 1fr);
-  gap: 18px;
-  min-width: 980px;
+.champions-skeleton-heading {
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(124, 145, 255, 0.35);
 }
 
-.champions-tree-side {
+.champions-skeleton-title {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  align-items: center;
+  gap: 14px;
+  color: white;
 }
 
-.champions-tree-right {
-  direction: rtl;
+.champions-skeleton-title > span {
+  font-size: 38px;
 }
 
-.champions-tree-right .visual-bracket-round,
-.champions-tree-right .visual-bracket-tie,
-.champions-tree-right .visual-bracket-team,
-.champions-tree-right h4 {
-  direction: ltr;
+.champions-skeleton-title strong {
+  display: block;
+  font-size: 24px;
+  letter-spacing: 0.5px;
 }
 
-.visual-bracket-round {
-  position: relative;
+.champions-skeleton-title small {
+  display: block;
+  margin-top: 3px;
+  color: #b9c6ff;
+  font-size: 14px;
+  letter-spacing: 1.5px;
 }
 
-.visual-bracket-round h4 {
-  margin: 0 0 8px;
-  text-align: center;
+.bracket-scroll-note {
+  color: #aebcff;
   font-size: 12px;
-  letter-spacing: 1px;
-  color: #dbe4ff;
+  text-align: right;
 }
 
-.visual-bracket-ties {
+
+/* =========================
+   HORIZONTAL BRACKET
+========================= */
+
+.champions-skeleton-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  padding: 28px 22px 34px;
+}
+
+.champions-skeleton-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(145px, 1fr)
+    minmax(145px, 1fr)
+    minmax(145px, 1fr)
+    minmax(205px, 1.35fr)
+    minmax(145px, 1fr)
+    minmax(145px, 1fr)
+    minmax(145px, 1fr);
+  align-items: stretch;
+  gap: 0;
+  min-width: 1050px;
+  min-height: 570px;
+}
+
+
+/* =========================
+   ROUND COLUMNS
+========================= */
+
+.skeleton-round,
+.skeleton-final-column {
+  position: relative;
+  min-width: 0;
+}
+
+.skeleton-round-title {
+  height: 34px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  color: #f1f4ff;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+.skeleton-round-title::after {
+  content: "";
+  position: absolute;
+  top: 31px;
+  left: 50%;
+  width: 72px;
+  height: 2px;
+  transform: translateX(-50%);
+  background: #6678ff;
+  border-radius: 2px;
+}
+
+.skeleton-round-body {
+  height: calc(100% - 34px);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  justify-content: space-around;
+  gap: 16px;
+  padding: 18px 8px 8px;
+}
+
+.skeleton-round-body.single-tie {
+  justify-content: center;
 }
 
 .visual-bracket-tie {
-  background: rgba(255,255,255,0.96);
-  color: #172033;
+  position: relative;
+  z-index: 2;
+  background: #17204b;
+  color: #f5f7ff;
+  border: 1px solid #6076bd;
   border-radius: 7px;
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.7);
-  box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+  overflow: visible;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
 }
 
-.visual-bracket-tie.placeholder {
-  opacity: 0.88;
+.visual-bracket-tie::before,
+.visual-bracket-tie::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  height: 2px;
+  width: 18px;
+  background: #eef2ff;
+  transform: translateY(-50%);
 }
 
 .visual-bracket-label {
-  padding: 3px 7px;
-  font-size: 9px;
-  font-weight: 800;
-  background: #dbe4ff;
-  color: #27345a;
+  padding: 4px 7px;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: #9fb0ff;
+  border-bottom: 1px solid rgba(130, 151, 255, 0.3);
   text-transform: uppercase;
 }
 
 .visual-bracket-team {
-  min-height: 30px;
-  padding: 5px 8px;
+  min-height: 28px;
+  padding: 5px 7px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  border-bottom: 1px solid #e5e7eb;
-  font-size: 12px;
+  gap: 6px;
+  border-bottom: 1px solid rgba(148, 164, 214, 0.2);
+  font-size: 10px;
+  line-height: 1.15;
 }
 
 .visual-bracket-team:last-child {
@@ -780,74 +868,256 @@ footer {
 }
 
 .visual-bracket-team.is-winner {
-  background: #e8fff1;
-  font-weight: 800;
+  background: rgba(35, 207, 125, 0.18);
+  color: #baffd9;
+  font-weight: 900;
 }
 
 .visual-bracket-team strong {
-  min-width: 18px;
+  min-width: 15px;
   text-align: right;
+  color: white;
 }
 
-.r16-ties {
-  gap: 11px;
+
+/* =========================
+   LEFT/RIGHT CONNECTORS
+========================= */
+
+.champions-skeleton-grid > .left .visual-bracket-tie::after {
+  right: -18px;
 }
 
-.qf-ties {
-  gap: 35px;
-  padding-top: 25px;
+.champions-skeleton-grid > .right .visual-bracket-tie::before {
+  left: -18px;
 }
 
-.semi-ties {
-  gap: 70px;
+.round-r16.left .visual-bracket-tie::after,
+.round-r16.right .visual-bracket-tie::before {
+  width: 18px;
 }
 
-.champions-tree-center {
+.round-qf.left .visual-bracket-tie::after,
+.round-qf.right .visual-bracket-tie::before {
+  width: 18px;
+}
+
+.sf-column.left .visual-bracket-tie::after {
+  right: -18px;
+}
+
+.sf-column.right .visual-bracket-tie::before {
+  left: -18px;
+}
+
+
+/* =========================
+   FINAL / TROPHY
+========================= */
+
+.skeleton-final-column {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 28px;
+  padding: 0 8px;
 }
 
-.champions-trophy {
+.skeleton-trophy {
   text-align: center;
-  font-size: 62px;
+  padding: 38px 0 15px;
+}
+
+.trophy-icon {
+  font-size: 64px;
   line-height: 1;
+  filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.4));
 }
 
-.champions-trophy span {
-  display: block;
-  margin-top: 6px;
-  font-size: 11px;
-  letter-spacing: 2px;
-  font-weight: 800;
+.trophy-label {
+  margin-top: 8px;
+  color: #ffd33d;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
 }
 
-.final-round {
-  max-width: 240px;
+.skeleton-final-tie {
+  position: relative;
   margin: 0 auto;
   width: 100%;
+  max-width: 210px;
 }
 
-.third-place-card {
-  margin-top: 25px;
+.skeleton-final-tie::before,
+.skeleton-final-tie::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 35px;
+  height: 2px;
+  background: #eef2ff;
 }
+
+.skeleton-final-tie::before {
+  left: -35px;
+}
+
+.skeleton-final-tie::after {
+  right: -35px;
+}
+
+.skeleton-champion {
+  width: 150px;
+  margin: 25px auto 0;
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #00d9ff;
+  border-radius: 7px;
+  background: rgba(5, 12, 46, 0.72);
+  color: white;
+}
+
+.skeleton-champion span {
+  display: block;
+  color: #ffd33d;
+  font-size: 22px;
+}
+
+.skeleton-champion strong {
+  display: block;
+  margin: 2px 0 5px;
+  color: #ffd33d;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+.skeleton-champion div {
+  font-size: 11px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.skeleton-third-place {
+  margin-top: auto;
+  padding-top: 18px;
+  text-align: center;
+}
+
+.third-place-title {
+  margin-bottom: 7px;
+  color: white;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.third-place-team {
+  max-width: 190px;
+  margin: auto;
+  padding: 8px;
+  border: 1px solid #6b80bd;
+  border-radius: 7px;
+  color: white;
+  background: #17204b;
+  font-size: 10px;
+}
+
+
+/* =========================
+   8-TEAM QF LAYOUT
+========================= */
+
+.champions-skeleton-grid:not(:has(.round-r16)) {
+  grid-template-columns:
+    minmax(165px, 1fr)
+    minmax(165px, 1fr)
+    minmax(220px, 1.4fr)
+    minmax(165px, 1fr)
+    minmax(165px, 1fr);
+
+  min-width: 820px;
+}
+
+
+/* =========================
+   ANDROID + IPHONE
+========================= */
 
 @media (max-width: 700px) {
 
-  .league-table-dropdown summary {
-    font-size: 18px;
+  .champions-skeleton-heading {
+    display: block;
+    padding: 16px;
   }
 
-  .champions-tree-wrap {
-    padding: 15px;
+  .champions-skeleton-title > span {
+    font-size: 30px;
   }
 
-  .champions-tree {
+  .champions-skeleton-title strong {
+    font-size: 19px;
+  }
+
+  .champions-skeleton-title small {
+    font-size: 11px;
+  }
+
+  .bracket-scroll-note {
+    margin-top: 10px;
+    text-align: left;
+    font-size: 11px;
+  }
+
+  .champions-skeleton-scroll {
+    padding: 22px 12px 28px;
+    touch-action: pan-x;
+  }
+
+  .champions-skeleton-grid {
     min-width: 920px;
+    min-height: 520px;
   }
 
-  .champions-tree-title {
-    font-size: 15px;
+  .champions-skeleton-grid:not(:has(.round-r16)) {
+    min-width: 760px;
+  }
+
+  .skeleton-round-body {
+    gap: 10px;
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+
+  .visual-bracket-team {
+    min-height: 27px;
+    padding: 5px 6px;
+    font-size: 9px;
+  }
+
+  .visual-bracket-label {
+    font-size: 7px;
+  }
+
+  .skeleton-round-title {
+    font-size: 9px;
+  }
+
+  .trophy-icon {
+    font-size: 52px;
+  }
+
+  .skeleton-champion {
+    width: 130px;
+  }
+}
+
+@media (max-width: 390px) {
+
+  .champions-skeleton-grid {
+    min-width: 880px;
+  }
+
+  .champions-skeleton-grid:not(:has(.round-r16)) {
+    min-width: 730px;
   }
 }
