@@ -3013,6 +3013,31 @@ if (adminTeamList) {
       }
 
 
+      try {
+
+        const registrationId =
+          teamKey(teamName);
+
+        if (registrationId) {
+
+          await deleteDoc(
+            doc(
+              window.db,
+              "registrations",
+              registrationId
+            )
+          );
+        }
+
+      } catch (registrationError) {
+
+        console.error(
+          "Team registration cleanup failed:",
+          registrationError
+        );
+      }
+
+
       renderAll();
 
 
