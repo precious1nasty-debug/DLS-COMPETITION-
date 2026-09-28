@@ -2062,7 +2062,11 @@ function renderWinnerCelebration() {
         </div>
 
         <div class="podium-block podium-center">
+          <div class="podium-crown" aria-hidden="true">👑</div>
           <span>🏆 CHAMPION 🏆</span>
+          <strong class="podium-team-name podium-champion-name">
+            ${escapeHTML(champion)}
+          </strong>
           <b>1</b>
         </div>
 
