@@ -1,18 +1,3 @@
-
-// =========================================================
-// ADMIN.JS LOAD TEST
-// =========================================================
-
-console.log("DLS ADMIN.JS LOADED");
-
-const adminLoadTest = document.getElementById("adminLoginMessage");
-
-if (adminLoadTest) {
-  adminLoadTest.textContent = "🟢 Admin system loaded. Enter your login details.";
-}
-
-// =========================================================
-
 // =========================================================
 // DLS COMPETITION
 // ADMIN.JS
@@ -32,9 +17,7 @@ import {
 import {
   signInWithEmailAndPassword,
   onAuthStateChanged,
-  signOut,
-  setPersistence,
-  browserLocalPersistence
+  signOut
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 const ADMIN_EMAIL = "obakimoprecious07@gmail.com";
@@ -544,38 +527,12 @@ if (adminLoginForm) {
         "⏳ Signing in...";
 
       try {
-        await setPersistence(
+
+        await signInWithEmailAndPassword(
           window.auth,
-          browserLocalPersistence
+          email,
+          password
         );
-
-        const credential =
-          await signInWithEmailAndPassword(
-            window.auth,
-            email,
-            password
-          );
-
-        const signedInEmail =
-          String(credential.user?.email || "")
-            .trim()
-            .toLowerCase();
-
-        if (signedInEmail !== ADMIN_EMAIL) {
-          throw new Error(
-            "Firebase signed in a different account."
-          );
-        }
-
-        console.log(
-          "ADMIN AUTH SUCCESS:",
-          signedInEmail,
-          credential.user?.uid
-        );
-
-        showDashboard();
-
-        await loadCompetition();
 
         adminLoginMessage.textContent =
           "✅ Login successful.";
@@ -583,22 +540,15 @@ if (adminLoginForm) {
       } catch (error) {
 
         console.error(
-          "ADMIN LOGIN ERROR:",
-          error?.code,
-          error?.message,
+          "Admin login failed:",
           error
         );
 
         adminLoginMessage.textContent =
           "❌ Login failed: " +
           (
-            error?.code
-              ? error.code + " — "
-              : ""
-          ) +
-          (
-            error?.message ||
-            "Please check your email and password."
+            error.message ||
+            "Please check your details."
           );
       }
     }
@@ -616,16 +566,6 @@ function setupAuthentication() {
   onAuthStateChanged(
     window.auth,
     async function(user) {
-
-      console.log(
-        "ADMIN AUTH STATE:",
-        user
-          ? {
-              email: user.email,
-              uid: user.uid
-            }
-          : "NO USER"
-      );
 
       if (!user) {
         showLogin();
@@ -653,15 +593,9 @@ function setupAuthentication() {
 
       showDashboard();
 
-      try {
-        await loadCompetition();
-        setupRegistrationListener();
-      } catch (error) {
-        console.error(
-          "ADMIN AUTHENTICATED BUT DATA LOAD FAILED:",
-          error
-        );
-      }
+      await loadCompetition();
+
+      setupRegistrationListener();
     }
   );
 }
@@ -686,57 +620,61 @@ function showDashboard() {
   }
 }
 
-function waitForFirebase() {
+if (logoutButton) {
+  logoutButton.addEventListener(
+    "click",
+    async function() {
 
-  return new Promise(function(resolve, reject) {
+      try {
+        await signOut(window.auth);
+      } catch (error) {
+        console.error(
+          "Logout failed:",
+          error
+        );
+      }
 
-    if (window.firebaseReady) {
-      resolve();
-      return;
     }
-
-    let attempts = 0;
-
-    const timer =
-      setInterval(function() {
-
-        attempts++;
-
-        if (window.firebaseReady) {
-
-          clearInterval(timer);
-          resolve();
-          return;
-        }
-
-        if (attempts >= 100) {
-
-          clearInterval(timer);
-
-          if (adminLoginMessage) {
-            adminLoginMessage.textContent =
-              "❌ Firebase failed to initialize.";
-          }
-
-          reject(
-            new Error("Firebase failed to initialize.")
-          );
-        }
-
-      }, 100);
-  });
+  );
 }
 
-waitForFirebase()
-  .then(function() {
+function waitForFirebase() {
+
+  if (window.firebaseReady) {
     setupAuthentication();
-  })
-  .catch(function(error) {
-    console.error(
-      "Firebase startup failed:",
-      error
-    );
-  });
+    return;
+  }
+
+  let attempts = 0;
+
+  const timer =
+    setInterval(function() {
+
+      attempts++;
+
+      if (window.firebaseReady) {
+
+        clearInterval(timer);
+
+        setupAuthentication();
+
+        return;
+      }
+
+      if (attempts >= 100) {
+
+        clearInterval(timer);
+
+        if (adminLoginMessage) {
+          adminLoginMessage.textContent =
+            "❌ Firebase failed to initialize.";
+        }
+      }
+
+    }, 100);
+}
+
+waitForFirebase();
 
 // =========================================================
 // DLS COMPETITION
@@ -9016,7 +8954,7 @@ if (logoutButton) {
 
       try {
 
-        await signOut(window.auth);
+        await signOut(auth);
 
       } catch (error) {
 
