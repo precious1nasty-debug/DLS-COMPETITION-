@@ -6,7 +6,6 @@
 
 import {
   doc,
-  getDoc,
   onSnapshot,
   setDoc
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
@@ -2271,54 +2270,6 @@ if (registrationForm) {
             "registrations",
             id
           );
-
-
-        const existing =
-          await getDoc(
-            registrationRef
-          );
-
-
-        if (existing.exists()) {
-
-          const existingData =
-            existing.data();
-
-          const normalizedTeamName =
-            teamName
-              .toLowerCase()
-              .replace(/\s+/g, " ")
-              .trim();
-
-          const approvedTeamStillExists =
-            teams.some(function(team) {
-              const existingTeamName =
-                getTeamName(team)
-                  .toLowerCase()
-                  .replace(/\s+/g, " ")
-                  .trim();
-
-              return (
-                existingTeamName ===
-                normalizedTeamName
-              );
-            });
-
-          const canReuseRegistration =
-            existingData.status === "rejected" ||
-            (
-              existingData.status === "approved" &&
-              !approvedTeamStillExists
-            );
-
-          if (!canReuseRegistration) {
-
-            registrationMessage.textContent =
-              "This team has already registered.";
-
-            return;
-          }
-        }
 
 
         await setDoc(
