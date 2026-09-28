@@ -1041,64 +1041,42 @@ function getQualifiedTeams() {
 
 function renderChampionsQualification() {
 
-  if (
-    !championsQualificationList
-  ) {
+  if (!championsQualificationList) {
     return;
   }
 
-
-  if (
-    season.format !==
-    "champions"
-  ) {
-
+  if (season.format !== "champions") {
     championsQualificationList.innerHTML =
       "<p>Not active.</p>";
-
     return;
   }
-
 
   const qualified =
     getQualifiedTeams();
 
-
   if (!qualified.length) {
-
     championsQualificationList.innerHTML =
-      "<p>Qualification positions will appear as results are recorded.</p>";
-
+      "<p>Qualification is not guaranteed for any team yet.</p>";
     return;
   }
 
-
   championsQualificationList.innerHTML = `
-
     <div class="qualified-grid">
-
       ${qualified
         .map(
           (team, index) => `
-
             <div class="qualified-team">
-
               <span>
                 ${index + 1}
               </span>
-
               <strong>
                 ${escapeHTML(team)}
               </strong>
-
             </div>
-
           `
         )
         .join("")}
-
     </div>
-
   `;
 }
 
