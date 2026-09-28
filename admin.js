@@ -528,6 +528,13 @@ if (adminLoginForm) {
 
       try {
 
+        // Always clear any previous Firebase session first.
+        // This prevents an old authenticated session from
+        // interfering with a new login attempt.
+        if (window.auth.currentUser) {
+          await signOut(window.auth);
+        }
+
         await signInWithEmailAndPassword(
           window.auth,
           email,
