@@ -494,41 +494,69 @@ async function saveCompetition() {
 }
 
 // =========================================================
-// CLEAN ADMIN AUTHENTICATION
+// ADMIN AUTHENTICATION
 // =========================================================
 
 let adminStartupInProgress = false;
 let adminStartupUserUid = "";
+let adminAuthReady = false;
 
 function showLogin() {
-  if (adminLogin) {
-    adminLogin.style.display = "block";
-  }
-
-  if (adminDashboard) {
-    adminDashboard.style.display = "none";
-  }
+  if (adminLogin) adminLogin.style.display = "block";
+  if (adminDashboard) adminDashboard.style.display = "none";
 }
 
 function showDashboard() {
-  if (adminLogin) {
-    adminLogin.style.display = "none";
-  }
-
-  if (adminDashboard) {
-    adminDashboard.style.display = "block";
-  }
+  if (adminLogin) adminLogin.style.display = "none";
+  if (adminDashboard) adminDashboard.style.display = "block";
 }
 
 function setAdminLoginMessage(message) {
   if (adminLoginMessage) {
-    adminLoginMessage.textContent = message;
+    adminLoginMessage.textContent = String(message || "");
   }
 }
 
+function getFirebaseErrorMessage(error) {
+  const code = String(error?.code || "");
+
+  if (code === "auth/invalid-credential" ||
+      code === "auth/wrong-password" ||
+      code === "auth/user-not-found") {
+    return "❌ Incorrect email or password.";
+  }
+
+  if (code === "auth/too-many-requests") {
+    return "❌ Too many login attempts. Try again later.";
+  }
+
+  if (code === "auth/network-request-failed") {
+    return "❌ Network error. Check your internet connection.";
+  }
+
+  if (code === "auth/user-disabled") {
+    return "❌ This admin account is disabled.";
+  }
+
+  if (code === "auth/operation-not-allowed") {
+    return "❌ Email/password sign-in is disabled in Firebase Authentication.";
+  }
+
+  if (code === "auth/invalid-api-key") {
+    return "❌ Firebase API configuration is invalid.";
+  }
+
+  if (code === "auth/app-deleted") {
+    return "❌ Firebase app configuration is invalid.";
+  }
+
+  return "❌ Login failed: " +
+    (error?.message || code || "Unknown Firebase error.");
+}
+
 async function handleAdminLogin() {
-  if (!window.auth) {
-    setAdminLoginMessage("❌ Firebase Authentication is not ready.");
+  if (!adminAuthReady || !window.auth) {
+    setAdminLoginMessage("⏳ Firebase Authentication is still loading.");
     return;
   }
 
@@ -550,50 +578,63 @@ async function handleAdminLogin() {
     return;
   }
 
-  setAdminLoginMessage("⏳ Signing in...");
-
   if (adminLoginButton) {
     adminLoginButton.disabled = true;
   }
 
+  setAdminLoginMessage("⏳ Signing in...");
+
   try {
-    const credential =
-      await signInWithEmailAndPassword(
+    const loginPromise =
+      signInWithEmailAndPassword(
         window.auth,
         email,
         password
       );
 
-    if (!credential || !credential.user) {
-      throw new Error("Firebase did not return an authenticated user.");
+    const timeoutPromise =
+      new Promise(function(_, reject) {
+        setTimeout(function() {
+          reject(
+            new Error(
+              "Firebase sign-in timed out. Check Firebase Authentication and your network connection."
+            )
+          );
+        }, 15000);
+      });
+
+    const credential =
+      await Promise.race([
+        loginPromise,
+        timeoutPromise
+      ]);
+
+    if (!credential?.user) {
+      throw new Error(
+        "Firebase did not return an authenticated user."
+      );
     }
 
-    // Show the dashboard immediately after Firebase confirms
-    // the credentials. The auth-state listener will also verify
-    // and maintain the authenticated state.
+    const signedInEmail =
+      String(credential.user.email || "")
+        .trim()
+        .toLowerCase();
+
+    if (signedInEmail !== ADMIN_EMAIL) {
+      await signOut(window.auth);
+      throw new Error(
+        "The authenticated account is not the authorized admin account."
+      );
+    }
+
     showDashboard();
     setAdminLoginMessage("✅ Login successful.");
 
   } catch (error) {
     console.error("Admin login failed:", error);
-
-    const code =
-      String(error?.code || "");
-
-    let message =
-      "❌ Login failed. Check your email and password.";
-
-    if (code === "auth/invalid-credential") {
-      message = "❌ Incorrect email or password.";
-    } else if (code === "auth/too-many-requests") {
-      message = "❌ Too many attempts. Try again later.";
-    } else if (code === "auth/network-request-failed") {
-      message = "❌ Network error. Check your internet connection.";
-    } else if (code === "auth/user-disabled") {
-      message = "❌ This account has been disabled.";
-    }
-
-    setAdminLoginMessage(message);
+    setAdminLoginMessage(
+      getFirebaseErrorMessage(error)
+    );
 
   } finally {
     if (adminLoginButton) {
@@ -612,20 +653,30 @@ if (adminLoginButton) {
 function setupAuthentication() {
   if (!window.auth) {
     console.error("Firebase Auth is unavailable.");
-    setAdminLoginMessage("❌ Firebase Authentication is unavailable.");
+    setAdminLoginMessage(
+      "❌ Firebase Authentication is unavailable."
+    );
     showLogin();
     return;
   }
 
+  adminAuthReady = true;
   showLogin();
 
   onAuthStateChanged(
     window.auth,
     async function(user) {
+
       if (!user) {
         adminStartupInProgress = false;
         adminStartupUserUid = "";
         showLogin();
+
+        if (!adminLoginMessage?.textContent ||
+            adminLoginMessage.textContent === "⏳ Signing in...") {
+          setAdminLoginMessage("");
+        }
+
         return;
       }
 
@@ -635,18 +686,26 @@ function setupAuthentication() {
           .toLowerCase();
 
       if (email !== ADMIN_EMAIL) {
-        console.warn("Unauthorized Firebase account:", user.email);
+        console.warn(
+          "Unauthorized Firebase account:",
+          user.email
+        );
 
         try {
           await signOut(window.auth);
         } catch (error) {
-          console.error("Unauthorized sign-out failed:", error);
+          console.error(
+            "Unauthorized sign-out failed:",
+            error
+          );
         }
 
         adminStartupInProgress = false;
         adminStartupUserUid = "";
         showLogin();
-        setAdminLoginMessage("❌ This account is not authorized.");
+        setAdminLoginMessage(
+          "❌ This account is not authorized."
+        );
         return;
       }
 
@@ -665,27 +724,16 @@ function setupAuthentication() {
 
       try {
         await loadCompetition();
-
         normalizeKnockoutArrays();
-
         await advanceKnockoutStage();
-
         renderAll();
-
         refreshAdminDashboard();
-
         updateCompletedSeasonMessage();
-
         enforceChampionsCompletionLock();
-
         renderFinalCompetitionStatus();
-
         renderChampionsDataWarning();
-
         setupRegistrationListener();
-
         renderFirebaseStatus();
-
         runAdminFinalCheck();
 
       } catch (error) {
@@ -694,9 +742,6 @@ function setupAuthentication() {
           error
         );
 
-        // Authentication remains valid.
-        // Do NOT send the user back to the login screen
-        // because of a dashboard-data error.
         showDashboard();
 
         if (seasonControlMessage) {
@@ -717,37 +762,43 @@ function setupAuthentication() {
 function waitForFirebase() {
   return new Promise(function(resolve, reject) {
 
-    if (window.firebaseReady && window.auth && window.db) {
+    if (window.firebaseReady &&
+        window.auth &&
+        window.db) {
       resolve();
       return;
     }
 
     let attempts = 0;
 
-    const timer = setInterval(function() {
+    const timer =
+      setInterval(function() {
 
-      attempts++;
+        attempts++;
 
-      if (window.firebaseReady && window.auth && window.db) {
-        clearInterval(timer);
-        resolve();
-        return;
-      }
-
-      if (attempts >= 100) {
-        clearInterval(timer);
-
-        if (adminLoginMessage) {
-          adminLoginMessage.textContent =
-            "❌ Firebase failed to initialize.";
+        if (window.firebaseReady &&
+            window.auth &&
+            window.db) {
+          clearInterval(timer);
+          resolve();
+          return;
         }
 
-        reject(
-          new Error("Firebase failed to initialize.")
-        );
-      }
+        if (attempts >= 100) {
+          clearInterval(timer);
 
-    }, 100);
+          setAdminLoginMessage(
+            "❌ Firebase failed to initialize."
+          );
+
+          reject(
+            new Error(
+              "Firebase failed to initialize."
+            )
+          );
+        }
+
+      }, 100);
   });
 }
 
