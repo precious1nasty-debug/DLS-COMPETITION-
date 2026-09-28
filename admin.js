@@ -639,42 +639,41 @@ if (logoutButton) {
 }
 
 function waitForFirebase() {
+  return new Promise(function(resolve, reject) {
 
-  if (window.firebaseReady) {
-    setupAuthentication();
-    return;
-  }
+    if (window.firebaseReady && window.auth && window.db) {
+      resolve();
+      return;
+    }
 
-  let attempts = 0;
+    let attempts = 0;
 
-  const timer =
-    setInterval(function() {
+    const timer = setInterval(function() {
 
       attempts++;
 
-      if (window.firebaseReady) {
-
+      if (window.firebaseReady && window.auth && window.db) {
         clearInterval(timer);
-
-        setupAuthentication();
-
+        resolve();
         return;
       }
 
       if (attempts >= 100) {
-
         clearInterval(timer);
 
         if (adminLoginMessage) {
           adminLoginMessage.textContent =
             "❌ Firebase failed to initialize.";
         }
+
+        reject(
+          new Error("Firebase failed to initialize.")
+        );
       }
 
     }, 100);
+  });
 }
-
-waitForFirebase();
 
 // =========================================================
 // DLS COMPETITION
