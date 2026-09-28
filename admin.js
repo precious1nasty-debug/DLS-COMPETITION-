@@ -173,6 +173,9 @@ const saveChampionsPrizeButton =
 const championsPrizeMessage =
   document.getElementById("championsPrizeMessage");
 
+const championsPrizeEnabled =
+  document.getElementById("championsPrizeEnabled");
+
 const clearCompetitionButton =
   document.getElementById("clearCompetitionButton");
 
@@ -244,7 +247,8 @@ function createDefaultChampions() {
     runnerUp: "",
     thirdPlace: "",
     prizeAmount: "",
-    prizeCurrency: ""
+    prizeCurrency: "₦",
+    prizeEnabled: false
   };
 }
 
@@ -1698,7 +1702,14 @@ function loadChampionsPrizeIntoForm() {
 
   if (championsPrizeCurrency) {
     championsPrizeCurrency.value =
-      champions.prizeCurrency || "";
+      champions.prizeCurrency === "$"
+        ? "$"
+        : "₦";
+  }
+
+  if (championsPrizeEnabled) {
+    championsPrizeEnabled.checked =
+      champions.prizeEnabled === true;
   }
 
   if (championsPrizeMessage) {
@@ -1713,9 +1724,14 @@ async function saveChampionsPrize() {
     championsPrizeAmount?.value?.trim() || "";
 
   const currency =
-    championsPrizeCurrency?.value?.trim().toUpperCase() || "";
+    championsPrizeCurrency?.value === "$"
+      ? "$"
+      : "₦";
 
-  if (!amount) {
+  const enabled =
+    championsPrizeEnabled?.checked === true;
+
+  if (!amount && enabled) {
     if (championsPrizeMessage) {
       championsPrizeMessage.textContent =
         "⚠️ Enter the cash prize amount.";
@@ -1733,6 +1749,7 @@ async function saveChampionsPrize() {
 
   champions.prizeAmount = amount;
   champions.prizeCurrency = currency;
+  champions.prizeEnabled = enabled;
 
   const saved = await saveCompetition();
 
@@ -8639,7 +8656,8 @@ function renderChampionsResults() {
 
   if (
     champions.prizeAmount ||
-    champions.prizeCurrency
+    champions.prizeCurrency &&
+    champions.prizeEnabled === true
   ) {
 
     const prize =
