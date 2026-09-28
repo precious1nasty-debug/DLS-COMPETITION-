@@ -2495,3 +2495,61 @@ footer {
     line-height: 7px !important;
   }
 }
+
+
+/* =========================================================
+   KNOCKOUT TEAM BOX ALIGNMENT — FINAL
+========================================================= */
+
+.champions-bracket-top .visual-bracket-team {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+.champions-bracket-top .visual-bracket-team > span {
+  display: block !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.2 !important;
+}
+
+.champions-bracket-top .visual-bracket-team > strong {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 28px !important;
+  width: 28px !important;
+  min-width: 28px !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  text-align: center !important;
+  line-height: 1 !important;
+}
+
+@media (max-width:700px) {
+  .champions-bracket-top .visual-bracket-team {
+    padding: 0 3px !important;
+  }
+
+  .champions-bracket-top .visual-bracket-team > span {
+    line-height: 1 !important;
+  }
+
+  .champions-bracket-top .visual-bracket-team > strong {
+    flex-basis: 12px !important;
+    width: 12px !important;
+    min-width: 12px !important;
+    font-size: 6.5px !important;
+  }
+}
