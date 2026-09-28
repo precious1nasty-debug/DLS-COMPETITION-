@@ -45,7 +45,9 @@ let knockout = {
 let champions = {
   champion: "",
   runnerUp: "",
-  thirdPlace: ""
+  thirdPlace: "",
+  prizeAmount: "",
+  prizeCurrency: ""
 };
 
 
@@ -55,6 +57,9 @@ let champions = {
 
 const seasonInfo =
   document.getElementById("seasonInfo");
+
+const winnerCelebration =
+  document.getElementById("winnerCelebration");
 
 const teamsList =
   document.getElementById("teamsList");
@@ -1969,6 +1974,104 @@ function renderChampionsPodium() {
   `;
 }
 
+// =========================================================
+// WINNER CELEBRATION
+// =========================================================
+
+function renderWinnerCelebration() {
+
+  if (!winnerCelebration) {
+    return;
+  }
+
+  /*
+   * The celebration is controlled entirely by
+   * the saved competition data. No local storage
+   * or one-time browser flag is used.
+   *
+   * Therefore it appears again whenever the
+   * website is opened or refreshed until the
+   * admin clears the competition.
+   */
+
+  const champion =
+    champions.champion || "";
+
+  if (
+    season.format !== "champions" ||
+    !champion
+  ) {
+
+    winnerCelebration.style.display =
+      "none";
+
+    winnerCelebration.innerHTML =
+      "";
+
+    return;
+  }
+
+  const prizeCurrency =
+    champions.prizeCurrency || "";
+
+  const prizeAmount =
+    champions.prizeAmount || "";
+
+  winnerCelebration.style.display =
+    "block";
+
+  winnerCelebration.innerHTML = `
+    <div class="winner-celebration-inner">
+
+      <div class="winner-confetti" aria-hidden="true">
+        ✨ 🎉 ✨ 🎊 ✨ 🎉 ✨
+      </div>
+
+      <div class="winner-label">
+        🏆 CHAMPION 🏆
+      </div>
+
+      <div class="winner-medal" aria-hidden="true">
+        🥇
+      </div>
+
+      <div class="winner-team-name">
+        ${escapeHTML(champion)}
+      </div>
+
+      <div class="winner-title">
+        🎉 WINNER 🎉
+      </div>
+
+      <div class="winner-prize">
+        <span class="winner-prize-label">
+          💰 CASH PRIZE
+        </span>
+
+        <strong>
+          ${escapeHTML(
+            prizeCurrency
+              ? prizeCurrency + " "
+              : ""
+          )}${escapeHTML(
+            prizeAmount || "Prize not set"
+          )}
+        </strong>
+      </div>
+
+      <div class="winner-congratulations">
+        Congratulations to the Champions!
+      </div>
+
+      <div class="winner-confetti winner-confetti-bottom" aria-hidden="true">
+        🎊 ✨ 🎉 ✨ 🎊
+      </div>
+
+    </div>
+  `;
+}
+
+
 
 // =========================================================
 // REGISTRATION
@@ -2147,6 +2250,8 @@ if (registrationForm) {
 function renderEverything() {
 
   renderSeason();
+
+  renderWinnerCelebration();
 
   renderTeams();
 
@@ -2333,7 +2438,9 @@ function normalizePublicChampionsData() {
     champions = {
       champion: "",
       runnerUp: "",
-      thirdPlace: ""
+      thirdPlace: "",
+      prizeAmount: "",
+      prizeCurrency: ""
     };
 
     return;
@@ -2352,6 +2459,14 @@ function normalizePublicChampionsData() {
 
     thirdPlace:
       champions.thirdPlace ||
+      "",
+
+    prizeAmount:
+      champions.prizeAmount ||
+      "",
+
+    prizeCurrency:
+      champions.prizeCurrency ||
       ""
   };
 }
