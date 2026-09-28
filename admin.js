@@ -17,7 +17,9 @@ import {
 import {
   signInWithEmailAndPassword,
   onAuthStateChanged,
-  signOut
+  signOut,
+  setPersistence,
+  browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 const ADMIN_EMAIL = "obakimoprecious07@gmail.com";
@@ -528,6 +530,11 @@ if (adminLoginForm) {
 
       try {
 
+        await setPersistence(
+          window.auth,
+          browserLocalPersistence
+        );
+
         await signInWithEmailAndPassword(
           window.auth,
           email,
@@ -640,41 +647,55 @@ if (logoutButton) {
 
 function waitForFirebase() {
 
-  if (window.firebaseReady) {
-    setupAuthentication();
-    return;
-  }
+  return new Promise(function(resolve, reject) {
 
-  let attempts = 0;
+    if (window.firebaseReady) {
+      resolve();
+      return;
+    }
 
-  const timer =
-    setInterval(function() {
+    let attempts = 0;
 
-      attempts++;
+    const timer =
+      setInterval(function() {
 
-      if (window.firebaseReady) {
+        attempts++;
 
-        clearInterval(timer);
+        if (window.firebaseReady) {
 
-        setupAuthentication();
-
-        return;
-      }
-
-      if (attempts >= 100) {
-
-        clearInterval(timer);
-
-        if (adminLoginMessage) {
-          adminLoginMessage.textContent =
-            "❌ Firebase failed to initialize.";
+          clearInterval(timer);
+          resolve();
+          return;
         }
-      }
 
-    }, 100);
+        if (attempts >= 100) {
+
+          clearInterval(timer);
+
+          if (adminLoginMessage) {
+            adminLoginMessage.textContent =
+              "❌ Firebase failed to initialize.";
+          }
+
+          reject(
+            new Error("Firebase failed to initialize.")
+          );
+        }
+
+      }, 100);
+  });
 }
 
-waitForFirebase();
+waitForFirebase()
+  .then(function() {
+    setupAuthentication();
+  })
+  .catch(function(error) {
+    console.error(
+      "Firebase startup failed:",
+      error
+    );
+  });
 
 // =========================================================
 // DLS COMPETITION
