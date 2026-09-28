@@ -3180,9 +3180,7 @@ The current fixtures will also be regenerated using the remaining teams.`
         renderAll();
 
         alert(
-          "❌ The team was not removed.
-
-" +
+          "❌ The team was not removed.\n\n" +
           fixtureResult.message
         );
 
@@ -3270,12 +3268,9 @@ The current fixtures will also be regenerated using the remaining teams.`
         );
 
         alert(
-          "⚠️ The team and fixtures were updated, but its old registration document could not be deleted.
-
-" +
+          "⚠️ The team and fixtures were updated, but its old registration document could not be deleted.\n\n" +
           (registrationError?.code || "") +
-          "
-" +
+          "\n" +
           (registrationError?.message || "Unknown Firestore error.")
         );
 
@@ -3289,9 +3284,7 @@ The current fixtures will also be regenerated using the remaining teams.`
 
 
       alert(
-        `✅ ${teamName} was removed.
-
-${fixtureResult.message}`
+        `✅ ${teamName} was removed.\n\n${fixtureResult.message}`
       );
     }
   );
