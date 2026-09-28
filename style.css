@@ -3222,3 +3222,366 @@ footer {
     animation-duration: 9s;
   }
 }
+
+
+/* =========================================================
+   CHAMPIONS TROPHY PRESENTATION STAGE
+========================================================= */
+
+.winner-celebration {
+  margin-top: 25px;
+  border-radius: 22px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 15%, rgba(40,88,160,.42), transparent 35%),
+    linear-gradient(180deg, #07152d 0%, #020817 58%, #01040b 100%);
+  color: #fff;
+  box-shadow:
+    0 20px 55px rgba(0,0,0,.45),
+    inset 0 0 80px rgba(40,120,220,.12);
+}
+
+.ucl-stage {
+  position: relative;
+  min-height: 610px;
+  padding: 18px 14px 35px;
+  overflow: hidden;
+  text-align: center;
+  perspective: 1000px;
+}
+
+.ucl-stage::before {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 0;
+  height: 44%;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,.025) 0,
+      rgba(255,255,255,.025) 2px,
+      transparent 2px,
+      transparent 42px
+    );
+  transform: perspective(500px) rotateX(58deg);
+  transform-origin: bottom;
+  pointer-events: none;
+}
+
+.stage-stars {
+  position: absolute;
+  top: 12px;
+  left: 0;
+  right: 0;
+  color: #dbeafe;
+  letter-spacing: 14px;
+  font-size: 18px;
+  opacity: .75;
+  animation: stageStarsTwinkle 2.5s ease-in-out infinite;
+}
+
+.stage-crawler-wrap {
+  position: relative;
+  z-index: 8;
+  width: 100%;
+  overflow: hidden;
+  margin: 12px 0 25px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(255,255,255,.25);
+  border-bottom: 1px solid rgba(255,255,255,.25);
+  background: rgba(0,0,0,.28);
+}
+
+.stage-crawler {
+  display: inline-block;
+  min-width: max-content;
+  padding-left: 100%;
+  white-space: nowrap;
+  font-size: clamp(21px, 5vw, 40px);
+  font-weight: 1000;
+  letter-spacing: 2px;
+  color: #fff;
+  text-shadow: 0 3px 12px rgba(0,0,0,.8);
+  animation: stageCrawler 13s linear infinite;
+}
+
+.stage-title {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 12px;
+  letter-spacing: 5px;
+}
+
+.stage-title span {
+  font-size: 13px;
+  font-weight: 800;
+  opacity: .7;
+}
+
+.stage-title strong {
+  font-size: clamp(21px, 5vw, 36px);
+  font-weight: 1000;
+  background: linear-gradient(180deg,#fff,#dbeafe 55%,#8ab4ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.stage-spotlight {
+  position: absolute;
+  top: 95px;
+  width: 30%;
+  height: 370px;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,.22),
+    rgba(80,150,255,.06),
+    transparent
+  );
+  filter: blur(4px);
+  transform-origin: top;
+  pointer-events: none;
+}
+
+.spotlight-left {
+  left: 14%;
+  transform: rotate(13deg);
+}
+
+.spotlight-right {
+  right: 14%;
+  transform: rotate(-13deg);
+}
+
+.stage-trophy-area {
+  position: relative;
+  z-index: 5;
+  height: 190px;
+  margin-top: 8px;
+}
+
+.stage-trophy {
+  position: absolute;
+  left: 50%;
+  top: 5px;
+  transform: translateX(-50%);
+  font-size: 112px;
+  line-height: 1;
+  filter:
+    drop-shadow(0 8px 5px rgba(0,0,0,.65))
+    drop-shadow(0 0 22px rgba(255,210,70,.65));
+  animation: trophyPresentation 2.8s ease-in-out infinite;
+}
+
+.stage-medal {
+  position: absolute;
+  left: calc(50% + 57px);
+  top: 90px;
+  font-size: 42px;
+  z-index: 2;
+  filter: drop-shadow(0 5px 5px rgba(0,0,0,.65));
+  animation: medalSwing 2.2s ease-in-out infinite;
+}
+
+.stage-firework {
+  position: absolute;
+  color: #facc15;
+  font-size: 42px;
+  opacity: .8;
+  animation: stageBurst 1.8s ease-in-out infinite;
+}
+
+.firework-one { left: 22%; top: 35px; }
+.firework-two { right: 23%; top: 58px; animation-delay: .6s; }
+.firework-three { left: 31%; top: 105px; animation-delay: 1s; }
+
+.stage-winner-name {
+  position: relative;
+  z-index: 6;
+  max-width: 92%;
+  margin: -2px auto 18px;
+  font-size: clamp(29px, 8vw, 60px);
+  line-height: 1.03;
+  font-weight: 1000;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  text-shadow:
+    0 3px 0 #6b4b00,
+    0 7px 18px rgba(0,0,0,.8);
+  animation: winnerNameStage 1s ease both;
+}
+
+.stage-podium {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 6px;
+  max-width: 600px;
+  margin: 0 auto;
+  height: 105px;
+}
+
+.podium-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px 8px 2px 2px;
+  font-weight: 900;
+  box-shadow:
+    inset 0 3px 0 rgba(255,255,255,.2),
+    0 12px 20px rgba(0,0,0,.35);
+}
+
+.podium-block span {
+  font-size: 9px;
+  letter-spacing: 1px;
+  opacity: .75;
+}
+
+.podium-block b {
+  font-size: 34px;
+}
+
+.podium-left,
+.podium-right {
+  width: 27%;
+  height: 58px;
+  background: linear-gradient(180deg,#7c8799,#303949);
+}
+
+.podium-center {
+  width: 34%;
+  height: 88px;
+  background: linear-gradient(180deg,#d9a62e,#76500a);
+  box-shadow:
+    inset 0 3px 0 rgba(255,255,255,.45),
+    0 0 25px rgba(245,190,55,.2),
+    0 15px 25px rgba(0,0,0,.4);
+}
+
+.stage-prize {
+  position: relative;
+  z-index: 7;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 22px;
+  padding: 10px 25px;
+  border: 1px solid rgba(255,255,255,.35);
+  border-radius: 12px;
+  background: linear-gradient(
+    145deg,
+    rgba(255,255,255,.18),
+    rgba(255,255,255,.05)
+  );
+  box-shadow:
+    0 12px 30px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.25);
+  backdrop-filter: blur(8px);
+}
+
+.stage-prize span {
+  font-size: 10px;
+  letter-spacing: 2px;
+  font-weight: 900;
+  opacity: .7;
+}
+
+.stage-prize strong {
+  font-size: clamp(24px, 6vw, 38px);
+  font-weight: 1000;
+  color: #ffd85a;
+  text-shadow: 0 3px 10px rgba(0,0,0,.65);
+}
+
+.stage-congratulations {
+  position: relative;
+  z-index: 6;
+  margin-top: 16px;
+  font-size: 15px;
+  font-weight: 800;
+  opacity: .85;
+}
+
+.stage-confetti {
+  position: relative;
+  z-index: 6;
+  margin-top: 18px;
+  font-size: 17px;
+  letter-spacing: 7px;
+  color: #f8d56a;
+  animation: stageStarsTwinkle 1.8s ease-in-out infinite;
+}
+
+@keyframes trophyPresentation {
+  0%,100% { transform: translateX(-50%) translateY(0) rotate(-2deg) scale(1); }
+  50% { transform: translateX(-50%) translateY(-12px) rotate(2deg) scale(1.06); }
+}
+
+@keyframes medalSwing {
+  0%,100% { transform: rotate(-8deg); }
+  50% { transform: rotate(10deg) translateY(-5px); }
+}
+
+@keyframes stageBurst {
+  0%,100% { opacity: .25; transform: scale(.6); }
+  50% { opacity: 1; transform: scale(1.35); }
+}
+
+@keyframes winnerNameStage {
+  from { opacity: 0; transform: translateY(25px) scale(.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes stageStarsTwinkle {
+  0%,100% { opacity: .4; }
+  50% { opacity: 1; }
+}
+
+@keyframes stageCrawler {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+
+@media (max-width: 700px) {
+  .ucl-stage {
+    min-height: 570px;
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+
+  .stage-trophy {
+    font-size: 88px;
+  }
+
+  .stage-medal {
+    left: calc(50% + 44px);
+    top: 78px;
+    font-size: 34px;
+  }
+
+  .stage-firework {
+    font-size: 30px;
+  }
+
+  .stage-podium {
+    height: 95px;
+  }
+
+  .podium-left,
+  .podium-right {
+    height: 50px;
+  }
+
+  .podium-center {
+    height: 78px;
+  }
+}
