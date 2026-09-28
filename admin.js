@@ -574,9 +574,7 @@ function setupAuthentication() {
     window.auth,
     async function(user) {
 
-      try {
-
-        if (!user) {
+      if (!user) {
         showLogin();
         return;
       }
@@ -600,49 +598,55 @@ function setupAuthentication() {
         return;
       }
 
+      // Authentication has succeeded.
+      // Keep the dashboard visible even if a later
+      // dashboard-data operation fails.
       showDashboard();
 
-      await loadCompetition();
+      try {
 
-      normalizeKnockoutArrays();
+        await loadCompetition();
 
-      await advanceKnockoutStage();
+        normalizeKnockoutArrays();
 
-      renderAll();
+        await advanceKnockoutStage();
 
-      refreshAdminDashboard();
+        renderAll();
 
-      updateCompletedSeasonMessage();
+        refreshAdminDashboard();
 
-      enforceChampionsCompletionLock();
+        updateCompletedSeasonMessage();
 
-      renderFinalCompetitionStatus();
+        enforceChampionsCompletionLock();
 
-      renderChampionsDataWarning();
+        renderFinalCompetitionStatus();
 
-      setupRegistrationListener();
+        renderChampionsDataWarning();
 
-      renderFirebaseStatus();
-      runAdminFinalCheck();
+        setupRegistrationListener();
 
-    } catch (error) {
+        renderFirebaseStatus();
+        runAdminFinalCheck();
 
-      console.error(
-        "Authenticated admin startup failed:",
-        error
-      );
+      } catch (error) {
 
-      showLogin();
+        console.error(
+          "Authenticated admin startup failed:",
+          error
+        );
 
-      if (adminLoginMessage) {
-        adminLoginMessage.textContent =
-          "❌ Admin dashboard could not load: " +
-          (
-            error.message ||
-            "Please refresh and try again."
-          );
+        if (seasonControlMessage) {
+          seasonControlMessage.textContent =
+            "❌ Admin signed in, but some dashboard data could not load: " +
+            (
+              error.message ||
+              "Please refresh and try again."
+            );
+
+          seasonControlMessage.style.display =
+            "block";
+        }
       }
-    }
     }
   );
 }
