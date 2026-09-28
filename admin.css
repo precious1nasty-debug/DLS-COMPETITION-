@@ -317,11 +317,12 @@ p {
   border-radius: 8px;
 }
 
+/* Compact fixture row: Home - Score - Away - Save */
 .fixture-score-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 42px auto 42px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .fixture-home-team,
@@ -331,22 +332,10 @@ p {
   word-break: break-word;
 }
 
-.fixture-home-team {
-  text-align: left;
-}
+.fixture-home-team { text-align: left; }
+.fixture-away-team { text-align: right; }
 
-.fixture-away-team {
-  text-align: right;
-}
-
-.fixture-score-inputs {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-}
-
-.fixture-score-inputs input {
+.fixture-score-row input {
   width: 42px;
   min-height: 36px;
   margin: 0;
@@ -354,16 +343,17 @@ p {
   text-align: center;
 }
 
-.fixture-score-inputs span {
+.fixture-score-separator {
   font-weight: 800;
+  text-align: center;
 }
 
 .save-fixture-result {
-  display: block;
-  width: 100%;
-  min-height: 38px;
-  margin: 8px 0 0;
-  padding: 7px 10px;
+  width: auto;
+  min-height: 36px;
+  margin: 0;
+  padding: 6px 9px;
+  white-space: nowrap;
 }
 
 .admin-fixture > p {
@@ -376,15 +366,17 @@ p {
   }
 
   .fixture-score-row {
-    gap: 5px;
-    font-size: 0.9rem;
-  }
-
-  .fixture-score-inputs {
+    grid-template-columns: minmax(0, 1fr) 36px auto 36px minmax(0, 1fr) auto;
     gap: 4px;
+    font-size: 0.85rem;
   }
 
-  .fixture-score-inputs input {
-    width: 38px;
+  .fixture-score-row input {
+    width: 36px;
+  }
+
+  .save-fixture-result {
+    padding: 6px 7px;
+    font-size: 0.78rem;
   }
 }
