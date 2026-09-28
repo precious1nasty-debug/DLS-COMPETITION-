@@ -2063,9 +2063,6 @@ function renderWinnerCelebration() {
 
         <div class="podium-block podium-center">
           <span>🏆 CHAMPION 🏆</span>
-          <strong class="podium-team-name podium-champion-name">
-            ${escapeHTML(champion)}
-          </strong>
           <b>1</b>
         </div>
 
