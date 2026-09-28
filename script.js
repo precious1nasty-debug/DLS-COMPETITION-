@@ -6,7 +6,7 @@
 
 import {
   doc,
-  getDoc,
+  onSnapshot,
   setDoc
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
@@ -210,7 +210,7 @@ function hasResult(fixture) {
 // LOAD COMPETITION
 // =========================================================
 
-async function loadCompetition() {
+function loadCompetition() {
 
   try {
 
@@ -221,88 +221,102 @@ async function loadCompetition() {
         "main"
       );
 
-    const snapshot =
-      await getDoc(
-        competitionRef
-      );
+    onSnapshot(
+      competitionRef,
+      (snapshot) => {
+
+        if (!snapshot.exists()) {
+
+          renderEverything();
+
+          return;
+        }
 
 
-    if (!snapshot.exists()) {
-
-      renderEverything();
-
-      return;
-    }
+        const data =
+          snapshot.data();
 
 
-    const data =
-      snapshot.data();
+        teams =
+          Array.isArray(data.teams)
+            ? data.teams
+            : [];
 
 
-    teams =
-      Array.isArray(data.teams)
-        ? data.teams
-        : [];
+        fixtures =
+          Array.isArray(data.fixtures)
+            ? data.fixtures
+            : [];
 
 
-    fixtures =
-      Array.isArray(data.fixtures)
-        ? data.fixtures
-        : [];
+        if (
+          data.season &&
+          typeof data.season === "object"
+        ) {
+
+          season = {
+            ...season,
+            ...data.season
+          };
+        }
 
 
-    if (
-      data.season &&
-      typeof data.season === "object"
-    ) {
+        if (
+          data.knockout &&
+          typeof data.knockout === "object"
+        ) {
 
-      season = {
-        ...season,
-        ...data.season
-      };
-    }
-
-
-    if (
-      data.knockout &&
-      typeof data.knockout === "object"
-    ) {
-
-      knockout = {
-        ...knockout,
-        ...data.knockout
-      };
-    }
+          knockout = {
+            ...knockout,
+            ...data.knockout
+          };
+        }
 
 
-    if (
-      data.champions &&
-      typeof data.champions === "object"
-    ) {
+        if (
+          data.champions &&
+          typeof data.champions === "object"
+        ) {
 
-      champions = {
-        ...champions,
-        ...data.champions
-      };
-    }
-
-
-    /*
-     * Normalize the Firestore knockout data after
-     * the competition document has been loaded.
-     * This is important because the public page
-     * initially starts with empty local defaults.
-     */
-    normalizePublicKnockoutData();
-    normalizePublicChampionsData();
+          champions = {
+            ...champions,
+            ...data.champions
+          };
+        }
 
 
-    renderEverything();
+        /*
+         * Normalize the Firestore knockout data after
+         * the competition document has been loaded.
+         * This is important because the public page
+         * initially starts with empty local defaults.
+         */
+        normalizePublicKnockoutData();
+        normalizePublicChampionsData();
+
+
+        renderEverything();
+
+      },
+      (error) => {
+
+        console.error(
+          "Unable to listen to competition:",
+          error
+        );
+
+        if (seasonInfo) {
+
+          seasonInfo.innerHTML =
+            "<p>Unable to load competition data.</p>";
+        }
+      }
+    );
 
   } catch (error) {
 
     console.error(
-      "Unable to load competition:",
+      "Unable to start competition listener:",
       error
     );
 
