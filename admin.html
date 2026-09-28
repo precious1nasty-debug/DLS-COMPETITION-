@@ -32,7 +32,7 @@
 
   <p>Authorized administrators only.</p>
 
-  <form id="adminLoginForm">
+  <form id="adminLoginForm" onsubmit="return false;">
 
     <input
       type="email"
@@ -50,7 +50,7 @@
       required
     >
 
-    <button type="submit">
+    <button type="button" id="adminLoginButton">
       🔑 Login
     </button>
 
@@ -537,13 +537,13 @@
 
 <script
   type="module"
-  src="firebase.js?v=20260928-2"
+  src="firebase.js?v=20260928-3"
 ></script>
 
 
 <script
   type="module"
-  src="admin.js?v=20260928-2"
+  src="admin.js?v=20260928-3"
 ></script>
 
 </body>
