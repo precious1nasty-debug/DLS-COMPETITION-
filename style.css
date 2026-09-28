@@ -2848,3 +2848,11 @@ footer {
   background: linear-gradient(90deg, #991b1b, #7f1d1d) !important;
   border-color: #ef4444 !important;
 }
+
+
+/* KNOCKOUT LOSER BOX */
+.champions-bracket-top .visual-bracket-team.is-loser {
+  background: #b91c1c !important;
+  border-color: #ef4444 !important;
+  color: #fff !important;
+}
