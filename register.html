@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="DLS Competition team registration">
+  <title>Register - DLS COMPETITION</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <h1>⚽ DLS COMPETITION</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="index.html#teams">Teams</a>
+      <a href="fixtures.html">Fixtures</a>
+      <a href="index.html#table">Table</a>
+      <a href="index.html#champions">Champions</a>
+      <a href="register.html">Register</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="section">
+    <div class="section-card">
+      <h2>Register Your Team</h2>
+      <p>Enter your team and player details.</p>
+
+      <form id="registrationForm">
+        <label for="teamName">Team Name</label>
+        <input type="text" id="teamName" name="teamName" maxlength="40" required>
+
+        <label for="playerName">Player Name</label>
+        <input type="text" id="playerName" name="playerName" maxlength="60" required>
+
+        <button type="submit">Submit Registration</button>
+      </form>
+
+      <div id="registrationMessage" class="registration-message"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>© DLS COMPETITION</p>
+</footer>
+
+<script type="module" src="firebase.js"></script>
+<script type="module" src="script.js?v=6"></script>
+
+</body>
+</html>
