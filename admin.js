@@ -612,6 +612,28 @@ function setupAuthentication() {
       renderChampionsDataWarning();
 
       setupRegistrationListener();
+
+      renderFirebaseStatus();
+      runAdminFinalCheck();
+
+    } catch (error) {
+
+      console.error(
+        "Authenticated admin startup failed:",
+        error
+      );
+
+      showLogin();
+
+      if (adminLoginMessage) {
+        adminLoginMessage.textContent =
+          "❌ Admin dashboard could not load: " +
+          (
+            error.message ||
+            "Please refresh and try again."
+          );
+      }
+    }
     }
   );
 }
@@ -9020,12 +9042,6 @@ function refreshAdminDashboard() {
 
 
 // =========================================================
-// RUN FINAL REFRESH
-// =========================================================
-
-refreshAdminDashboard();
-
-// =========================================================
 // DLS COMPETITION
 // ADMIN.JS
 // PART 13 — KNOCKOUT SAFETY FIXES
@@ -9232,19 +9248,8 @@ function normalizeKnockoutArrays() {
 
 
 // =========================================================
-// RUN NORMALIZATION
+// NORMALIZATION IS RUN AFTER AUTHENTICATED DATA LOAD.
 // =========================================================
-
-normalizeKnockoutArrays();
-
-
-// =========================================================
-// REFRESH AFTER NORMALIZATION
-// =========================================================
-
-renderKnockout();
-
-renderChampionsResults();
 
 // =========================================================
 // DLS COMPETITION
@@ -9404,10 +9409,8 @@ refreshAdminDashboard = function () {
 
 
 // =========================================================
-// INITIAL UPDATE
+// COMPLETION MESSAGE IS UPDATED AFTER AUTHENTICATION.
 // =========================================================
-
-updateCompletedSeasonMessage();
 
 // =========================================================
 // DLS COMPETITION
@@ -9497,10 +9500,8 @@ updateSeasonControlState = function () {
 
 
 // =========================================================
-// FINAL INITIALIZATION
+// COMPLETION LOCK IS APPLIED AFTER AUTHENTICATED DATA LOAD.
 // =========================================================
-
-enforceChampionsCompletionLock();
 
 // =========================================================
 // DLS COMPETITION
@@ -9573,10 +9574,8 @@ refreshAdminDashboard = function () {
 
 
 // =========================================================
-// INITIAL STATUS
+// STATUS IS RENDERED AFTER AUTHENTICATION.
 // =========================================================
-
-renderFinalCompetitionStatus();
 
 // =========================================================
 // DLS COMPETITION
@@ -9694,10 +9693,8 @@ refreshAdminDashboard = function () {
 
 
 // =========================================================
-// INITIAL CHECK
+// DATA WARNING IS RENDERED AFTER AUTHENTICATION.
 // =========================================================
-
-renderChampionsDataWarning();
 
 // =========================================================
 // DLS COMPETITION
@@ -9839,10 +9836,8 @@ function renderFirebaseStatus() {
 
 
 // =========================================================
-// INITIAL CONNECTION CHECK
+// FIREBASE CONNECTION STATUS IS CHECKED DURING AUTHENTICATED STARTUP.
 // =========================================================
-
-renderFirebaseStatus();
 
 // =========================================================
 // DLS COMPETITION
@@ -9901,10 +9896,8 @@ saveCompetition = async function () {
 
 
 // =========================================================
-// INITIAL VALIDATION
+// DATA VALIDATION IS RUN BEFORE SAVES AND AFTER AUTHENTICATED LOAD.
 // =========================================================
-
-validateAdminDataBeforeSave();
 
 // =========================================================
 // DLS COMPETITION
@@ -9968,50 +9961,8 @@ function runAdminFinalCheck() {
 
 
 // =========================================================
-// RUN FINAL CHECK
+// FINAL ADMIN STARTUP
 // =========================================================
-
-runAdminFinalCheck();
-
+// All data-dependent rendering is intentionally started only from
+// setupAuthentication() after Firebase Auth has established the user.
 // =========================================================
-// DLS COMPETITION
-// ADMIN.JS
-// PART 22 — FINAL ADMIN STARTUP
-// =========================================================
-
-async function finalizeAdminStartup() {
-
-  try {
-
-    validateAdminDataBeforeSave();
-
-    normalizeKnockoutArrays();
-
-    renderAll();
-
-    updateCompletedSeasonMessage();
-
-    enforceChampionsCompletionLock();
-
-    renderFinalCompetitionStatus();
-
-    renderChampionsDataWarning();
-
-    runAdminFinalCheck();
-
-  } catch (error) {
-
-    console.error(
-      "Final admin startup error:",
-      error
-    );
-
-  }
-}
-
-
-// =========================================================
-// RUN FINAL STARTUP
-// =========================================================
-
-finalizeAdminStartup();
