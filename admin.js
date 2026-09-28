@@ -5957,100 +5957,73 @@ const awayName =
 
 
       card.innerHTML = `
-        <div
-          style="
-            padding:15px;
-            margin-bottom:12px;
-            border:1px solid #ccc;
-            border-radius:10px;
-          "
-        >
-
+        <div class="fixture-teams">
           <strong>
             ${escapeHTML(homeName)}
           </strong>
 
-          <span>
-            vs
-          </span>
+          <span>vs</span>
 
           <strong>
             ${escapeHTML(awayName)}
           </strong>
+        </div>
 
-          <div
-            style="
-              display:flex;
-              gap:8px;
-              align-items:center;
-              margin-top:10px;
-              flex-wrap:wrap;
-            "
+        <div class="fixture-score-row">
+
+          <input
+            type="number"
+            min="0"
+            step="1"
+            class="fixture-home-score"
+            value="${
+              score
+                ? score.home
+                : ""
+            }"
+            placeholder="Home"
           >
 
-            <input
-              type="number"
-              min="0"
-              step="1"
-              class="fixture-home-score"
-              value="${
-                score
-                  ? score.home
-                  : ""
-              }"
-              placeholder="Home"
-              style="width:80px;"
-            >
+          <span>-</span>
 
-            <span>
-              -
-            </span>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            class="fixture-away-score"
+            value="${
+              score
+                ? score.away
+                : ""
+            }"
+            placeholder="Away"
+          >
 
-            <input
-              type="number"
-              min="0"
-              step="1"
-              class="fixture-away-score"
-              value="${
-                score
-                  ? score.away
-                  : ""
-              }"
-              placeholder="Away"
-              style="width:80px;"
-            >
-
-            <button
-              class="save-fixture-result"
-              data-fixture-id="${escapeHTML(
-                fixture.id
-              )}"
-            >
-              💾 Save Result
-            </button>
-
-          </div>
-
-          ${
-            score
-              ? `
-                <p>
-                  ✅ Result recorded:
-                  <strong>
-                    ${score.home}
-                    -
-                    ${score.away}
-                  </strong>
-                </p>
-              `
-              : `
-                <p>
-                  🟡 Result not entered.
-                </p>
-              `
-          }
+          <button
+            class="save-fixture-result"
+            data-fixture-id="${escapeHTML(
+              fixture.id
+            )}"
+          >
+            💾 Save Result
+          </button>
 
         </div>
+
+        ${
+          score
+            ? `
+              <p>
+                ✅ Result recorded:
+                <strong>
+                  ${score.home} - ${score.away}
+                </strong>
+              </p>
+            `
+            : `
+              <p>🟡 Result not entered.</p>
+            `
+        }
       `;
 
 
