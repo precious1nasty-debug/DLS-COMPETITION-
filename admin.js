@@ -529,17 +529,38 @@ if (adminLoginForm) {
         "⏳ Signing in...";
 
       try {
-
         await setPersistence(
           window.auth,
           browserLocalPersistence
         );
 
-        await signInWithEmailAndPassword(
-          window.auth,
-          email,
-          password
+        const credential =
+          await signInWithEmailAndPassword(
+            window.auth,
+            email,
+            password
+          );
+
+        const signedInEmail =
+          String(credential.user?.email || "")
+            .trim()
+            .toLowerCase();
+
+        if (signedInEmail !== ADMIN_EMAIL) {
+          throw new Error(
+            "Firebase signed in a different account."
+          );
+        }
+
+        console.log(
+          "ADMIN AUTH SUCCESS:",
+          signedInEmail,
+          credential.user?.uid
         );
+
+        showDashboard();
+
+        await loadCompetition();
 
         adminLoginMessage.textContent =
           "✅ Login successful.";
@@ -547,15 +568,22 @@ if (adminLoginForm) {
       } catch (error) {
 
         console.error(
-          "Admin login failed:",
+          "ADMIN LOGIN ERROR:",
+          error?.code,
+          error?.message,
           error
         );
 
         adminLoginMessage.textContent =
           "❌ Login failed: " +
           (
-            error.message ||
-            "Please check your details."
+            error?.code
+              ? error.code + " — "
+              : ""
+          ) +
+          (
+            error?.message ||
+            "Please check your email and password."
           );
       }
     }
@@ -573,6 +601,16 @@ function setupAuthentication() {
   onAuthStateChanged(
     window.auth,
     async function(user) {
+
+      console.log(
+        "ADMIN AUTH STATE:",
+        user
+          ? {
+              email: user.email,
+              uid: user.uid
+            }
+          : "NO USER"
+      );
 
       if (!user) {
         showLogin();
@@ -600,9 +638,15 @@ function setupAuthentication() {
 
       showDashboard();
 
-      await loadCompetition();
-
-      setupRegistrationListener();
+      try {
+        await loadCompetition();
+        setupRegistrationListener();
+      } catch (error) {
+        console.error(
+          "ADMIN AUTHENTICATED BUT DATA LOAD FAILED:",
+          error
+        );
+      }
     }
   );
 }
@@ -625,24 +669,6 @@ function showDashboard() {
   if (adminDashboard) {
     adminDashboard.style.display = "block";
   }
-}
-
-if (logoutButton) {
-  logoutButton.addEventListener(
-    "click",
-    async function() {
-
-      try {
-        await signOut(window.auth);
-      } catch (error) {
-        console.error(
-          "Logout failed:",
-          error
-        );
-      }
-
-    }
-  );
 }
 
 function waitForFirebase() {
@@ -8975,7 +9001,7 @@ if (logoutButton) {
 
       try {
 
-        await signOut(auth);
+        await signOut(window.auth);
 
       } catch (error) {
 
