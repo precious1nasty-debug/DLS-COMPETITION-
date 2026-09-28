@@ -1703,7 +1703,7 @@ function renderChampionsBracket() {
   ) {
 
     championsBracketContent.innerHTML =
-      "<p>The Champions League bracket will appear after the knockout draw.</p>";
+      "<p>CHAMPIONS LEAGUE PHASE NOT COMPLETED YET.</p>";
 
     return;
   }
