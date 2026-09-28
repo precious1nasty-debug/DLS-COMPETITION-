@@ -1984,16 +1984,6 @@ function renderWinnerCelebration() {
     return;
   }
 
-  /*
-   * The celebration is controlled entirely by
-   * the saved competition data. No local storage
-   * or one-time browser flag is used.
-   *
-   * Therefore it appears again whenever the
-   * website is opened or refreshed until the
-   * admin clears the competition.
-   */
-
   const champion =
     champions.champion || "";
 
@@ -2001,18 +1991,15 @@ function renderWinnerCelebration() {
     season.format !== "champions" ||
     !champion
   ) {
-
-    winnerCelebration.style.display =
-      "none";
-
-    winnerCelebration.innerHTML =
-      "";
-
+    winnerCelebration.style.display = "none";
+    winnerCelebration.innerHTML = "";
     return;
   }
 
   const prizeCurrency =
-    champions.prizeCurrency || "";
+    champions.prizeCurrency === "$"
+      ? "$"
+      : "₦";
 
   const prizeAmount =
     champions.prizeAmount || "";
@@ -2020,81 +2007,92 @@ function renderWinnerCelebration() {
   const prizeEnabled =
     champions.prizeEnabled === true;
 
-  winnerCelebration.style.display =
-    "block";
+  winnerCelebration.style.display = "block";
 
   winnerCelebration.innerHTML = `
-    <div class="winner-celebration-inner">
+    <div class="ucl-stage">
 
-      <div class="winner-fireworks" aria-hidden="true">
-        <span>🎆</span>
-        <span>✨</span>
-        <span>🎇</span>
-        <span>✨</span>
-        <span>🎆</span>
+      <div class="stage-stars" aria-hidden="true">
+        <span>✦</span><span>·</span><span>✦</span>
+        <span>·</span><span>✦</span><span>·</span>
+        <span>✦</span>
       </div>
 
-      <div class="winner-balloons" aria-hidden="true">
-        <span>🎈</span>
-        <span>🎈</span>
-        <span>🎈</span>
-        <span>🎈</span>
-        <span>🎈</span>
-      </div>
-
-      <div class="winner-crawler-wrap" aria-label="Winner congratulations">
-        <div class="winner-crawler">
-          🎉 CONGRATULATIONS ${escapeHTML(champion)} 🎉
+      <div class="stage-crawler-wrap">
+        <div class="stage-crawler">
+          🏆 CONGRATULATIONS — ${escapeHTML(champion)} — CHAMPIONS 🏆
         </div>
       </div>
 
-      <div class="winner-confetti" aria-hidden="true">
-        ✨ 🎉 ✨ 🎊 ✨ 🎉 ✨
+      <div class="stage-spotlight spotlight-left"></div>
+      <div class="stage-spotlight spotlight-right"></div>
+
+      <div class="stage-title">
+        <span>CHAMPIONS</span>
+        <strong>LEAGUE WINNER</strong>
       </div>
 
-      <div class="winner-label">
-        🏆 CHAMPION 🏆
+      <div class="stage-trophy-area">
+
+        <div class="stage-firework firework-one">✦</div>
+        <div class="stage-firework firework-two">✧</div>
+        <div class="stage-firework firework-three">✦</div>
+
+        <div class="stage-trophy" aria-label="Champions trophy">
+          🏆
+        </div>
+
+        <div class="stage-medal">
+          🥇
+        </div>
+
       </div>
 
-      <div class="winner-medal" aria-hidden="true">
-        🥇
-      </div>
-
-      <div class="winner-team-name">
+      <div class="stage-winner-name">
         ${escapeHTML(champion)}
       </div>
 
-      <div class="winner-title">
-        🎉 WINNER 🎉
+      <div class="stage-podium">
+
+        <div class="podium-block podium-left">
+          <span>FINALIST</span>
+          <b>2</b>
+        </div>
+
+        <div class="podium-block podium-center">
+          <span>CHAMPION</span>
+          <b>1</b>
+        </div>
+
+        <div class="podium-block podium-right">
+          <span>3RD PLACE</span>
+          <b>3</b>
+        </div>
+
       </div>
 
       ${prizeEnabled ? `
-      <div class="winner-prize">
-        <span class="winner-prize-label">
-          💰 CASH PRIZE
-        </span>
-
-        <strong>
-          ${escapeHTML(
-            prizeCurrency + " " + (prizeAmount || "0")
-          )}
-        </strong>
-      </div>
-
+        <div class="stage-prize">
+          <span>WINNER'S PRIZE</span>
+          <strong>
+            ${escapeHTML(
+              prizeCurrency + " " + (prizeAmount || "0")
+            )}
+          </strong>
+        </div>
       ` : ""}
 
-      <div class="winner-congratulations">
+      <div class="stage-congratulations">
         Congratulations to the Champions!
       </div>
 
-      <div class="winner-confetti winner-confetti-bottom" aria-hidden="true">
-        🎊 ✨ 🎉 ✨ 🎊
+      <div class="stage-confetti" aria-hidden="true">
+        ✦ ･ ✧ ･ ✦ ･ ✧ ･ ✦ ･ ✧ ･ ✦
       </div>
 
     </div>
   `;
 }
-
 
 
 // =========================================================
