@@ -6143,7 +6143,7 @@ const awayName =
           </button>
 
         </div>
-;
+`;
 
 
       adminFixtureList.appendChild(
