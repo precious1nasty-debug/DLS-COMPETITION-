@@ -267,3 +267,43 @@ p {
     width: 100%;
   }
 }
+/* =========================================================
+   ADMIN NAVIGATION
+========================================================= */
+
+.admin-navigation {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 0 0 22px;
+}
+
+.admin-nav-button {
+  width: 100%;
+  margin: 0;
+  background: #e2e8f0;
+  color: #172033;
+  border: 1px solid #cbd5e1;
+}
+
+.admin-nav-button.active {
+  background: #1d4ed8;
+  color: #ffffff;
+  border-color: #1d4ed8;
+}
+
+.admin-page-section {
+  transition: opacity 0.15s ease;
+}
+
+@media (max-width: 650px) {
+  .admin-navigation {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: 8px 0;
+    background: #f4f6f9;
+  }
+}
