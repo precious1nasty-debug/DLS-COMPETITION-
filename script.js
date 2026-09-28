@@ -2348,7 +2348,10 @@ if (registrationForm) {
         );
 
         registrationMessage.textContent =
-          "Registration failed. Please try again.";
+          "Registration failed: " +
+          (error?.code || "unknown") +
+          " — " +
+          (error?.message || "Unknown error");
       }
     }
   );
