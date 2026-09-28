@@ -2206,7 +2206,7 @@ function renderEverything() {
     leagueTableDropdown.open =
       !(
         season.format === "champions" &&
-        knockout.drawLocked === true
+        season.phase === "knockout"
       );
   }
 
