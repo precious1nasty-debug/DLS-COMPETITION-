@@ -5961,54 +5961,24 @@ const awayName =
             ${escapeHTML(homeName)}
           </strong>
 
-          <div class="fixture-score-inputs">
+          <input type="number" min="0" step="1" class="fixture-home-score"
+            value="${score ? score.home : ""}" placeholder="0" aria-label="Home score">
 
-            <input
-              type="number"
-              min="0"
-              step="1"
-              class="fixture-home-score"
-              value="${
-                score
-                  ? score.home
-                  : ""
-              }"
-              placeholder="0"
-              aria-label="Home score"
-            >
+          <span class="fixture-score-separator">-</span>
 
-            <span>-</span>
-
-            <input
-              type="number"
-              min="0"
-              step="1"
-              class="fixture-away-score"
-              value="${
-                score
-                  ? score.away
-                  : ""
-              }"
-              placeholder="0"
-              aria-label="Away score"
-            >
-
-          </div>
+          <input type="number" min="0" step="1" class="fixture-away-score"
+            value="${score ? score.away : ""}" placeholder="0" aria-label="Away score">
 
           <strong class="fixture-away-team">
             ${escapeHTML(awayName)}
           </strong>
-        </div>
 
-        <button
-          class="save-fixture-result"
-          data-fixture-id="${escapeHTML(
-            fixture.id
-          )}"
-        >
-          💾 Save Result
-        </button>
-      `;
+          <button class="save-fixture-result" data-fixture-id="${escapeHTML(fixture.id)}">
+            💾 Save
+          </button>
+
+        </div>
+;
 
 
       adminFixtureList.appendChild(
