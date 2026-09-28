@@ -6892,15 +6892,11 @@ function renderKnockout() {
     "champions"
   ) {
 
-    adminKnockoutSection.style.display =
-      "none";
-
     return;
   }
 
 
-  adminKnockoutSection.style.display =
-    "block";
+
 
 
   adminKnockoutList.innerHTML =
