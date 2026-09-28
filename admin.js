@@ -595,6 +595,22 @@ function setupAuthentication() {
 
       await loadCompetition();
 
+      normalizeKnockoutArrays();
+
+      await advanceKnockoutStage();
+
+      renderAll();
+
+      refreshAdminDashboard();
+
+      updateCompletedSeasonMessage();
+
+      enforceChampionsCompletionLock();
+
+      renderFinalCompetitionStatus();
+
+      renderChampionsDataWarning();
+
       setupRegistrationListener();
     }
   );
@@ -9701,24 +9717,6 @@ async function initializeAdminApplication() {
     await waitForFirebase();
 
     setupAuthentication();
-
-    await loadCompetition();
-
-    normalizeKnockoutArrays();
-
-    await advanceKnockoutStage();
-
-    renderAll();
-
-    refreshAdminDashboard();
-
-    updateCompletedSeasonMessage();
-
-    enforceChampionsCompletionLock();
-
-    renderFinalCompetitionStatus();
-
-    renderChampionsDataWarning();
 
   } catch (error) {
 
