@@ -65,6 +65,9 @@ const adminDashboard = document.getElementById("adminDashboard");
 const adminLoginForm =
   document.getElementById("adminLoginForm");
 
+const adminLoginButton =
+  document.getElementById("adminLoginButton");
+
 const adminEmail =
   document.getElementById("adminEmail");
 
@@ -490,12 +493,10 @@ async function saveCompetition() {
   }
 }
 
-if (adminLoginForm) {
-  adminLoginForm.addEventListener(
-    "submit",
-    async function(event) {
-
-      event.preventDefault();
+if (adminLoginButton) {
+  adminLoginButton.addEventListener(
+    "click",
+    async function() {
 
       if (!window.auth) {
         adminLoginMessage.textContent =
