@@ -1041,9 +1041,17 @@ footer {
 }
 
 .visual-bracket-team.is-winner {
-  background: linear-gradient(90deg, #087a68, #095a63);
-  color: #d8fff6;
-  font-weight: 900;
+  background: linear-gradient(90deg, #f7d44a, #b8860b);
+  border-color: #ffd700;
+  color: #241700;
+  font-weight: 1000;
+  box-shadow:
+    0 0 0 1px rgba(255,215,0,.35),
+    0 0 14px rgba(255,215,0,.45);
+}
+
+.visual-bracket-team.is-winner strong {
+  color: #241700;
 }
 
 .visual-bracket-team strong {
