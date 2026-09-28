@@ -3020,13 +3020,42 @@ if (adminTeamList) {
 
         if (registrationId) {
 
-          await deleteDoc(
+          const registrationRef =
             doc(
               window.db,
               "registrations",
               registrationId
-            )
-          );
+            );
+
+          const registrationSnapshot =
+            await getDoc(
+              registrationRef
+            );
+
+          if (registrationSnapshot.exists()) {
+
+            await deleteDoc(
+              registrationRef
+            );
+
+            const deletedCheck =
+              await getDoc(
+                registrationRef
+              );
+
+            if (deletedCheck.exists()) {
+              throw new Error(
+                "The registration document still exists after the delete request."
+              );
+            }
+
+          } else {
+
+            console.log(
+              "No registration document found for:",
+              registrationId
+            );
+          }
         }
 
       } catch (registrationError) {
@@ -3034,6 +3063,13 @@ if (adminTeamList) {
         console.error(
           "Team registration cleanup failed:",
           registrationError
+        );
+
+        alert(
+          "⚠️ The team was removed, but its old registration document could not be deleted.\n\n" +
+          (registrationError?.code || "") +
+          "\n" +
+          (registrationError?.message || "Unknown Firestore error.")
         );
       }
 
