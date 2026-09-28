@@ -2162,6 +2162,9 @@ function renderEverything() {
   const championsSection =
     document.getElementById("champions");
 
+  const championsBracketTop =
+    document.getElementById("championsBracketTop");
+
   const championsNav =
     document.querySelector(
       'a[href="#champions"]'
@@ -2175,6 +2178,14 @@ function renderEverything() {
   if (championsSection) {
 
     championsSection.style.display =
+      championsActive
+        ? ""
+        : "none";
+  }
+
+  if (championsBracketTop) {
+
+    championsBracketTop.style.display =
       championsActive
         ? ""
         : "none";
