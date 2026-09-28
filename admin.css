@@ -309,41 +309,65 @@ p {
 }
 
 
-/* Compact fixture cards */
+/* Compact public-style fixture cards */
 .admin-fixture {
-  padding: 10px 12px;
+  display: block;
+  padding: 10px;
   margin: 8px 0;
   border-radius: 8px;
-  gap: 8px;
 }
 
 .fixture-teams {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
-  flex-wrap: wrap;
+}
+
+.fixture-teams strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.fixture-teams strong:first-child {
+  text-align: left;
+}
+
+.fixture-teams strong:last-child {
+  text-align: right;
+}
+
+.fixture-teams span {
+  text-align: center;
+  font-weight: 700;
 }
 
 .fixture-score-row {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 7px;
-  margin-top: 7px;
-  flex-wrap: wrap;
+  margin-top: 8px;
 }
 
 .fixture-score-row input {
-  width: 58px;
-  min-height: 38px;
+  width: 52px;
+  min-height: 36px;
   margin: 0;
-  padding: 7px;
+  padding: 6px;
+  text-align: center;
 }
 
-.fixture-score-row .save-fixture-result {
-  width: auto;
+.fixture-score-row span {
+  font-weight: 800;
+}
+
+.save-fixture-result {
+  display: block;
+  width: 100%;
   min-height: 38px;
-  margin: 0;
+  margin: 8px 0 0;
   padding: 7px 10px;
 }
 
@@ -353,10 +377,19 @@ p {
 
 @media (max-width: 650px) {
   .admin-fixture {
-    padding: 9px 10px;
+    padding: 9px;
   }
 
-  .fixture-score-row .save-fixture-result {
-    width: 100%;
+  .fixture-teams {
+    gap: 5px;
+    font-size: 0.9rem;
+  }
+
+  .fixture-score-row {
+    margin-top: 7px;
+  }
+
+  .fixture-score-row input {
+    width: 48px;
   }
 }
