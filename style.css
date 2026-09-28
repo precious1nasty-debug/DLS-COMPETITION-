@@ -2973,3 +2973,86 @@ footer {
     letter-spacing: 4px;
   }
 }
+
+
+/* =========================================================
+   CHAMPIONS PRIZE ADMIN CONTROL
+========================================================= */
+
+.champions-prize-settings select {
+  width: 100%;
+  max-width: 260px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  margin: 6px 0 14px;
+}
+
+.prize-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.prize-toggle-label input {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+/* =========================================================
+   3D CASH PRIZE
+========================================================= */
+
+.winner-prize {
+  position: relative;
+  perspective: 900px;
+  transform-style: preserve-3d;
+}
+
+.winner-prize strong {
+  display: inline-block;
+  padding: 4px 10px;
+  font-weight: 1000;
+  letter-spacing: 1px;
+  transform: rotateX(8deg);
+  text-shadow:
+    0 2px 0 rgba(255,255,255,.8),
+    0 4px 0 rgba(120,53,15,.18),
+    0 7px 12px rgba(120,53,15,.25);
+  animation: prize3DFloat 2.4s ease-in-out infinite;
+}
+
+.winner-prize::before {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border-radius: 18px;
+  border: 2px solid rgba(255,255,255,.75);
+  pointer-events: none;
+  animation: prize3DGlow 1.8s ease-in-out infinite;
+}
+
+@keyframes prize3DFloat {
+  0%,100% {
+    transform: rotateX(8deg) rotateY(-2deg) translateY(0);
+  }
+  50% {
+    transform: rotateX(8deg) rotateY(2deg) translateY(-5px);
+  }
+}
+
+@keyframes prize3DGlow {
+  0%,100% {
+    opacity: .55;
+    transform: scale(.98);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
