@@ -2043,6 +2043,7 @@ function renderWinnerCelebration() {
         🎉 WINNER 🎉
       </div>
 
+      ${prizeEnabled ? `
       <div class="winner-prize">
         <span class="winner-prize-label">
           💰 CASH PRIZE
@@ -2050,14 +2051,12 @@ function renderWinnerCelebration() {
 
         <strong>
           ${escapeHTML(
-            prizeCurrency
-              ? prizeCurrency + " "
-              : ""
-          )}${escapeHTML(
-            prizeAmount || "Prize not set"
+            prizeCurrency + " " + (prizeAmount || "0")
           )}
         </strong>
       </div>
+
+      ` : ""}
 
       <div class="winner-congratulations">
         Congratulations to the Champions!
@@ -2466,8 +2465,12 @@ function normalizePublicChampionsData() {
       "",
 
     prizeCurrency:
-      champions.prizeCurrency ||
-      ""
+      champions.prizeCurrency === "$"
+        ? "$"
+        : "₦",
+
+    prizeEnabled:
+      champions.prizeEnabled === true
   };
 }
 
