@@ -203,6 +203,12 @@ const championsPrizeMessage =
 const championsPrizeEnabled =
   document.getElementById("championsPrizeEnabled");
 
+// LOGIN HANDLER IS ATTACHED EARLY SO DASHBOARD CODE CANNOT BLOCK IT.
+if (adminLoginButton) {
+  adminLoginButton.addEventListener("click", handleAdminLogin);
+}
+
+
 const clearCompetitionButton =
   document.getElementById("clearCompetitionButton");
 
@@ -677,12 +683,6 @@ async function handleAdminLogin() {
   }
 }
 
-if (adminLoginButton) {
-  adminLoginButton.addEventListener(
-    "click",
-    handleAdminLogin
-  );
-}
 
 function setupAuthentication() {
   if (!window.auth) {
