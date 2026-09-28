@@ -1372,12 +1372,18 @@ function renderVisualTeam(
   winner
 ) {
 
-  const safeName =
-    name || "TBD";
+  const safeName = name || "TBD";
+
+  const nameClass =
+    safeName.length > 28
+      ? "team-name-small"
+      : safeName.length > 20
+        ? "team-name-medium"
+        : "";
 
   return `
     <div class="visual-bracket-team ${winner ? "is-winner" : ""}">
-      <span>${escapeHTML(safeName)}</span>
+      <span class="${nameClass}">${escapeHTML(safeName)}</span>
       <strong>${score !== "" ? escapeHTML(score) : ""}</strong>
     </div>
   `;
