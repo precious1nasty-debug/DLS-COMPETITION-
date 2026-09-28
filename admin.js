@@ -9700,6 +9700,8 @@ async function initializeAdminApplication() {
 
     await waitForFirebase();
 
+    setupAuthentication();
+
     await loadCompetition();
 
     normalizeKnockoutArrays();
