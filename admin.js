@@ -1465,11 +1465,14 @@ if (knockoutLegFormat) {
 
   knockoutLegFormat.addEventListener(
     "change",
-    function() {
+    async function() {
 
       if (
-        season.started ||
-        season.formatLocked
+        season.format !== "champions" ||
+        !season.started ||
+        !areLeagueFixturesComplete() ||
+        knockout.drawLocked ||
+        season.phase === "completed"
       ) {
 
         knockoutLegFormat.value =
@@ -1534,6 +1537,37 @@ if (knockoutLegFormat) {
         champions =
           createDefaultChampions();
       }
+
+
+      const previousValue =
+        Number(
+          season.knockoutLegs || 1
+        );
+
+      season.knockoutLegs =
+        newValue;
+
+      const saved =
+        await saveCompetition();
+
+      if (!saved) {
+
+        season.knockoutLegs =
+          previousValue;
+
+        knockoutLegFormat.value =
+          String(previousValue);
+
+        return;
+      }
+
+      if (seasonControlMessage) {
+
+        seasonControlMessage.textContent =
+          "✅ Knockout format updated. You can now draw the knockout stage.";
+      }
+
+      updateSeasonControlState();
     }
   );
 }
@@ -1801,16 +1835,31 @@ function updateSeasonControlState() {
   if (matchesPerTeam) {
 
     matchesPerTeam.disabled =
-      locked ||
-      season.format !== "champions";
+      season.format !== "champions" ||
+      fixtures.length > 0 ||
+      locked;
   }
 
 
   if (knockoutLegFormat) {
 
     knockoutLegFormat.disabled =
-      locked ||
-      season.format !== "champions";
+      season.format !== "champions" ||
+      !season.started ||
+      !areLeagueFixturesComplete() ||
+      knockout.drawLocked ||
+      season.phase === "completed";
+  }
+
+
+  if (drawKnockoutButton) {
+
+    drawKnockoutButton.disabled =
+      season.format !== "champions" ||
+      !season.started ||
+      !areLeagueFixturesComplete() ||
+      knockout.drawLocked ||
+      season.phase === "completed";
   }
 
 
@@ -5995,6 +6044,8 @@ async function saveFixtureResult(
   renderTable();
 
   renderFixtures();
+
+  updateSeasonControlState();
 
 
   alert(
