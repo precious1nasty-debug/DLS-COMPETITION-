@@ -2308,3 +2308,83 @@ footer {
   background: transparent !important;
   margin-top: 0 !important;
 }
+
+
+/* FINAL KNOCKOUT PRESENTATION */
+.champions-bracket-top,
+.champions-bracket-top #championsBracket,
+.champions-skeleton-shell {
+  border-radius: 0 !important;
+  overflow: visible !important;
+}
+.champions-skeleton-shell {
+  border-left: 0 !important;
+  border-right: 0 !important;
+  box-shadow: none !important;
+}
+.champions-bracket-top .dls-knockout-title {
+  margin: 0 0 18px !important;
+  padding: 0 20px !important;
+  color: #fff !important;
+  background: transparent !important;
+  text-align: center !important;
+  font-size: 28px !important;
+  font-weight: 900 !important;
+  letter-spacing: 1px !important;
+}
+@media (max-width:700px) {
+  .champions-bracket-top { padding: 24px 0 !important; }
+  .champions-bracket-top .dls-knockout-title {
+    margin-bottom: 14px !important;
+    padding: 0 12px !important;
+    font-size: 20px !important;
+    letter-spacing: .7px !important;
+  }
+  .champions-skeleton-scroll { padding: 0 !important; }
+  .champions-skeleton-grid,
+  .champions-skeleton-grid.qf-only {
+    height: 190px !important;
+    min-height: 190px !important;
+  }
+  .visual-bracket-label {
+    font-size: 6px !important;
+    line-height: 7px !important;
+    padding: 1px 3px !important;
+  }
+  .visual-bracket-team,
+  .skeleton-final-tie .visual-bracket-team {
+    height: 18px !important;
+    min-height: 18px !important;
+    max-height: 18px !important;
+    padding: 1px 3px !important;
+    font-size: 7px !important;
+    line-height: 16px !important;
+  }
+  .visual-bracket-team strong {
+    min-width: 10px !important;
+    font-size: 7px !important;
+    line-height: 16px !important;
+  }
+  .skeleton-round-title {
+    height: 18px !important;
+    font-size: 6px !important;
+  }
+  .skeleton-round-title::after {
+    top: 17px !important;
+    width: 28px !important;
+  }
+  .skeleton-round-body { height: calc(100% - 18px) !important; }
+  .skeleton-final-tie { top: 82px !important; }
+  .skeleton-champion { top: 116px !important; }
+  .skeleton-third-place { bottom: 2px !important; }
+  .champions-bracket-lines path { stroke-width: 1px !important; }
+}
+@media (max-width:390px) {
+  .champions-skeleton-grid,
+  .champions-skeleton-grid.qf-only {
+    height: 190px !important;
+    min-height: 190px !important;
+  }
+  .visual-bracket-team,
+  .skeleton-final-tie .visual-bracket-team { font-size: 7px !important; }
+}
