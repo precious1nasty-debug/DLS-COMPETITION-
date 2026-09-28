@@ -2388,3 +2388,20 @@ footer {
   .visual-bracket-team,
   .skeleton-final-tie .visual-bracket-team { font-size: 7px !important; }
 }
+
+
+/* =========================================================
+   KNOCKOUT DIAGRAM — DIRECTLY ON BLUE BACKGROUND
+========================================================= */
+
+.champions-skeleton-shell {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.champions-skeleton-scroll,
+.champions-skeleton-grid {
+  background: transparent !important;
+}
