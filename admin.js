@@ -5923,9 +5923,7 @@ function renderFixtures() {
           );
 
         heading.textContent =
-          season.format === "champions"
-            ? `Match Day ${round}`
-            : `Match Day ${round}`;
+          `MATCH DAY ${round}`;
 
         adminFixtureList.appendChild(
           heading
