@@ -3585,3 +3585,64 @@ footer {
     height: 78px;
   }
 }
+
+
+/* Podium team names */
+.stage-podium {
+  align-items: flex-end;
+}
+
+.podium-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 27%;
+  min-width: 0;
+}
+
+.podium-column-center {
+  width: 34%;
+}
+
+.podium-team-name {
+  width: 100%;
+  min-height: 38px;
+  margin-bottom: 7px;
+  padding: 0 5px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  text-align: center;
+  font-size: clamp(11px, 2.5vw, 16px);
+  line-height: 1.05;
+  font-weight: 1000;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,.85);
+}
+
+.podium-champion-name {
+  color: #ffd85a;
+  font-size: clamp(12px, 2.8vw, 18px);
+}
+
+.podium-column .podium-left,
+.podium-column .podium-right,
+.podium-column .podium-center {
+  width: 100%;
+}
+
+@media (max-width: 700px) {
+  .podium-team-name {
+    min-height: 42px;
+    font-size: 10px;
+    padding: 0 2px;
+  }
+
+  .podium-champion-name {
+    font-size: 11px;
+  }
+}
