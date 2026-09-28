@@ -1830,17 +1830,6 @@ function renderChampionsBracket() {
   championsBracketContent.innerHTML = `
     <div class="champions-skeleton-shell">
 
-      <div class="champions-skeleton-heading">
-        <div class="champions-skeleton-title">
-          <span>🏆</span>
-          <div>
-            <strong>CHAMPIONS LEAGUE</strong>
-            <small>ROAD TO THE FINAL</small>
-          </div>
-        </div>
-
-      </div>
-
       <div class="champions-skeleton-scroll">
         <div class="champions-skeleton-grid ${isR16 ? "has-r16" : "qf-only"}">
           ${renderChampionsBracketConnectors(isR16)}
