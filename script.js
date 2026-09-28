@@ -1369,7 +1369,8 @@ function getVisualTeamName(value) {
 function renderVisualTeam(
   name,
   score,
-  winner
+  winner,
+  loser
 ) {
 
   const safeName = name || "TBD";
@@ -1384,7 +1385,7 @@ function renderVisualTeam(
           : "";
 
   return `
-    <div class="visual-bracket-team ${winner ? "is-winner" : ""}">
+    <div class="visual-bracket-team ${winner ? "is-winner" : loser ? "is-loser" : ""}">
       <span class="${nameClass}">${escapeHTML(safeName)}</span>
       <strong>${score !== "" ? escapeHTML(score) : ""}</strong>
     </div>
@@ -1467,13 +1468,15 @@ function renderVisualTie(
       ${renderVisualTeam(
         tie.teamA || "TBD",
         hasScore ? String(aggregateA) : "",
-        winner === tie.teamA
+        winner === tie.teamA,
+        Boolean(winner) && winner !== tie.teamA
       )}
 
       ${renderVisualTeam(
         tie.teamB || "TBD",
         hasScore ? String(aggregateB) : "",
-        winner === tie.teamB
+        winner === tie.teamB,
+        Boolean(winner) && winner !== tie.teamB
       )}
     </div>
   `;
