@@ -229,6 +229,50 @@
         </p>
       </div>
 
+      <div class="champions-prize-settings">
+
+        <h3>💰 Champions Prize</h3>
+
+        <p>
+          Set the cash prize for the Champions League winner.
+          You can edit this amount anytime.
+        </p>
+
+        <label for="championsPrizeAmount">
+          Prize Amount
+        </label>
+
+        <input
+          type="text"
+          id="championsPrizeAmount"
+          placeholder="e.g. 1000"
+          inputmode="decimal"
+          autocomplete="off"
+        >
+
+        <label for="championsPrizeCurrency">
+          Currency
+        </label>
+
+        <input
+          type="text"
+          id="championsPrizeCurrency"
+          placeholder="e.g. USD, NGN, GBP"
+          maxlength="10"
+          autocomplete="off"
+        >
+
+        <button
+          type="button"
+          id="saveChampionsPrizeButton"
+        >
+          💾 Save Prize
+        </button>
+
+        <div id="championsPrizeMessage"></div>
+
+      </div>
+
     </div>
 
 
