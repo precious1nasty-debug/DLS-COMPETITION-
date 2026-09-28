@@ -185,6 +185,62 @@ const logoutButton =
 const seasonControlMessage =
   document.getElementById("seasonControlMessage");
 
+// =========================================================
+// ADMIN NAVIGATION
+// =========================================================
+
+const adminNavButtons =
+  document.querySelectorAll(".admin-nav-button");
+
+const adminPageSections =
+  document.querySelectorAll(".admin-page-section");
+
+function showAdminPage(page) {
+
+  adminPageSections.forEach(function(section) {
+
+    const sectionPage =
+      section.dataset.adminPageSection;
+
+    section.style.display =
+      sectionPage === page
+        ? ""
+        : "none";
+  });
+
+  adminNavButtons.forEach(function(button) {
+
+    const buttonPage =
+      button.dataset.adminPage;
+
+    button.classList.toggle(
+      "active",
+      buttonPage === page
+    );
+  });
+}
+
+adminNavButtons.forEach(function(button) {
+
+  button.addEventListener(
+    "click",
+    function() {
+
+      showAdminPage(
+        button.dataset.adminPage
+      );
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    }
+  );
+});
+
+showAdminPage("registrations");
+
+
 function escapeHTML(value) {
   const div = document.createElement("div");
   div.textContent = String(value ?? "");
