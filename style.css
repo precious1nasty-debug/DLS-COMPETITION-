@@ -2753,19 +2753,12 @@ footer {
    KNOCKOUT RESULT COLORS
 ========================================================= */
 
-
 .champions-bracket-top .visual-bracket-team.is-winner {
-  background: linear-gradient(90deg, #166534, #14532d) !important;
+  background: #166534 !important;
   border-color: #22c55e !important;
+  color: #baffd9 !important;
 }
 
-.champions-bracket-top .visual-bracket-team.is-loser {
-  background: linear-gradient(90deg, #991b1b, #7f1d1d) !important;
-  border-color: #ef4444 !important;
-}
-
-
-/* KNOCKOUT LOSER BOX */
 .champions-bracket-top .visual-bracket-team.is-loser {
   background: #b91c1c !important;
   border-color: #ef4444 !important;
