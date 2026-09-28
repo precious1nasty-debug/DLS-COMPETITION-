@@ -554,6 +554,35 @@
 })();
 </script>
 
+<script>
+(function () {
+  const message = document.getElementById("adminLoginMessage");
+
+  window.addEventListener("error", function (event) {
+    const source = String(event.filename || "");
+    if (source.includes("admin.js") || source.includes("gstatic.com")) {
+      if (message) {
+        message.textContent =
+          "❌ admin.js error: " +
+          String(event.message || "Unknown JavaScript error.");
+      }
+    }
+  });
+
+  window.addEventListener("unhandledrejection", function (event) {
+    const reason = event.reason;
+    const detail = reason && reason.message
+      ? reason.message
+      : String(reason || "Unknown promise error.");
+
+    if (message) {
+      message.textContent =
+        "❌ admin.js startup error: " + detail;
+    }
+  });
+})();
+</script>
+
 <!-- =====================================================
      FIREBASE
 ===================================================== -->
