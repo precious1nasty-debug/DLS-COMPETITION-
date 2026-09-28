@@ -8206,7 +8206,7 @@ function renderKnockoutProgressStatus() {
 
   if (
     knockout.semiFinals.length === 2 &&
-    !knockout.final.length
+    (!knockout.final || knockout.final.length === 0)
   ) {
 
     if (
