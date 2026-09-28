@@ -5955,50 +5955,49 @@ const awayName =
 
 
       card.innerHTML = `
-        <div class="fixture-teams">
-          <strong>
+        <div class="fixture-score-row">
+
+          <strong class="fixture-home-team">
             ${escapeHTML(homeName)}
           </strong>
 
-          <span>vs</span>
+          <div class="fixture-score-inputs">
 
-          <strong>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              class="fixture-home-score"
+              value="${
+                score
+                  ? score.home
+                  : ""
+              }"
+              placeholder="0"
+              aria-label="Home score"
+            >
+
+            <span>-</span>
+
+            <input
+              type="number"
+              min="0"
+              step="1"
+              class="fixture-away-score"
+              value="${
+                score
+                  ? score.away
+                  : ""
+              }"
+              placeholder="0"
+              aria-label="Away score"
+            >
+
+          </div>
+
+          <strong class="fixture-away-team">
             ${escapeHTML(awayName)}
           </strong>
-        </div>
-
-        <div class="fixture-score-row">
-
-          <input
-            type="number"
-            min="0"
-            step="1"
-            class="fixture-home-score"
-            value="${
-              score
-                ? score.home
-                : ""
-            }"
-            placeholder="0"
-            aria-label="Home score"
-          >
-
-          <span>-</span>
-
-          <input
-            type="number"
-            min="0"
-            step="1"
-            class="fixture-away-score"
-            value="${
-              score
-                ? score.away
-                : ""
-            }"
-            placeholder="0"
-            aria-label="Away score"
-          >
-
         </div>
 
         <button
