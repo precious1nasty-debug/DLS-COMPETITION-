@@ -8043,7 +8043,7 @@ async function advanceKnockoutStage() {
   if (
     knockout.semiFinals &&
     knockout.semiFinals.length === 2 &&
-    !knockout.final.length
+    (!knockout.final || knockout.final.length === 0)
   ) {
 
     if (
