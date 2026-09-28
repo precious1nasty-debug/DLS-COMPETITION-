@@ -161,6 +161,18 @@ const adminChampionsSection =
 const adminChampionsResults =
   document.getElementById("adminChampionsResults");
 
+const championsPrizeAmount =
+  document.getElementById("championsPrizeAmount");
+
+const championsPrizeCurrency =
+  document.getElementById("championsPrizeCurrency");
+
+const saveChampionsPrizeButton =
+  document.getElementById("saveChampionsPrizeButton");
+
+const championsPrizeMessage =
+  document.getElementById("championsPrizeMessage");
+
 const clearCompetitionButton =
   document.getElementById("clearCompetitionButton");
 
@@ -230,7 +242,9 @@ function createDefaultChampions() {
   return {
     champion: "",
     runnerUp: "",
-    thirdPlace: ""
+    thirdPlace: "",
+    prizeAmount: "",
+    prizeCurrency: ""
   };
 }
 
@@ -1513,6 +1527,8 @@ function loadSeasonSettingsIntoForm() {
   }
 
 
+  loadChampionsPrizeIntoForm();
+
   updateFormatSettings();
 }
 
@@ -1671,6 +1687,79 @@ function validateChampionsSettings() {
 
 // =========================================================
 // PREPARE SEASON SETTINGS
+// =========================================================
+
+function loadChampionsPrizeIntoForm() {
+
+  if (championsPrizeAmount) {
+    championsPrizeAmount.value =
+      champions.prizeAmount || "";
+  }
+
+  if (championsPrizeCurrency) {
+    championsPrizeCurrency.value =
+      champions.prizeCurrency || "";
+  }
+
+  if (championsPrizeMessage) {
+    championsPrizeMessage.textContent = "";
+  }
+}
+
+
+async function saveChampionsPrize() {
+
+  const amount =
+    championsPrizeAmount?.value?.trim() || "";
+
+  const currency =
+    championsPrizeCurrency?.value?.trim().toUpperCase() || "";
+
+  if (!amount) {
+    if (championsPrizeMessage) {
+      championsPrizeMessage.textContent =
+        "⚠️ Enter the cash prize amount.";
+    }
+    return;
+  }
+
+  if (!currency) {
+    if (championsPrizeMessage) {
+      championsPrizeMessage.textContent =
+        "⚠️ Enter the prize currency.";
+    }
+    return;
+  }
+
+  champions.prizeAmount = amount;
+  champions.prizeCurrency = currency;
+
+  const saved = await saveCompetition();
+
+  if (!saved) {
+    return;
+  }
+
+  if (championsPrizeMessage) {
+    championsPrizeMessage.textContent =
+      "✅ Prize saved successfully.";
+  }
+
+  renderChampionsResults();
+}
+
+
+if (saveChampionsPrizeButton) {
+
+  saveChampionsPrizeButton.addEventListener(
+    "click",
+    saveChampionsPrize
+  );
+}
+
+
+// =========================================================
+// READ SEASON SETTINGS
 // =========================================================
 
 function readSeasonSettingsFromForm() {
@@ -8546,6 +8635,26 @@ function renderChampionsResults() {
 
     </div>
   `;
+
+
+  if (
+    champions.prizeAmount ||
+    champions.prizeCurrency
+  ) {
+
+    const prize =
+      document.createElement("p");
+
+    prize.style.textAlign = "center";
+
+    prize.textContent =
+      "💰 Cash Prize: " +
+      (champions.prizeCurrency || "") +
+      " " +
+      (champions.prizeAmount || "");
+
+    adminChampionsResults.appendChild(prize);
+  }
 
 
   if (
