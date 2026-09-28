@@ -606,7 +606,12 @@ async function handleAdminLogin() {
     adminLoginButton.disabled = true;
   }
 
-  setAdminLoginMessage("⏳ Signing in...");
+  setAdminLoginMessage("⏳ Login started — Firebase Auth is being contacted...");
+  console.log("[DLS ADMIN] login clicked", email);
+
+  if (window.auth) {
+    console.log("[DLS ADMIN] auth ready", window.auth.currentUser?.email || "no current user");
+  }
 
   try {
     const loginPromise =
@@ -627,11 +632,15 @@ async function handleAdminLogin() {
         }, 15000);
       });
 
+    console.log("[DLS ADMIN] signInWithEmailAndPassword started");
+
     const credential =
       await Promise.race([
         loginPromise,
         timeoutPromise
       ]);
+
+    console.log("[DLS ADMIN] sign-in promise completed", credential?.user?.email || "NO USER");
 
     if (!credential?.user) {
       throw new Error(
@@ -656,6 +665,7 @@ async function handleAdminLogin() {
 
   } catch (error) {
     console.error("Admin login failed:", error);
+    console.error("[DLS ADMIN] login error code:", error?.code, "message:", error?.message);
     setAdminLoginMessage(
       getFirebaseErrorMessage(error)
     );
@@ -686,10 +696,13 @@ function setupAuthentication() {
 
   adminAuthReady = true;
   showLogin();
+  console.log("[DLS ADMIN] authentication setup complete");
 
   onAuthStateChanged(
     window.auth,
     async function(user) {
+
+      console.log("[DLS ADMIN] auth state:", user ? user.email : "SIGNED OUT");
 
       if (!user) {
         adminStartupInProgress = false;
