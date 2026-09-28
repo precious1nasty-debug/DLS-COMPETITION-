@@ -685,8 +685,6 @@ function renderTable() {
 
         return `
 
-          ${cutoff}
-
           <tr>
 
             <td>
@@ -736,6 +734,8 @@ function renderTable() {
             </td>
 
           </tr>
+
+          ${cutoff}
 
         `;
       })
