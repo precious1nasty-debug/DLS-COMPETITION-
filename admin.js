@@ -7820,6 +7820,22 @@ if (adminKnockoutList) {
         }
 
 
+        const confirmed =
+          window.confirm(
+            "⚠️ CONFIRM KNOCKOUT SCORE\n\n" +
+            "Team A: " + homeInput.value + "\n" +
+            "Team B: " + awayInput.value + "\n\n" +
+            "Please confirm that this score is correct.\n\n" +
+            "⚠️ IMPORTANT: Once this score is saved, " +
+            "the admin cannot change or edit the score. " +
+            "Please check it carefully before confirming.\n\n" +
+            "Click OK to confirm the score or Cancel to review it."
+          );
+
+        if (!confirmed) {
+          return;
+        }
+
         await saveKnockoutMatchResult(
           tieId,
           matchId,
