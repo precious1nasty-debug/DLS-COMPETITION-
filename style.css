@@ -3695,20 +3695,110 @@ footer {
   text-shadow: 0 2px 7px rgba(0,0,0,.75);
 }
 
-.podium-left,
-.podium-right {
+/* 2ND PLACE — SILVER */
+.podium-left {
   height: 72px;
+  background: linear-gradient(
+    180deg,
+    #f4f6f8 0%,
+    #c9d0d8 45%,
+    #747d88 100%
+  );
+  border: 2px solid #e5e7eb;
+  color: #1f2937;
+  box-shadow:
+    inset 0 3px 0 rgba(255,255,255,.75),
+    0 0 18px rgba(210,220,230,.35),
+    0 15px 30px rgba(0,0,0,.45);
+  animation: silverPodiumGlow 2.2s ease-in-out infinite;
 }
 
+/* 3RD PLACE — BRONZE */
+.podium-right {
+  height: 72px;
+  background: linear-gradient(
+    180deg,
+    #e0a06a 0%,
+    #b87333 45%,
+    #6f3518 100%
+  );
+  border: 2px solid #cd7f32;
+  color: #fff4e6;
+  box-shadow:
+    inset 0 3px 0 rgba(255,235,210,.5),
+    0 0 18px rgba(205,127,50,.35),
+    0 15px 30px rgba(0,0,0,.45);
+  animation: bronzePodiumGlow 2.2s ease-in-out infinite;
+}
+
+/* 1ST PLACE — GOLD */
 .podium-center {
   width: 36%;
   height: 115px;
   padding: 10px 9px;
-  border: 2px solid rgba(255,220,100,.65);
+  background: linear-gradient(
+    180deg,
+    #ffe98a 0%,
+    #d9a62e 45%,
+    #76500a 100%
+  );
+  border: 2px solid #ffd700;
   box-shadow:
-    inset 0 3px 0 rgba(255,255,255,.4),
-    0 0 30px rgba(245,190,55,.3),
+    inset 0 3px 0 rgba(255,255,255,.55),
+    0 0 30px rgba(255,215,0,.45),
     0 15px 30px rgba(0,0,0,.45);
+  animation: goldPodiumGlow 2.2s ease-in-out infinite;
+}
+
+@keyframes goldPodiumGlow {
+  0%,100% {
+    filter: brightness(1);
+    box-shadow:
+      inset 0 3px 0 rgba(255,255,255,.55),
+      0 0 25px rgba(255,215,0,.35),
+      0 15px 30px rgba(0,0,0,.45);
+  }
+  50% {
+    filter: brightness(1.12);
+    box-shadow:
+      inset 0 3px 0 rgba(255,255,255,.7),
+      0 0 42px rgba(255,215,0,.75),
+      0 15px 30px rgba(0,0,0,.5);
+  }
+}
+
+@keyframes silverPodiumGlow {
+  0%,100% {
+    filter: brightness(1);
+    box-shadow:
+      inset 0 3px 0 rgba(255,255,255,.75),
+      0 0 16px rgba(210,220,230,.25),
+      0 15px 30px rgba(0,0,0,.45);
+  }
+  50% {
+    filter: brightness(1.12);
+    box-shadow:
+      inset 0 3px 0 rgba(255,255,255,.95),
+      0 0 30px rgba(220,230,240,.65),
+      0 15px 30px rgba(0,0,0,.5);
+  }
+}
+
+@keyframes bronzePodiumGlow {
+  0%,100% {
+    filter: brightness(1);
+    box-shadow:
+      inset 0 3px 0 rgba(255,235,210,.5),
+      0 0 16px rgba(205,127,50,.25),
+      0 15px 30px rgba(0,0,0,.45);
+  }
+  50% {
+    filter: brightness(1.12);
+    box-shadow:
+      inset 0 3px 0 rgba(255,235,210,.75),
+      0 0 30px rgba(205,127,50,.65),
+      0 15px 30px rgba(0,0,0,.5);
+  }
 }
 
 .podium-center span {
