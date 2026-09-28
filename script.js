@@ -1015,7 +1015,6 @@ function getQualifiedTeams() {
   const table =
     calculateTable();
 
-
   const count =
     Number(
       season.qualificationCount ||
@@ -1023,17 +1022,73 @@ function getQualifiedTeams() {
       0
     );
 
-
-  if (!count) {
+  if (
+    season.format !== "champions" ||
+    !season.started ||
+    !count
+  ) {
     return [];
   }
 
+  if (season.phase === "knockout") {
+    return table
+      .slice(0, count)
+      .map(team => team.team);
+  }
+
+  const remainingMatches = {};
+
+  teams.forEach(team => {
+    remainingMatches[getTeamName(team)] = 0;
+  });
+
+  fixtures.forEach(fixture => {
+
+    if (hasResult(fixture)) {
+      return;
+    }
+
+    const home =
+      fixture.homeTeam ||
+      fixture.home ||
+      "";
+
+    const away =
+      fixture.awayTeam ||
+      fixture.away ||
+      "";
+
+    if (remainingMatches[home] !== undefined) {
+      remainingMatches[home]++;
+    }
+
+    if (remainingMatches[away] !== undefined) {
+      remainingMatches[away]++;
+    }
+  });
 
   return table
+    .filter(team => {
+
+      const teamsThatCanFinishAbove =
+        table.filter(other => {
+
+          if (other.team === team.team) {
+            return false;
+          }
+
+          const otherMaxPoints =
+            other.points +
+            (remainingMatches[other.team] || 0) * 3;
+
+          return otherMaxPoints > team.points;
+        }).length;
+
+      return teamsThatCanFinishAbove < count;
+    })
     .slice(0, count)
     .map(team => team.team);
 }
-
 
 // =========================================================
 // QUALIFICATION DISPLAY
