@@ -9556,6 +9556,8 @@ async function initializeAdminApplication() {
 
     normalizeKnockoutArrays();
 
+    await advanceKnockoutStage();
+
     renderAll();
 
     refreshAdminDashboard();
