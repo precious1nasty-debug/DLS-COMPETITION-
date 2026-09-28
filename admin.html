@@ -72,12 +72,29 @@
 
   <h2>⚙️ Competition Control</h2>
 
+  <nav id="adminNavigation" class="admin-navigation" aria-label="Admin navigation">
+
+    <button type="button" class="admin-nav-button active" data-admin-page="registrations">
+      👥 Registrations & Teams
+    </button>
+
+    <button type="button" class="admin-nav-button" data-admin-page="season">
+      ⚙️ Season & Competition
+    </button>
+
+    <button type="button" class="admin-nav-button" data-admin-page="results">
+      📊 Table, Fixtures & Results
+    </button>
+
+  </nav>
+
+
 
   <!-- ===================================================
        PENDING REGISTRATIONS
   ==================================================== -->
 
-  <section class="admin-section">
+  <section class="admin-section admin-page-section" data-admin-page-section="registrations">
 
     <h2>📥 Pending Registrations</h2>
 
@@ -92,7 +109,7 @@
        SEASON FORMAT & SETTINGS
   ==================================================== -->
 
-  <section class="admin-section">
+  <section class="admin-section admin-page-section" data-admin-page-section="season">
 
     <h2>🏆 Season Settings</h2>
 
@@ -312,7 +329,7 @@
        APPROVED TEAMS
   ==================================================== -->
 
-  <section class="admin-section">
+  <section class="admin-section admin-page-section" data-admin-page-section="registrations">
 
     <h2>👥 Approved Teams</h2>
 
@@ -331,7 +348,7 @@
        LEAGUE / CHAMPIONS LEAGUE TABLE
   ==================================================== -->
 
-  <section class="admin-section">
+  <section class="admin-section admin-page-section" data-admin-page-section="results">
 
     <h2 id="adminTableTitle">
       📊 League Table
@@ -397,7 +414,7 @@
        FIXTURES & RESULTS
   ==================================================== -->
 
-  <section class="admin-section">
+  <section class="admin-section admin-page-section" data-admin-page-section="results">
 
     <h2 id="adminFixtureTitle">
       ⚽ Fixtures & Results
@@ -419,7 +436,8 @@
   ==================================================== -->
 
   <section
-    class="admin-section"
+    class="admin-section admin-page-section"
+    data-admin-page-section="results"
     id="adminKnockoutSection"
     style="display:none;"
   >
@@ -462,7 +480,8 @@
   ==================================================== -->
 
   <section
-    class="admin-section"
+    class="admin-section admin-page-section"
+    data-admin-page-section="results"
     id="adminChampionsSection"
     style="display:none;"
   >
@@ -487,7 +506,7 @@
        COMPETITION CONTROLS
   ==================================================== -->
 
-  <section class="admin-section danger-zone">
+  <section class="admin-section danger-zone admin-page-section" data-admin-page-section="season">
 
     <h2>
       ⚠️ Competition Controls
