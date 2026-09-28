@@ -1,15 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
   <meta charset="UTF-8">
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DLS Competition Admin</title>
-
   <link rel="stylesheet" href="admin.css">
 </head>
 
@@ -22,530 +18,166 @@
 
 <main>
 
-<!-- =====================================================
-     ADMIN LOGIN
-===================================================== -->
-
 <section id="adminLogin" class="admin-login">
-
   <h2>🔐 Admin Login</h2>
-
   <p>Authorized administrators only.</p>
 
   <form id="adminLoginForm">
-
-    <input
-      type="email"
-      id="adminEmail"
-      placeholder="Admin Email"
-      autocomplete="email"
-      required
-    >
-
-    <input
-      type="password"
-      id="adminPassword"
-      placeholder="Admin Password"
-      autocomplete="current-password"
-      required
-    >
-
-    <button type="submit">
-      🔑 Login
-    </button>
-
+    <input type="email" id="adminEmail" placeholder="Admin Email" autocomplete="email" required>
+    <input type="password" id="adminPassword" placeholder="Admin Password" autocomplete="current-password" required>
+    <button type="submit">🔑 Login</button>
   </form>
 
   <p id="adminLoginMessage"></p>
-
 </section>
 
-
-<!-- =====================================================
-     ADMIN DASHBOARD
-===================================================== -->
-
-<section
-  id="adminDashboard"
-  style="display:none;"
->
-
+<section id="adminDashboard" style="display:none;">
   <h2>⚙️ Competition Control</h2>
 
   <nav id="adminNavigation" class="admin-navigation" aria-label="Admin navigation">
-
-    <button type="button" class="admin-nav-button active" data-admin-page="registrations">
-      👥 Registrations & Teams
-    </button>
-
-    <button type="button" class="admin-nav-button" data-admin-page="season">
-      ⚙️ Season & Competition
-    </button>
-
-    <button type="button" class="admin-nav-button" data-admin-page="results">
-      📊 Table, Fixtures & Results
-    </button>
-
+    <button type="button" class="admin-nav-button active" data-admin-page="registrations">👥 Registrations & Teams</button>
+    <button type="button" class="admin-nav-button" data-admin-page="season">⚙️ Season & Competition</button>
+    <button type="button" class="admin-nav-button" data-admin-page="results">📊 Table, Fixtures & Results</button>
   </nav>
 
-
-
-  <!-- ===================================================
-       PENDING REGISTRATIONS
-  ==================================================== -->
-
   <section class="admin-section admin-page-section" data-admin-page-section="registrations">
-
     <h2>📥 Pending Registrations</h2>
-
-    <div id="pendingRegistrations">
-      <p>No pending registrations.</p>
-    </div>
-
+    <div id="pendingRegistrations"><p>No pending registrations.</p></div>
   </section>
 
-
-  <!-- ===================================================
-       SEASON FORMAT & SETTINGS
-  ==================================================== -->
-
   <section class="admin-section admin-page-section" data-admin-page-section="season">
-
     <h2>🏆 Season Settings</h2>
+    <div id="adminSeasonDetails"><p>🟡 Season not started.</p></div>
 
-    <div id="adminSeasonDetails">
-      <p>🟡 Season not started.</p>
-    </div>
-
-
-    <!-- COMPETITION FORMAT -->
-
-    <label for="competitionFormat">
-      Competition Format
-    </label>
-
+    <label for="competitionFormat">Competition Format</label>
     <select id="competitionFormat">
-
-      <option value="league">
-        League
-      </option>
-
-      <option value="champions">
-        Champions League
-      </option>
-
+      <option value="league">League</option>
+      <option value="champions">Champions League</option>
     </select>
 
+    <label for="seasonStart">Season Start Date</label>
+    <input type="date" id="seasonStart">
 
-    <!-- SEASON DATES -->
-
-    <label for="seasonStart">
-      Season Start Date
-    </label>
-
-    <input
-      type="date"
-      id="seasonStart"
-    >
-
-
-    <label for="seasonEnd">
-      Season End Date
-    </label>
-
-    <input
-      type="date"
-      id="seasonEnd"
-    >
-
-
-    <!-- NORMAL LEAGUE SETTINGS -->
+    <label for="seasonEnd">Season End Date</label>
+    <input type="date" id="seasonEnd">
 
     <div id="leagueSettings">
-
       <h3>⚽ League Settings</h3>
-
-      <label for="legFormat">
-        League Format
-      </label>
-
+      <label for="legFormat">League Format</label>
       <select id="legFormat">
-
-        <option value="1">
-          1 Leg
-        </option>
-
-        <option value="2">
-          2 Legs
-        </option>
-
+        <option value="1">1 Leg</option>
+        <option value="2">2 Legs</option>
       </select>
-
     </div>
 
-
-    <!-- CHAMPIONS LEAGUE SETTINGS -->
-
-    <div
-      id="championsSettings"
-      style="display:none;"
-    >
-
+    <div id="championsSettings" style="display:none;">
       <h3>🏆 Champions League Settings</h3>
+      <p>Champions League requires <strong>9–40 approved teams.</strong></p>
 
-
-      <p>
-        Champions League requires
-        <strong>9–40 approved teams.</strong>
-      </p>
-
-
-      <label for="matchesPerTeam">
-        Matches per Team
-      </label>
-
+      <label for="matchesPerTeam">Matches per Team</label>
       <select id="matchesPerTeam">
-
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-
+        <option value="1">1</option><option value="2">2</option>
+        <option value="3">3</option><option value="4">4</option>
+        <option value="5">5</option><option value="6">6</option>
+        <option value="7">7</option><option value="8">8</option>
       </select>
 
+      <div id="matchesPerTeamSuggestion"></div>
 
-      <div id="matchesPerTeamSuggestion">
-      </div>
-
-
-      <label for="knockoutLegFormat">
-        Knockout Format
-      </label>
-
+      <label for="knockoutLegFormat">Knockout Format</label>
       <select id="knockoutLegFormat">
-
-        <option value="1">
-          1 Leg
-        </option>
-
-        <option value="2">
-          2 Legs
-        </option>
-
+        <option value="1">1 Leg</option>
+        <option value="2">2 Legs</option>
       </select>
-
 
       <div id="championsQualificationInfo">
-        <p>
-          Qualification places will be determined
-          automatically from the number of approved teams.
-        </p>
+        <p>Qualification places will be determined automatically from the number of approved teams.</p>
       </div>
 
       <div class="champions-prize-settings">
-
         <h3>💰 Champions Prize</h3>
+        <p>Set the cash prize for the Champions League winner. You can edit this amount anytime.</p>
 
-        <p>
-          Set the cash prize for the Champions League winner.
-          You can edit this amount anytime.
-        </p>
+        <label for="championsPrizeAmount">Prize Amount</label>
+        <input type="text" id="championsPrizeAmount" placeholder="e.g. 1000" inputmode="decimal" autocomplete="off">
 
-        <label for="championsPrizeAmount">
-          Prize Amount
-        </label>
-
-        <input
-          type="text"
-          id="championsPrizeAmount"
-          placeholder="e.g. 1000"
-          inputmode="decimal"
-          autocomplete="off"
-        >
-
-        <label for="championsPrizeCurrency">
-          Currency
-        </label>
-
+        <label for="championsPrizeCurrency">Currency</label>
         <select id="championsPrizeCurrency">
           <option value="₦">₦ Naira</option>
           <option value="$">$ Dollar</option>
         </select>
 
         <label class="prize-toggle-label">
-          <input
-            type="checkbox"
-            id="championsPrizeEnabled"
-          >
+          <input type="checkbox" id="championsPrizeEnabled">
           <span>Show Prize in Winner Celebration</span>
         </label>
 
-        <button
-          type="button"
-          id="saveChampionsPrizeButton"
-        >
-          💾 Save Prize
-        </button>
-
+        <button type="button" id="saveChampionsPrizeButton">💾 Save Prize</button>
         <div id="championsPrizeMessage"></div>
-
       </div>
-
     </div>
-
-
-    <!-- SEASON CONTROL BUTTONS -->
 
     <div class="admin-buttons">
-
-
-      <button id="startSeasonButton">
-        🏆 Start Season
-      </button>
-
-
-      <button id="reopenRegistrationButton">
-        🔓 Reopen Registration
-      </button>
-
+      <button id="startSeasonButton">🏆 Start Season</button>
+      <button id="reopenRegistrationButton">🔓 Reopen Registration</button>
     </div>
 
-
-    <div id="seasonControlMessage">
-    </div>
-
+    <div id="seasonControlMessage"></div>
   </section>
-
-
-  <!-- ===================================================
-       APPROVED TEAMS
-  ==================================================== -->
 
   <section class="admin-section admin-page-section" data-admin-page-section="registrations">
-
     <h2>👥 Approved Teams</h2>
-
-    <div id="adminTeamList">
-      <p>No approved teams.</p>
-    </div>
-
-    <button id="manageTeamsButton">
-      ⚙️ Manage Teams
-    </button>
-
+    <div id="adminTeamList"><p>No approved teams.</p></div>
+    <button id="manageTeamsButton">⚙️ Manage Teams</button>
   </section>
 
-
-  <!-- ===================================================
-       LEAGUE / CHAMPIONS LEAGUE TABLE
-  ==================================================== -->
-
   <section class="admin-section admin-page-section" data-admin-page-section="results">
-
-    <h2 id="adminTableTitle">
-      📊 League Table
-    </h2>
-
-    <div
-      id="qualificationLegend"
-      style="display:none;"
-    >
-
-      <p>
-        🟢 Teams above the qualification line
-        qualify for the knockout stage.
-      </p>
-
+    <h2 id="adminTableTitle">📊 League Table</h2>
+    <div id="qualificationLegend" style="display:none;">
+      <p>🟢 Teams above the qualification line qualify for the knockout stage.</p>
     </div>
-
-
     <div class="table-container">
-
       <table>
-
         <thead>
-
-          <tr>
-
-            <th>#</th>
-
-            <th>Team</th>
-
-            <th>P</th>
-
-            <th>W</th>
-
-            <th>D</th>
-
-            <th>L</th>
-
-            <th>GF</th>
-
-            <th>GA</th>
-
-            <th>GD</th>
-
-            <th>PTS</th>
-
-          </tr>
-
+          <tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>PTS</th></tr>
         </thead>
-
-        <tbody id="adminLeagueTable">
-
-        </tbody>
-
+        <tbody id="adminLeagueTable"></tbody>
       </table>
-
     </div>
-
   </section>
-
-
-  <!-- ===================================================
-       FIXTURES & RESULTS
-  ==================================================== -->
 
   <section class="admin-section admin-page-section" data-admin-page-section="results">
-
-    <h2 id="adminFixtureTitle">
-      ⚽ Fixtures & Results
-    </h2>
-
+    <h2 id="adminFixtureTitle">⚽ Fixtures & Results</h2>
     <div class="admin-buttons">
-
-      <button id="generateFixturesButton">
-        📅 Generate Fixtures
-      </button>
-
+      <button id="generateFixturesButton">📅 Generate Fixtures</button>
     </div>
-
-    <div id="adminFixtureList">
-
-      <p>
-        No fixtures generated.
-      </p>
-
-    </div>
-
+    <div id="adminFixtureList"><p>No fixtures generated.</p></div>
   </section>
 
-
-  <!-- ===================================================
-       CHAMPIONS LEAGUE KNOCKOUT
-  ==================================================== -->
-
-  <section
-    class="admin-section admin-page-section"
-    data-admin-page-section="results"
-    id="adminKnockoutSection"
-    style="display:none;"
-  >
-
-    <h2>
-      🏆 Champions League Knockout Stage
-    </h2>
-
-
-    <div id="knockoutQualificationStatus">
-    </div>
-
-
-    <div class="admin-buttons">
-
-      <button id="drawKnockoutButton">
-        🎲 Draw Knockout Stage
-      </button>
-
-    </div>
-
-
-    <div id="knockoutDrawStatus">
-    </div>
-
-
-    <div id="adminKnockoutList">
-
-      <p>
-        Knockout stage has not started.
-      </p>
-
-    </div>
-
+  <section class="admin-section admin-page-section" data-admin-page-section="results" id="adminKnockoutSection" style="display:none;">
+    <h2>🏆 Champions League Knockout Stage</h2>
+    <div id="knockoutQualificationStatus"></div>
+    <div class="admin-buttons"><button id="drawKnockoutButton">🎲 Draw Knockout Stage</button></div>
+    <div id="knockoutDrawStatus"></div>
+    <div id="adminKnockoutList"><p>Knockout stage has not started.</p></div>
   </section>
 
-
-  <!-- ===================================================
-       CHAMPIONS LEAGUE PODIUM
-  ==================================================== -->
-
-  <section
-    class="admin-section admin-page-section"
-    data-admin-page-section="results"
-    id="adminChampionsSection"
-    style="display:none;"
-  >
-
-    <h2>
-      🏆 Competition Results
-    </h2>
-
-
-    <div id="adminChampionsResults">
-
-      <p>
-        Competition results will appear here.
-      </p>
-
-    </div>
-
+  <section class="admin-section admin-page-section" data-admin-page-section="results" id="adminChampionsSection" style="display:none;">
+    <h2>🏆 Competition Results</h2>
+    <div id="adminChampionsResults"><p>Competition results will appear here.</p></div>
   </section>
-
-
-  <!-- ===================================================
-       COMPETITION CONTROLS
-  ==================================================== -->
 
   <section class="admin-section danger-zone admin-page-section" data-admin-page-section="season">
-
-    <h2>
-      ⚠️ Competition Controls
-    </h2>
-
-
-    <button id="clearCompetitionButton">
-      🗑️ Clear Competition
-    </button>
-
-
-    <button id="logoutButton">
-      🚪 Logout
-    </button>
-
+    <h2>⚠️ Competition Controls</h2>
+    <button id="clearCompetitionButton">🗑️ Clear Competition</button>
+    <button id="logoutButton">🚪 Logout</button>
   </section>
 
 </section>
 
+<script type="module" src="firebase.js"></script>
+<script type="module" src="admin.js"></script>
 
-<!-- =====================================================
-     FIREBASE
-===================================================== -->
-
-<script
-  type="module"
-  src="firebase.js?v=20260928"
-></script>
-
-
-<script
-  type="module"
-  src="admin.js?v=20260929"
-></script>
-
+</main>
 </body>
-
 </html>
