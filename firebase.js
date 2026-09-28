@@ -7,8 +7,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 import {
-  initializeAuth,
-  browserLocalPersistence
+  getAuth
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 
@@ -27,9 +26,7 @@ const app = initializeApp(firebaseConfig);
 
 const db = getFirestore(app);
 
-const auth = initializeAuth(app, {
-  persistence: browserLocalPersistence
-});
+const auth = getAuth(app);
 
 
 window.db = db;
