@@ -2201,3 +2201,28 @@ footer {
     min-height:142px !important;
   }
 }
+
+
+/* =========================================================
+   TOP KNOCKOUT STAGE — FULL SCREEN WIDTH
+   Matches the full left-to-right width of the hero area.
+========================================================= */
+
+.champions-bracket-top {
+  width: 100%;
+  max-width: none !important;
+  margin: 0 !important;
+  box-sizing: border-box;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.champions-bracket-top > .section-card {
+  width: 100%;
+  max-width: none !important;
+  box-sizing: border-box;
+  margin-left: 0;
+  margin-right: 0;
+  border-radius: 0;
+}
+
