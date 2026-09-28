@@ -557,12 +557,21 @@ async function handleAdminLogin() {
   }
 
   try {
-    await signInWithEmailAndPassword(
-      window.auth,
-      email,
-      password
-    );
+    const credential =
+      await signInWithEmailAndPassword(
+        window.auth,
+        email,
+        password
+      );
 
+    if (!credential || !credential.user) {
+      throw new Error("Firebase did not return an authenticated user.");
+    }
+
+    // Show the dashboard immediately after Firebase confirms
+    // the credentials. The auth-state listener will also verify
+    // and maintain the authenticated state.
+    showDashboard();
     setAdminLoginMessage("✅ Login successful.");
 
   } catch (error) {
