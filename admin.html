@@ -254,13 +254,18 @@
           Currency
         </label>
 
-        <input
-          type="text"
-          id="championsPrizeCurrency"
-          placeholder="e.g. USD, NGN, GBP"
-          maxlength="10"
-          autocomplete="off"
-        >
+        <select id="championsPrizeCurrency">
+          <option value="₦">₦ Naira</option>
+          <option value="$">$ Dollar</option>
+        </select>
+
+        <label class="prize-toggle-label">
+          <input
+            type="checkbox"
+            id="championsPrizeEnabled"
+          >
+          <span>Show Prize in Winner Celebration</span>
+        </label>
 
         <button
           type="button"
