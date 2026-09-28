@@ -2602,3 +2602,41 @@ footer {
     font-size: 6px !important;
   }
 }
+
+
+/* FINAL TEAM NAME FIT — KEEP NAMES INSIDE EACH BOX */
+.champions-bracket-top .visual-bracket-team > span.team-name-medium {
+  font-size: 11px !important;
+  letter-spacing: -0.15px !important;
+}
+
+.champions-bracket-top .visual-bracket-team > span.team-name-small {
+  font-size: 9px !important;
+  letter-spacing: -0.2px !important;
+}
+
+.champions-bracket-top .visual-bracket-team > span.team-name-xsmall {
+  font-size: 8px !important;
+  letter-spacing: -0.25px !important;
+}
+
+@media (max-width:700px) {
+  .champions-bracket-top .visual-bracket-team > span.team-name-medium {
+    font-size: 6.5px !important;
+  }
+
+  .champions-bracket-top .visual-bracket-team > span.team-name-small {
+    font-size: 5.8px !important;
+  }
+
+  .champions-bracket-top .visual-bracket-team > span.team-name-xsmall {
+    font-size: 5.2px !important;
+  }
+
+  .champions-bracket-top .visual-bracket-team > span {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: clip !important;
+  }
+}
