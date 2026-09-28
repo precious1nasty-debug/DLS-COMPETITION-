@@ -688,9 +688,15 @@ function renderTable() {
         }
 
 
+        const isQualified =
+          season.format === "champions" &&
+          qualificationCount > 0 &&
+          position <= qualificationCount;
+
+
         return `
 
-          <tr>
+          <tr class="${isQualified ? "qualification-team" : ""}">
 
             <td>
               ${position}
