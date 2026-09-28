@@ -1,3 +1,18 @@
+
+// =========================================================
+// ADMIN.JS LOAD TEST
+// =========================================================
+
+console.log("DLS ADMIN.JS LOADED");
+
+const adminLoadTest = document.getElementById("adminLoginMessage");
+
+if (adminLoadTest) {
+  adminLoadTest.textContent = "🟢 Admin system loaded. Enter your login details.";
+}
+
+// =========================================================
+
 // =========================================================
 // DLS COMPETITION
 // ADMIN.JS
