@@ -2917,6 +2917,136 @@ if (manageTeamsButton) {
 
 
 // =========================================================
+// REGENERATE FIXTURES AFTER TEAM REMOVAL
+// =========================================================
+
+function regenerateFixturesAfterTeamRemoval() {
+
+  /*
+   * The season has not started, so any existing fixtures
+   * belong to the old team list and must not remain.
+   */
+
+  if (teams.length < 2) {
+
+    fixtures = [];
+
+    season.phase = "registration";
+    season.qualificationCount = 0;
+
+    knockout = createDefaultKnockout();
+    champions = createDefaultChampions();
+
+    return {
+      success: true,
+      message:
+        "Fixtures were cleared because fewer than 2 teams remain."
+    };
+  }
+
+
+  if (season.format === "champions") {
+
+    /*
+     * Champions League needs its existing settings,
+     * but the fixture generator must validate the new
+     * team count and match settings.
+     */
+
+    if (teams.length < 9) {
+
+      fixtures = [];
+
+      season.phase = "registration";
+      season.qualificationCount = 0;
+
+      knockout = createDefaultKnockout();
+      champions = createDefaultChampions();
+
+      return {
+        success: true,
+        message:
+          "Fixtures were cleared because Champions League requires at least 9 teams."
+      };
+    }
+
+
+    const result =
+      createChampionsLeagueFixtures();
+
+
+    if (!result.success) {
+
+      return result;
+    }
+
+
+    fixtures =
+      result.fixtures;
+
+    season.phase =
+      "league";
+
+    season.qualificationCount =
+      getChampionsQualificationCount(
+        teams.length
+      );
+
+    knockout =
+      createDefaultKnockout();
+
+    knockout.enabled =
+      true;
+
+    knockout.qualificationCount =
+      season.qualificationCount;
+
+    champions =
+      createDefaultChampions();
+
+
+    return {
+      success: true,
+      message:
+        "Champions League fixtures were regenerated."
+    };
+  }
+
+
+  const result =
+    generateLeagueFixtures();
+
+
+  if (!result.success) {
+    return result;
+  }
+
+
+  fixtures =
+    result.fixtures;
+
+  season.phase =
+    "league";
+
+  season.qualificationCount =
+    0;
+
+  knockout =
+    createDefaultKnockout();
+
+  champions =
+    createDefaultChampions();
+
+
+  return {
+    success: true,
+    message:
+      "League fixtures were regenerated."
+  };
+}
+
+
+// =========================================================
 // REMOVE TEAM
 // =========================================================
 
@@ -2979,7 +3109,9 @@ if (adminTeamList) {
 
       const confirmed =
         confirm(
-          `Remove ${teamName} from the approved teams?`
+          `Remove ${teamName} from the approved teams?
+
+The current fixtures will also be regenerated using the remaining teams.`
         );
 
 
@@ -2991,11 +3123,71 @@ if (adminTeamList) {
       const previousTeams =
         [...teams];
 
+      const previousFixtures =
+        [...fixtures];
+
+      const previousSeason =
+        { ...season };
+
+      const previousKnockout =
+        {
+          ...knockout,
+          roundOf16:
+            Array.isArray(knockout.roundOf16)
+              ? [...knockout.roundOf16]
+              : [],
+          quarterFinals:
+            Array.isArray(knockout.quarterFinals)
+              ? [...knockout.quarterFinals]
+              : [],
+          semiFinals:
+            Array.isArray(knockout.semiFinals)
+              ? [...knockout.semiFinals]
+              : []
+        };
+
+      const previousChampions =
+        { ...champions };
+
 
       teams.splice(
         index,
         1
       );
+
+
+      const fixtureResult =
+        regenerateFixturesAfterTeamRemoval();
+
+
+      if (!fixtureResult.success) {
+
+        teams =
+          previousTeams;
+
+        fixtures =
+          previousFixtures;
+
+        season =
+          previousSeason;
+
+        knockout =
+          previousKnockout;
+
+        champions =
+          previousChampions;
+
+        renderAll();
+
+        alert(
+          "❌ The team was not removed.
+
+" +
+          fixtureResult.message
+        );
+
+        return;
+      }
 
 
       const saved =
@@ -3006,6 +3198,18 @@ if (adminTeamList) {
 
         teams =
           previousTeams;
+
+        fixtures =
+          previousFixtures;
+
+        season =
+          previousSeason;
+
+        knockout =
+          previousKnockout;
+
+        champions =
+          previousChampions;
 
         renderAll();
 
@@ -3066,11 +3270,18 @@ if (adminTeamList) {
         );
 
         alert(
-          "⚠️ The team was removed, but its old registration document could not be deleted.\n\n" +
+          "⚠️ The team and fixtures were updated, but its old registration document could not be deleted.
+
+" +
           (registrationError?.code || "") +
-          "\n" +
+          "
+" +
           (registrationError?.message || "Unknown Firestore error.")
         );
+
+        renderAll();
+
+        return;
       }
 
 
@@ -3078,12 +3289,13 @@ if (adminTeamList) {
 
 
       alert(
-        `✅ ${teamName} was removed.`
+        `✅ ${teamName} was removed.
+
+${fixtureResult.message}`
       );
     }
   );
 }
-
 
 // =========================================================
 // REFRESH TEAM-DEPENDENT SETTINGS
