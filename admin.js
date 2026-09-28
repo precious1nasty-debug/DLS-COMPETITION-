@@ -5394,7 +5394,11 @@ function enforceFormatLock() {
       );
 
     knockoutLegFormat.disabled =
-      true;
+      season.format !== "champions" ||
+      !season.started ||
+      !areLeagueFixturesComplete() ||
+      knockout.drawLocked ||
+      season.phase === "completed";
   }
 }
 
