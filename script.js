@@ -1226,20 +1226,17 @@ function renderTie(
       : [];
 
 
-  const home =
-    tie.homeTeam ||
-    tie.home ||
+  const teamA =
+    getTeamName(tie.teamA) ||
+    "TBD";
+
+  const teamB =
+    getTeamName(tie.teamB) ||
     "TBD";
 
 
-  const away =
-    tie.awayTeam ||
-    tie.away ||
-    "TBD";
-
-
-  let aggregateHome = 0;
-  let aggregateAway = 0;
+  let aggregateA = 0;
+  let aggregateB = 0;
 
 
   matches.forEach(match => {
@@ -1255,11 +1252,16 @@ function renderTie(
     }
 
 
-    aggregateHome +=
-      result.home;
+    const homeTeam =
+      getTeamName(match.homeTeam);
 
-    aggregateAway +=
-      result.away;
+    if (homeTeam === teamA) {
+      aggregateA += result.home;
+      aggregateB += result.away;
+    } else if (homeTeam === teamB) {
+      aggregateB += result.home;
+      aggregateA += result.away;
+    }
   });
 
 
@@ -1275,11 +1277,11 @@ function renderTie(
       <div class="knockout-team">
 
         <span>
-          ${escapeHTML(home)}
+          ${escapeHTML(teamA)}
         </span>
 
         <strong>
-          ${aggregateHome}
+          ${aggregateA}
         </strong>
 
       </div>
@@ -1288,11 +1290,11 @@ function renderTie(
       <div class="knockout-team">
 
         <span>
-          ${escapeHTML(away)}
+          ${escapeHTML(teamB)}
         </span>
 
         <strong>
-          ${aggregateAway}
+          ${aggregateB}
         </strong>
 
       </div>
