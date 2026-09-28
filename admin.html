@@ -531,6 +531,29 @@
 </section>
 
 
+<script>
+(function () {
+  const button = document.getElementById("adminLoginButton");
+  const message = document.getElementById("adminLoginMessage");
+
+  if (!button) return;
+
+  button.addEventListener("click", function () {
+    if (message) {
+      message.textContent = "🔄 Button received your tap. Loading login system...";
+    }
+
+    setTimeout(function () {
+      if (typeof window.handleAdminLogin === "function") {
+        window.handleAdminLogin();
+      } else if (message) {
+        message.textContent = "⚠️ The login page loaded, but admin.js did not load correctly.";
+      }
+    }, 100);
+  });
+})();
+</script>
+
 <!-- =====================================================
      FIREBASE
 ===================================================== -->
