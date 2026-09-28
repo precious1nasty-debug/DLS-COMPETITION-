@@ -493,164 +493,12 @@ async function saveCompetition() {
   }
 }
 
-if (adminLoginButton) {
-  adminLoginButton.addEventListener(
-    "click",
-    async function() {
+// =========================================================
+// CLEAN ADMIN AUTHENTICATION
+// =========================================================
 
-      if (!window.auth) {
-        adminLoginMessage.textContent =
-          "❌ Authentication is unavailable.";
-        return;
-      }
-
-      const email =
-        adminEmail?.value
-          ?.trim()
-          .toLowerCase() || "";
-
-      const password =
-        adminPassword?.value || "";
-
-      if (!email || !password) {
-        adminLoginMessage.textContent =
-          "⚠️ Enter your email and password.";
-        return;
-      }
-
-      if (email !== ADMIN_EMAIL) {
-        adminLoginMessage.textContent =
-          "❌ This account is not authorized.";
-        return;
-      }
-
-      adminLoginMessage.textContent =
-        "⏳ Signing in...";
-
-      try {
-
-        // Always clear any previous Firebase session first.
-        // This prevents an old authenticated session from
-        // interfering with a new login attempt.
-        if (window.auth.currentUser) {
-          await signOut(window.auth);
-        }
-
-        await signInWithEmailAndPassword(
-          window.auth,
-          email,
-          password
-        );
-
-        adminLoginMessage.textContent =
-          "✅ Login successful.";
-
-      } catch (error) {
-
-        console.error(
-          "Admin login failed:",
-          error
-        );
-
-        adminLoginMessage.textContent =
-          "❌ Login failed: " +
-          (
-            error.message ||
-            "Please check your details."
-          );
-      }
-    }
-  );
-}
-
-function setupAuthentication() {
-  if (!window.auth) {
-    console.error(
-      "Firebase Auth is unavailable."
-    );
-    return;
-  }
-
-  onAuthStateChanged(
-    window.auth,
-    async function(user) {
-
-      if (!user) {
-        showLogin();
-        return;
-      }
-
-      const email =
-        String(user.email || "")
-          .trim()
-          .toLowerCase();
-
-      if (email !== ADMIN_EMAIL) {
-
-        await signOut(window.auth);
-
-        showLogin();
-
-        if (adminLoginMessage) {
-          adminLoginMessage.textContent =
-            "❌ Unauthorized account.";
-        }
-
-        return;
-      }
-
-      // Authentication has succeeded.
-      // Keep the dashboard visible even if a later
-      // dashboard-data operation fails.
-      showDashboard();
-
-      try {
-
-        await loadCompetition();
-
-        normalizeKnockoutArrays();
-
-        await advanceKnockoutStage();
-
-        renderAll();
-
-        refreshAdminDashboard();
-
-        updateCompletedSeasonMessage();
-
-        enforceChampionsCompletionLock();
-
-        renderFinalCompetitionStatus();
-
-        renderChampionsDataWarning();
-
-        setupRegistrationListener();
-
-        renderFirebaseStatus();
-        runAdminFinalCheck();
-
-      } catch (error) {
-
-        console.error(
-          "Authenticated admin startup failed:",
-          error
-        );
-
-        if (seasonControlMessage) {
-          seasonControlMessage.textContent =
-            "❌ Admin signed in, but some dashboard data could not load: " +
-            (
-              error.message ||
-              "Please refresh and try again."
-            );
-
-          seasonControlMessage.style.display =
-            "block";
-        }
-      }
-    }
-  );
-}
+let adminStartupInProgress = false;
+let adminStartupUserUid = "";
 
 function showLogin() {
   if (adminLogin) {
@@ -672,20 +520,187 @@ function showDashboard() {
   }
 }
 
-if (logoutButton) {
-  logoutButton.addEventListener(
-    "click",
-    async function() {
+function setAdminLoginMessage(message) {
+  if (adminLoginMessage) {
+    adminLoginMessage.textContent = message;
+  }
+}
 
-      try {
-        await signOut(window.auth);
-      } catch (error) {
-        console.error(
-          "Logout failed:",
-          error
-        );
+async function handleAdminLogin() {
+  if (!window.auth) {
+    setAdminLoginMessage("❌ Firebase Authentication is not ready.");
+    return;
+  }
+
+  const email =
+    String(adminEmail?.value || "")
+      .trim()
+      .toLowerCase();
+
+  const password =
+    String(adminPassword?.value || "");
+
+  if (!email || !password) {
+    setAdminLoginMessage("⚠️ Enter your email and password.");
+    return;
+  }
+
+  if (email !== ADMIN_EMAIL) {
+    setAdminLoginMessage("❌ This account is not authorized.");
+    return;
+  }
+
+  setAdminLoginMessage("⏳ Signing in...");
+
+  if (adminLoginButton) {
+    adminLoginButton.disabled = true;
+  }
+
+  try {
+    await signInWithEmailAndPassword(
+      window.auth,
+      email,
+      password
+    );
+
+    setAdminLoginMessage("✅ Login successful.");
+
+  } catch (error) {
+    console.error("Admin login failed:", error);
+
+    const code =
+      String(error?.code || "");
+
+    let message =
+      "❌ Login failed. Check your email and password.";
+
+    if (code === "auth/invalid-credential") {
+      message = "❌ Incorrect email or password.";
+    } else if (code === "auth/too-many-requests") {
+      message = "❌ Too many attempts. Try again later.";
+    } else if (code === "auth/network-request-failed") {
+      message = "❌ Network error. Check your internet connection.";
+    } else if (code === "auth/user-disabled") {
+      message = "❌ This account has been disabled.";
+    }
+
+    setAdminLoginMessage(message);
+
+  } finally {
+    if (adminLoginButton) {
+      adminLoginButton.disabled = false;
+    }
+  }
+}
+
+if (adminLoginButton) {
+  adminLoginButton.addEventListener(
+    "click",
+    handleAdminLogin
+  );
+}
+
+function setupAuthentication() {
+  if (!window.auth) {
+    console.error("Firebase Auth is unavailable.");
+    setAdminLoginMessage("❌ Firebase Authentication is unavailable.");
+    showLogin();
+    return;
+  }
+
+  showLogin();
+
+  onAuthStateChanged(
+    window.auth,
+    async function(user) {
+      if (!user) {
+        adminStartupInProgress = false;
+        adminStartupUserUid = "";
+        showLogin();
+        return;
       }
 
+      const email =
+        String(user.email || "")
+          .trim()
+          .toLowerCase();
+
+      if (email !== ADMIN_EMAIL) {
+        console.warn("Unauthorized Firebase account:", user.email);
+
+        try {
+          await signOut(window.auth);
+        } catch (error) {
+          console.error("Unauthorized sign-out failed:", error);
+        }
+
+        adminStartupInProgress = false;
+        adminStartupUserUid = "";
+        showLogin();
+        setAdminLoginMessage("❌ This account is not authorized.");
+        return;
+      }
+
+      if (
+        adminStartupInProgress &&
+        adminStartupUserUid === user.uid
+      ) {
+        return;
+      }
+
+      adminStartupInProgress = true;
+      adminStartupUserUid = user.uid;
+
+      showDashboard();
+      setAdminLoginMessage("");
+
+      try {
+        await loadCompetition();
+
+        normalizeKnockoutArrays();
+
+        await advanceKnockoutStage();
+
+        renderAll();
+
+        refreshAdminDashboard();
+
+        updateCompletedSeasonMessage();
+
+        enforceChampionsCompletionLock();
+
+        renderFinalCompetitionStatus();
+
+        renderChampionsDataWarning();
+
+        setupRegistrationListener();
+
+        renderFirebaseStatus();
+
+        runAdminFinalCheck();
+
+      } catch (error) {
+        console.error(
+          "Authenticated admin startup failed:",
+          error
+        );
+
+        // Authentication remains valid.
+        // Do NOT send the user back to the login screen
+        // because of a dashboard-data error.
+        showDashboard();
+
+        if (seasonControlMessage) {
+          seasonControlMessage.textContent =
+            "⚠️ Admin signed in, but some dashboard data could not load: " +
+            (
+              error?.message ||
+              "Please refresh the dashboard."
+            );
+
+          seasonControlMessage.style.display = "block";
+        }
+      }
     }
   );
 }
