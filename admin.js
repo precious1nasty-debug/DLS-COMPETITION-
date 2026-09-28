@@ -6409,7 +6409,8 @@ function createKnockoutTie(
   round,
   tieNumber,
   teamA,
-  teamB
+  teamB,
+  legsOverride = null
 ) {
 
   const tieId =
@@ -6421,7 +6422,9 @@ function createKnockoutTie(
 
   const legs =
     Number(
-      season.knockoutLegs || 1
+      legsOverride ??
+      season.knockoutLegs ??
+      1
     );
 
 
@@ -8236,23 +8239,36 @@ async function createFinalAndThirdPlace() {
    * Final
    */
 
-  knockout.final =
-    createNextKnockoutRound(
+  /*
+   * The Final is always a single match.
+   * The 1/2-leg knockout setting does not apply here.
+   */
+  knockout.final = [
+    createKnockoutTie(
       "FINAL",
-      winners
-    );
+      1,
+      winners[0],
+      winners[1],
+      1
+    )
+  ];
 
 
   /*
    * Third-place match
    */
 
+  /*
+   * The 3rd-place match is always a single match.
+   * The 1/2-leg knockout setting does not apply here.
+   */
   const thirdPlaceTie =
     createKnockoutTie(
       "THIRD",
       1,
       losers[0],
-      losers[1]
+      losers[1],
+      1
     );
 
 
