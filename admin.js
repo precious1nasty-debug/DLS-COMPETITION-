@@ -1728,17 +1728,6 @@ async function saveChampionsPrize() {
       ? "$"
       : "₦";
 
-  const enabled =
-    championsPrizeEnabled?.checked === true;
-
-  if (!amount && enabled) {
-    if (championsPrizeMessage) {
-      championsPrizeMessage.textContent =
-        "⚠️ Enter the cash prize amount.";
-    }
-    return;
-  }
-
   if (!currency) {
     if (championsPrizeMessage) {
       championsPrizeMessage.textContent =
@@ -1747,9 +1736,9 @@ async function saveChampionsPrize() {
     return;
   }
 
+  // Save button controls ONLY the prize amount and currency.
   champions.prizeAmount = amount;
   champions.prizeCurrency = currency;
-  champions.prizeEnabled = enabled;
 
   const saved = await saveCompetition();
 
@@ -1771,6 +1760,60 @@ if (saveChampionsPrizeButton) {
   saveChampionsPrizeButton.addEventListener(
     "click",
     saveChampionsPrize
+  );
+}
+
+if (championsPrizeEnabled) {
+
+  championsPrizeEnabled.addEventListener(
+    "change",
+    async function() {
+
+      champions.prizeEnabled =
+        championsPrizeEnabled.checked === true;
+
+      try {
+
+        await setDoc(
+          doc(window.db, "competition", "main"),
+          {
+            champions: {
+              ...champions
+            }
+          },
+          {
+            merge: true
+          }
+        );
+
+        if (championsPrizeMessage) {
+          championsPrizeMessage.textContent =
+            champions.prizeEnabled
+              ? "✅ Prize display enabled."
+              : "✅ Prize display disabled.";
+        }
+
+        renderChampionsResults();
+
+      } catch (error) {
+
+        console.error(
+          "Prize display setting save failed:",
+          error
+        );
+
+        championsPrizeEnabled.checked =
+          !championsPrizeEnabled.checked;
+
+        champions.prizeEnabled =
+          championsPrizeEnabled.checked === true;
+
+        if (championsPrizeMessage) {
+          championsPrizeMessage.textContent =
+            "❌ Could not update prize display setting.";
+        }
+      }
+    }
   );
 }
 
