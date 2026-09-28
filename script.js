@@ -94,6 +94,11 @@ const championsQualificationList =
     "championsQualificationList"
   );
 
+const championsQualificationDropdown =
+  document.getElementById(
+    "championsQualificationDropdown"
+  );
+
 const championsBracketContent =
   document.getElementById(
     "championsBracketContent"
@@ -1095,6 +1100,11 @@ function getQualifiedTeams() {
 // =========================================================
 
 function renderChampionsQualification() {
+
+  if (championsQualificationDropdown) {
+    championsQualificationDropdown.open =
+      season.phase !== "knockout";
+  }
 
   if (!championsQualificationList) {
     return;
