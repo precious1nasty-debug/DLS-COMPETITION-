@@ -2023,6 +2023,28 @@ function renderWinnerCelebration() {
   winnerCelebration.innerHTML = `
     <div class="winner-celebration-inner">
 
+      <div class="winner-fireworks" aria-hidden="true">
+        <span>🎆</span>
+        <span>✨</span>
+        <span>🎇</span>
+        <span>✨</span>
+        <span>🎆</span>
+      </div>
+
+      <div class="winner-balloons" aria-hidden="true">
+        <span>🎈</span>
+        <span>🎈</span>
+        <span>🎈</span>
+        <span>🎈</span>
+        <span>🎈</span>
+      </div>
+
+      <div class="winner-crawler-wrap" aria-label="Winner congratulations">
+        <div class="winner-crawler">
+          🎉 CONGRATULATIONS ${escapeHTML(champion)} 🎉
+        </div>
+      </div>
+
       <div class="winner-confetti" aria-hidden="true">
         ✨ 🎉 ✨ 🎊 ✨ 🎉 ✨
       </div>
