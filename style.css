@@ -152,33 +152,46 @@ nav a:hover {
 ========================================================= */
 
 .fixture-round {
-  background: white;
-  border-radius: 14px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow:
-    0 4px 15px rgba(0, 0, 0, 0.06);
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 16px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
 }
 
 .fixture-round h3 {
-  margin-top: 0;
+  margin: 0 0 10px;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .fixture-list {
   display: grid;
-  gap: 10px;
+  gap: 6px;
 }
 
 .fixture-card {
   display: grid;
-  grid-template-columns:
-    1fr auto 1fr;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  gap: 15px;
-  padding: 14px;
+  gap: 8px;
+  padding: 9px 10px;
   border: 1px solid #e4e7ec;
-  border-radius: 10px;
+  border-radius: 8px;
   background: #fafafa;
+  min-width: 0;
+}
+
+.fixture-card span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.fixture-card span:first-child {
+  text-align: left;
 }
 
 .fixture-card span:last-child {
@@ -186,8 +199,31 @@ nav a:hover {
 }
 
 .fixture-card strong {
-  min-width: 60px;
+  min-width: 52px;
   text-align: center;
+  white-space: nowrap;
+}
+
+@media (max-width: 650px) {
+  .fixture-round {
+    padding: 10px;
+    margin-bottom: 12px;
+  }
+
+  .fixture-round h3 {
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+  }
+
+  .fixture-card {
+    gap: 5px;
+    padding: 8px 6px;
+    font-size: 0.9rem;
+  }
+
+  .fixture-card strong {
+    min-width: 48px;
+  }
 }
 
 
