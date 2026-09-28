@@ -5979,7 +5979,8 @@ const awayName =
                 ? score.home
                 : ""
             }"
-            placeholder="Home"
+            placeholder="0"
+            aria-label="Home score"
           >
 
           <span>-</span>
@@ -5994,34 +5995,20 @@ const awayName =
                 ? score.away
                 : ""
             }"
-            placeholder="Away"
+            placeholder="0"
+            aria-label="Away score"
           >
-
-          <button
-            class="save-fixture-result"
-            data-fixture-id="${escapeHTML(
-              fixture.id
-            )}"
-          >
-            💾 Save Result
-          </button>
 
         </div>
 
-        ${
-          score
-            ? `
-              <p>
-                ✅ Result recorded:
-                <strong>
-                  ${score.home} - ${score.away}
-                </strong>
-              </p>
-            `
-            : `
-              <p>🟡 Result not entered.</p>
-            `
-        }
+        <button
+          class="save-fixture-result"
+          data-fixture-id="${escapeHTML(
+            fixture.id
+          )}"
+        >
+          💾 Save Result
+        </button>
       `;
 
 
