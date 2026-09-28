@@ -905,7 +905,7 @@ function isMatchesPerTeamPossible(
     return false;
   }
 
-  if (matchesPerTeam < 1 || matchesPerTeam > 8) {
+  if (matchesPerTeam < 4 || matchesPerTeam > 8) {
     return false;
   }
 
@@ -953,7 +953,7 @@ function getSuggestedMatchesPerTeam(
 
   for (
     let number = requestedNumber - 1;
-    number >= 1;
+    number >= 4;
     number--
   ) {
 
@@ -1914,7 +1914,7 @@ function validateChampionsSettings() {
 
 
   if (
-    selectedMatches < 1 ||
+    selectedMatches < 4 ||
     selectedMatches > 8
   ) {
 
@@ -2917,119 +2917,33 @@ if (manageTeamsButton) {
 
 
 // =========================================================
-// REGENERATE FIXTURES AFTER TEAM REMOVAL
+// =========================================================
+// CLEAR OBSOLETE FIXTURES AFTER TEAM REMOVAL
 // =========================================================
 
-function regenerateFixturesAfterTeamRemoval() {
+function clearFixturesAfterTeamRemoval() {
 
   /*
-   * The season has not started, so any existing fixtures
-   * belong to the old team list and must not remain.
+   * The season has not started.
+   *
+   * The old fixtures were generated for the previous
+   * team count, so they must be removed. The admin will
+   * choose the appropriate matches-per-team setting and
+   * manually generate a new schedule for the remaining
+   * teams.
    */
 
-  if (teams.length < 2) {
-
-    fixtures = [];
-
-    season.phase = "registration";
-    season.qualificationCount = 0;
-
-    knockout = createDefaultKnockout();
-    champions = createDefaultChampions();
-
-    return {
-      success: true,
-      message:
-        "Fixtures were cleared because fewer than 2 teams remain."
-    };
-  }
-
-
-  if (season.format === "champions") {
-
-    /*
-     * Champions League needs its existing settings,
-     * but the fixture generator must validate the new
-     * team count and match settings.
-     */
-
-    if (teams.length < 9) {
-
-      fixtures = [];
-
-      season.phase = "registration";
-      season.qualificationCount = 0;
-
-      knockout = createDefaultKnockout();
-      champions = createDefaultChampions();
-
-      return {
-        success: true,
-        message:
-          "Fixtures were cleared because Champions League requires at least 9 teams."
-      };
-    }
-
-
-    const result =
-      createChampionsLeagueFixtures();
-
-
-    if (!result.success) {
-
-      return result;
-    }
-
-
-    fixtures =
-      result.fixtures;
-
-    season.phase =
-      "league";
-
-    season.qualificationCount =
-      getChampionsQualificationCount(
-        teams.length
-      );
-
-    knockout =
-      createDefaultKnockout();
-
-    knockout.enabled =
-      true;
-
-    knockout.qualificationCount =
-      season.qualificationCount;
-
-    champions =
-      createDefaultChampions();
-
-
-    return {
-      success: true,
-      message:
-        "Champions League fixtures were regenerated."
-    };
-  }
-
-
-  const result =
-    generateLeagueFixtures();
-
-
-  if (!result.success) {
-    return result;
-  }
-
-
-  fixtures =
-    result.fixtures;
+  fixtures = [];
 
   season.phase =
-    "league";
+    "registration";
 
   season.qualificationCount =
-    0;
+    season.format === "champions"
+      ? getChampionsQualificationCount(
+          teams.length
+        )
+      : 0;
 
   knockout =
     createDefaultKnockout();
@@ -3037,11 +2951,8 @@ function regenerateFixturesAfterTeamRemoval() {
   champions =
     createDefaultChampions();
 
-
   return {
-    success: true,
-    message:
-      "League fixtures were regenerated."
+    success: true
   };
 }
 
@@ -3111,7 +3022,7 @@ if (adminTeamList) {
         confirm(
           `Remove ${teamName} from the approved teams?
 
-The current fixtures will also be regenerated using the remaining teams.`
+The current fixtures will be cleared. You can then choose the correct matches-per-team setting and generate new fixtures for the remaining teams.`
         );
 
 
@@ -3157,7 +3068,7 @@ The current fixtures will also be regenerated using the remaining teams.`
 
 
       const fixtureResult =
-        regenerateFixturesAfterTeamRemoval();
+        clearFixturesAfterTeamRemoval();
 
 
       if (!fixtureResult.success) {
@@ -3284,7 +3195,7 @@ The current fixtures will also be regenerated using the remaining teams.`
 
 
       alert(
-        `✅ ${teamName} was removed.\n\n${fixtureResult.message}`
+        `✅ ${teamName} was removed.\n\nThe old fixtures were cleared. Set the matches per team for the remaining teams, then generate the new fixtures.`
       );
     }
   );
