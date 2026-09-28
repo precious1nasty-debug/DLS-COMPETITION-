@@ -2553,3 +2553,52 @@ footer {
     font-size: 6.5px !important;
   }
 }
+
+
+/* KNOCKOUT TEAM NAMES — FIT INSIDE BOXES */
+.champions-bracket-top .visual-bracket-team {
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+.champions-bracket-top .visual-bracket-team > span {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+  line-height: 1 !important;
+  text-align: left !important;
+}
+
+.champions-bracket-top .visual-bracket-team > strong {
+  flex: 0 0 28px !important;
+  width: 28px !important;
+  min-width: 28px !important;
+  text-align: center !important;
+}
+
+.champions-bracket-top .visual-bracket-team > span.team-name-medium {
+  font-size: 11px !important;
+}
+
+.champions-bracket-top .visual-bracket-team > span.team-name-small {
+  font-size: 9px !important;
+}
+
+@media (max-width:700px) {
+  .champions-bracket-top .visual-bracket-team > span.team-name-medium {
+    font-size: 6.5px !important;
+  }
+
+  .champions-bracket-top .visual-bracket-team > span.team-name-small {
+    font-size: 5.5px !important;
+  }
+
+  .champions-bracket-top .visual-bracket-team > strong {
+    flex-basis: 12px !important;
+    width: 12px !important;
+    min-width: 12px !important;
+    font-size: 6px !important;
+  }
+}
