@@ -1375,11 +1375,13 @@ function renderVisualTeam(
   const safeName = name || "TBD";
 
   const nameClass =
-    safeName.length > 28
-      ? "team-name-small"
-      : safeName.length > 20
-        ? "team-name-medium"
-        : "";
+    safeName.length > 26
+      ? "team-name-xsmall"
+      : safeName.length > 18
+        ? "team-name-small"
+        : safeName.length > 10
+          ? "team-name-medium"
+          : "";
 
   return `
     <div class="visual-bracket-team ${winner ? "is-winner" : ""}">
