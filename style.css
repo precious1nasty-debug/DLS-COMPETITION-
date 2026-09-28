@@ -2226,3 +2226,28 @@ footer {
   border-radius: 0;
 }
 
+
+
+/* =========================================================
+   TOP KNOCKOUT STAGE — REMOVE SECTION SIDE GAPS
+========================================================= */
+
+.champions-bracket-top {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin-left: calc(50% - 50vw) !important;
+  margin-right: calc(50% - 50vw) !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.champions-bracket-top > .section-card {
+  width: 100% !important;
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  border-radius: 0 !important;
+  box-sizing: border-box !important;
+}
+
