@@ -2054,34 +2054,26 @@ function renderWinnerCelebration() {
 
       <div class="stage-podium">
 
-        <div class="podium-column podium-column-left">
-          <div class="podium-team-name">
+        <div class="podium-block podium-left">
+          <span>2ND PLACE</span>
+          <strong class="podium-team-name">
             ${escapeHTML(champions.runnerUp || "RUNNER-UP")}
-          </div>
-          <div class="podium-block podium-left">
-            <span>2ND PLACE</span>
-            <b>2</b>
-          </div>
+          </strong>
         </div>
 
-        <div class="podium-column podium-column-center">
-          <div class="podium-team-name podium-champion-name">
+        <div class="podium-block podium-center">
+          <span>🏆 CHAMPION 🏆</span>
+          <strong class="podium-team-name podium-champion-name">
             ${escapeHTML(champion)}
-          </div>
-          <div class="podium-block podium-center">
-            <span>CHAMPION</span>
-            <b>1</b>
-          </div>
+          </strong>
+          <b>1</b>
         </div>
 
-        <div class="podium-column podium-column-right">
-          <div class="podium-team-name">
+        <div class="podium-block podium-right">
+          <span>3RD PLACE</span>
+          <strong class="podium-team-name">
             ${escapeHTML(champions.thirdPlace || "3RD PLACE")}
-          </div>
-          <div class="podium-block podium-right">
-            <span>3RD PLACE</span>
-            <b>3</b>
-          </div>
+          </strong>
         </div>
 
       </div>
