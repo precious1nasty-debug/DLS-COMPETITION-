@@ -3056,3 +3056,169 @@ footer {
     transform: scale(1.02);
   }
 }
+
+
+/* =========================================================
+   WINNER FIREWORKS, BALLOONS & CRAWLER
+========================================================= */
+
+.winner-celebration-inner {
+  position: relative;
+}
+
+.winner-fireworks {
+  position: absolute;
+  inset: 8px 0 auto;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  pointer-events: none;
+  z-index: 1;
+  font-size: 28px;
+}
+
+.winner-fireworks span {
+  display: inline-block;
+  animation: winnerFireworkBurst 1.6s ease-in-out infinite;
+}
+
+.winner-fireworks span:nth-child(2) {
+  animation-delay: .35s;
+}
+
+.winner-fireworks span:nth-child(3) {
+  animation-delay: .7s;
+}
+
+.winner-fireworks span:nth-child(4) {
+  animation-delay: 1s;
+}
+
+.winner-fireworks span:nth-child(5) {
+  animation-delay: 1.3s;
+}
+
+.winner-balloons {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.winner-balloons span {
+  position: absolute;
+  bottom: -55px;
+  font-size: 38px;
+  animation: winnerBalloonRise 7s linear infinite;
+}
+
+.winner-balloons span:nth-child(1) {
+  left: 4%;
+  animation-delay: 0s;
+}
+
+.winner-balloons span:nth-child(2) {
+  left: 23%;
+  animation-delay: 2s;
+}
+
+.winner-balloons span:nth-child(3) {
+  left: 48%;
+  animation-delay: 4s;
+}
+
+.winner-balloons span:nth-child(4) {
+  left: 73%;
+  animation-delay: 1s;
+}
+
+.winner-balloons span:nth-child(5) {
+  left: 91%;
+  animation-delay: 3s;
+}
+
+.winner-crawler-wrap {
+  position: relative;
+  z-index: 4;
+  width: 100%;
+  overflow: hidden;
+  margin: 4px 0 12px;
+  padding: 8px 0;
+  background: rgba(255,255,255,.18);
+  border-top: 2px solid rgba(255,255,255,.5);
+  border-bottom: 2px solid rgba(255,255,255,.5);
+}
+
+.winner-crawler {
+  display: inline-block;
+  min-width: max-content;
+  padding-left: 100%;
+  font-size: clamp(24px, 6vw, 52px);
+  line-height: 1;
+  font-weight: 1000;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #fff;
+  text-shadow:
+    0 3px 0 rgba(120,53,15,.55),
+    0 7px 16px rgba(120,53,15,.45);
+  animation: winnerCrawlerMove 11s linear infinite;
+}
+
+@keyframes winnerFireworkBurst {
+  0%, 100% {
+    opacity: .45;
+    transform: scale(.65) rotate(-15deg);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1.45) rotate(12deg);
+  }
+  65% {
+    opacity: .8;
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes winnerBalloonRise {
+  0% {
+    opacity: 0;
+    transform: translateY(0) rotate(-8deg);
+  }
+  12% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-280px) translateX(18px) rotate(8deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-600px) translateX(-15px) rotate(-8deg);
+  }
+}
+
+@keyframes winnerCrawlerMove {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@media (max-width: 700px) {
+  .winner-fireworks {
+    font-size: 21px;
+  }
+
+  .winner-balloons span {
+    font-size: 29px;
+  }
+
+  .winner-crawler {
+    font-size: clamp(22px, 8vw, 38px);
+    animation-duration: 9s;
+  }
+}
