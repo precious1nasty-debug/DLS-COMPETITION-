@@ -317,49 +317,44 @@ p {
   border-radius: 8px;
 }
 
-.fixture-teams {
+.fixture-score-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: 8px;
 }
 
-.fixture-teams strong {
+.fixture-home-team,
+.fixture-away-team {
   min-width: 0;
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 
-.fixture-teams strong:first-child {
+.fixture-home-team {
   text-align: left;
 }
 
-.fixture-teams strong:last-child {
+.fixture-away-team {
   text-align: right;
 }
 
-.fixture-teams span {
-  text-align: center;
-  font-weight: 700;
-}
-
-.fixture-score-row {
+.fixture-score-inputs {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  margin-top: 8px;
+  gap: 5px;
 }
 
-.fixture-score-row input {
-  width: 52px;
+.fixture-score-inputs input {
+  width: 42px;
   min-height: 36px;
   margin: 0;
   padding: 6px;
   text-align: center;
 }
 
-.fixture-score-row span {
+.fixture-score-inputs span {
   font-weight: 800;
 }
 
@@ -380,16 +375,16 @@ p {
     padding: 9px;
   }
 
-  .fixture-teams {
+  .fixture-score-row {
     gap: 5px;
     font-size: 0.9rem;
   }
 
-  .fixture-score-row {
-    margin-top: 7px;
+  .fixture-score-inputs {
+    gap: 4px;
   }
 
-  .fixture-score-row input {
-    width: 48px;
+  .fixture-score-inputs input {
+    width: 38px;
   }
 }
