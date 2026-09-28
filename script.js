@@ -859,9 +859,7 @@ function renderFixtures() {
           <div class="fixture-round">
 
             <h3>
-              ${escapeHTML(
-                round
-              )}
+              MATCH DAY ${escapeHTML(round)}
             </h3>
 
             <div class="fixture-list">
