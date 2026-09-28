@@ -2764,3 +2764,212 @@ footer {
   border-color: #ef4444 !important;
   color: #fff !important;
 }
+
+
+/* =========================================================
+   WINNER CELEBRATION
+========================================================= */
+
+.winner-celebration {
+  width: 100%;
+  margin-top: 25px;
+  overflow: hidden;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top, #fff7c2 0%, #facc15 32%, #b45309 100%);
+  box-shadow:
+    0 12px 35px rgba(120, 53, 15, 0.25);
+  color: #3b2200;
+  text-align: center;
+  animation: winnerCelebrationPop 0.8s ease both;
+}
+
+.winner-celebration-inner {
+  position: relative;
+  padding: 28px 18px 32px;
+  overflow: hidden;
+}
+
+.winner-label {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+
+.winner-medal {
+  font-size: 76px;
+  line-height: 1;
+  animation:
+    winnerMedalDrop 1s ease both,
+    winnerMedalFloat 2.2s ease-in-out 1s infinite;
+}
+
+.winner-team-name {
+  margin: 14px auto 8px;
+  max-width: 100%;
+  font-size: clamp(28px, 7vw, 58px);
+  line-height: 1.05;
+  font-weight: 1000;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-shadow:
+    0 3px 0 rgba(255, 255, 255, 0.55);
+  animation: winnerNameReveal 1s ease 0.25s both;
+}
+
+.winner-title {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  animation: winnerPulse 1.5s ease-in-out infinite;
+}
+
+.winner-prize {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 18px;
+  padding: 12px 22px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(120, 53, 15, 0.25);
+  box-shadow: 0 7px 20px rgba(120, 53, 15, 0.2);
+  animation: winnerPrizeReveal 0.9s ease 0.7s both;
+}
+
+.winner-prize-label {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+}
+
+.winner-prize strong {
+  font-size: clamp(22px, 6vw, 34px);
+  overflow-wrap: anywhere;
+}
+
+.winner-congratulations {
+  margin-top: 14px;
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.winner-confetti {
+  font-size: 20px;
+  letter-spacing: 8px;
+  white-space: nowrap;
+  animation: winnerConfettiMove 2s ease-in-out infinite;
+}
+
+.winner-confetti-bottom {
+  margin-top: 20px;
+  animation-delay: 0.5s;
+}
+
+@keyframes winnerCelebrationPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  70% {
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes winnerMedalDrop {
+  0% {
+    opacity: 0;
+    transform: translateY(-70px) rotate(-18deg) scale(0.6);
+  }
+  70% {
+    transform: translateY(8px) rotate(5deg) scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotate(0) scale(1);
+  }
+}
+
+@keyframes winnerMedalFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(0);
+  }
+  50% {
+    transform: translateY(-8px) rotate(3deg);
+  }
+}
+
+@keyframes winnerNameReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(25px) scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes winnerPrizeReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes winnerPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes winnerConfettiMove {
+  0%, 100% {
+    transform: translateX(-8px);
+  }
+  50% {
+    transform: translateX(8px);
+  }
+}
+
+@media (max-width: 700px) {
+
+  .winner-celebration-inner {
+    padding: 22px 12px 26px;
+  }
+
+  .winner-medal {
+    font-size: 62px;
+  }
+
+  .winner-team-name {
+    font-size: clamp(24px, 9vw, 42px);
+  }
+
+  .winner-title {
+    font-size: 18px;
+  }
+
+  .winner-prize {
+    max-width: 100%;
+    padding: 11px 16px;
+  }
+
+  .winner-confetti {
+    font-size: 16px;
+    letter-spacing: 4px;
+  }
+}
