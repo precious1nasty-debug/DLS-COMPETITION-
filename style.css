@@ -2285,3 +2285,26 @@ footer {
 .champions-bracket-top > .section-card h3 {
   color: white !important;
 }
+
+
+/* =========================================================
+   KNOCKOUT DIAGRAM — DIRECTLY FUSED TO BACKGROUND
+========================================================= */
+
+.champions-bracket-top #championsBracket {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 20px !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+}
+
+.champions-bracket-top #championsBracket h3 {
+  color: white !important;
+  background: transparent !important;
+  margin-top: 0 !important;
+}
