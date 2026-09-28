@@ -2017,6 +2017,9 @@ function renderWinnerCelebration() {
   const prizeAmount =
     champions.prizeAmount || "";
 
+  const prizeEnabled =
+    champions.prizeEnabled === true;
+
   winnerCelebration.style.display =
     "block";
 
