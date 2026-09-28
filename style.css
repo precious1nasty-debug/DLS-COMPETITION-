@@ -3943,3 +3943,24 @@ footer {
 .champions-bracket-top .skeleton-third-place .third-place-title {
   color: #e7b77a !important;
 }
+
+
+/* =========================================================
+   CHAMPIONS LEAGUE QUALIFYING TEAMS
+========================================================= */
+
+.champions-bracket-top table tr.qualification-team,
+table tr.qualification-team {
+  background: #dcfce7 !important;
+}
+
+.champions-bracket-top table tr.qualification-team td,
+table tr.qualification-team td {
+  background: #dcfce7 !important;
+  color: #14532d !important;
+}
+
+.champions-bracket-top table tr.qualification-team strong,
+table tr.qualification-team strong {
+  color: #166534 !important;
+}
