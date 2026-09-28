@@ -32,7 +32,7 @@
 
   <p>Authorized administrators only.</p>
 
-  <form id="adminLoginForm" onsubmit="return false;">
+  <div id="adminLoginForm">
 
     <input
       type="email"
@@ -50,11 +50,11 @@
       required
     >
 
-    <button type="submit">
+    <button type="button" id="adminLoginButton">
       🔑 Login
     </button>
 
-  </form>
+  </div>
 
   <p id="adminLoginMessage"></p>
 
