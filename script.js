@@ -1770,11 +1770,6 @@ function renderChampionsBracket() {
 
       <div class="skeleton-round-title">FINAL</div>
 
-      <div class="skeleton-trophy">
-        <div class="trophy-icon">🏆</div>
-        <div class="trophy-label">CHAMPIONS</div>
-      </div>
-
       <div class="skeleton-final-tie">
         ${renderVisualTie(
           finalTie,
@@ -1782,14 +1777,6 @@ function renderChampionsBracket() {
           "Winner SF-1",
           "Winner SF-2"
         )}
-      </div>
-
-      <div class="skeleton-champion">
-        <span>♛</span>
-        <strong>CHAMPION</strong>
-        <div>
-          ${escapeHTML(champions.champion || "TBD")}
-        </div>
       </div>
 
       <div class="skeleton-third-place">
