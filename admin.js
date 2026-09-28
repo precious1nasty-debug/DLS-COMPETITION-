@@ -683,6 +683,8 @@ async function handleAdminLogin() {
   }
 }
 
+window.handleAdminLogin = handleAdminLogin;
+
 
 function setupAuthentication() {
   if (!window.auth) {
