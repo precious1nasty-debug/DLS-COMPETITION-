@@ -1752,6 +1752,11 @@ function renderChampionsBracket() {
 
       <div class="skeleton-round-title">FINAL</div>
 
+      <div class="skeleton-trophy">
+        <div class="trophy-icon">🏆</div>
+        <div class="trophy-label">CHAMPIONS</div>
+      </div>
+
       <div class="skeleton-final-tie">
         ${renderVisualTie(
           finalTie,
@@ -1772,17 +1777,19 @@ function renderChampionsBracket() {
       <div class="skeleton-third-place">
         <div class="third-place-title">3RD PLACE</div>
         <div class="third-place-team">
-             <div class="skeleton-third-place">
-        <div class="third-place-title">3RD PLACE MATCH</div>
-        <div class="skeleton-third-place-tie">
-          ${renderVisualTie(
-            knockout.thirdPlace || null,
-            "3RD",
-            "Loser SF-1",
-            "Loser SF-2"
+          ${escapeHTML(
+            champions.thirdPlace ||
+            "Winner SF-1 / SF-2"
           )}
         </div>
-      </div>LS</div>
+      </div>
+
+    </div>
+  `);
+
+  bracketColumns.push(`
+    <div class="skeleton-round right sf-column">
+      <div class="skeleton-round-title">SEMI-FINALS</div>
       <div class="skeleton-round-body single-tie">
         ${renderVisualTie(
           rightSF,
