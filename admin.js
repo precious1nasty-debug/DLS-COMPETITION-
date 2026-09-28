@@ -567,7 +567,9 @@ function setupAuthentication() {
     window.auth,
     async function(user) {
 
-      if (!user) {
+      try {
+
+        if (!user) {
         showLogin();
         return;
       }
