@@ -13,6 +13,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  getFirestore,
   setDoc,
   deleteDoc,
   onSnapshot
