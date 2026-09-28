@@ -2405,3 +2405,93 @@ footer {
 .champions-skeleton-grid {
   background: transparent !important;
 }
+
+
+/* =========================================================
+   FINAL KNOCKOUT BACKGROUND + TEAM NAME FIX
+   The bracket itself is part of the same blue hero surface.
+========================================================= */
+
+.champions-bracket-top,
+.champions-bracket-top #championsBracket,
+.champions-bracket-top #championsBracketContent,
+.champions-bracket-top .bracket-container,
+.champions-bracket-top .champions-skeleton-shell,
+.champions-bracket-top .champions-skeleton-scroll,
+.champions-bracket-top .champions-skeleton-grid {
+  background: linear-gradient(
+    135deg,
+    #172554,
+    #1d4ed8
+  ) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Keep the individual team-name rectangles, but never let
+   the team text disappear outside its own box. */
+.champions-bracket-top .visual-bracket-team {
+  overflow: hidden !important;
+}
+
+.champions-bracket-top .visual-bracket-team > span {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  white-space: normal !important;
+  text-overflow: clip !important;
+  line-height: 1.1 !important;
+}
+
+.champions-bracket-top .visual-bracket-team > strong {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 22px !important;
+  white-space: nowrap !important;
+}
+
+/* Phone: readable names with enough vertical room for wrapping. */
+@media (max-width:700px) {
+  .champions-bracket-top .visual-bracket-team {
+    height: 22px !important;
+    min-height: 22px !important;
+    max-height: 22px !important;
+    padding: 2px 3px !important;
+    font-size: 7px !important;
+    line-height: 8px !important;
+  }
+
+  .champions-bracket-top .visual-bracket-team > span {
+    line-height: 8px !important;
+  }
+
+  .champions-bracket-top .visual-bracket-team > strong {
+    min-width: 10px !important;
+    font-size: 7px !important;
+    line-height: 17px !important;
+  }
+
+  .champions-bracket-top .skeleton-final-tie .visual-bracket-team {
+    height: 22px !important;
+    min-height: 22px !important;
+    max-height: 22px !important;
+    font-size: 7px !important;
+  }
+}
+
+@media (max-width:390px) {
+  .champions-bracket-top .visual-bracket-team {
+    height: 21px !important;
+    min-height: 21px !important;
+    max-height: 21px !important;
+    font-size: 6.5px !important;
+    line-height: 7px !important;
+  }
+
+  .champions-bracket-top .visual-bracket-team > span {
+    line-height: 7px !important;
+  }
+}
