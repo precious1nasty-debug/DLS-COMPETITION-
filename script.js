@@ -153,18 +153,51 @@ function getTeamName(team) {
 
 function getFixtureResult(fixture) {
 
+  // -------------------------------------------------------
+  // A fixture is NOT a result just because its score fields
+  // exist. Newly generated fixtures store null scores.
+  // null must therefore NOT become 0 through Number(null).
+  // -------------------------------------------------------
+
   if (
     fixture &&
     fixture.homeScore !== undefined &&
     fixture.awayScore !== undefined
   ) {
 
+    if (
+      fixture.homeScore === null ||
+      fixture.awayScore === null ||
+      fixture.homeScore === "" ||
+      fixture.awayScore === ""
+    ) {
+
+      return null;
+    }
+
+
+    const homeScore =
+      Number(fixture.homeScore);
+
+    const awayScore =
+      Number(fixture.awayScore);
+
+
+    if (
+      !Number.isFinite(homeScore) ||
+      !Number.isFinite(awayScore)
+    ) {
+
+      return null;
+    }
+
+
     return {
       home:
-        Number(fixture.homeScore),
+        homeScore,
 
       away:
-        Number(fixture.awayScore)
+        awayScore
     };
   }
 
@@ -175,16 +208,43 @@ function getFixtureResult(fixture) {
     fixture.result.awayGoals !== undefined
   ) {
 
+    if (
+      fixture.result.homeGoals === null ||
+      fixture.result.awayGoals === null ||
+      fixture.result.homeGoals === "" ||
+      fixture.result.awayGoals === ""
+    ) {
+
+      return null;
+    }
+
+
+    const homeGoals =
+      Number(
+        fixture.result.homeGoals
+      );
+
+    const awayGoals =
+      Number(
+        fixture.result.awayGoals
+      );
+
+
+    if (
+      !Number.isFinite(homeGoals) ||
+      !Number.isFinite(awayGoals)
+    ) {
+
+      return null;
+    }
+
+
     return {
       home:
-        Number(
-          fixture.result.homeGoals
-        ),
+        homeGoals,
 
       away:
-        Number(
-          fixture.result.awayGoals
-        )
+        awayGoals
     };
   }
 
