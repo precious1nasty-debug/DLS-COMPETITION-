@@ -7991,9 +7991,23 @@ if (adminKnockoutList) {
         match.voided = true; match.homeScore = null; match.awayScore = null;
         match.resultEntered = false; match.updatedAt = Date.now();
         tie.winner = ""; tie.loser = ""; tie.completed = false;
+
+        const recalculated = determineKnockoutWinner(tie);
+        if (recalculated.status === "winner") {
+          tie.winner = recalculated.winner;
+          tie.loser = recalculated.loser;
+          tie.completed = true;
+        }
+
         if (!(await saveCompetition())) return;
         renderKnockout();
-        alert("Knockout match marked VOIDED. No automatic winner was chosen.");
+        if (recalculated.status === "winner") {
+          alert("Knockout match marked VOIDED. The remaining valid result still decides the tie: " + recalculated.winner + " advances.");
+        } else if (recalculated.status === "draw") {
+          alert("Knockout match marked VOIDED. The tie is level; manually select who advances.");
+        } else {
+          alert("Knockout match marked VOIDED. The tie remains incomplete until the remaining valid match is resolved.");
+        }
         return;
       }
 
