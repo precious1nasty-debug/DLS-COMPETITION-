@@ -27,13 +27,12 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBbknvIO-87ff0lOCSUHtJlPs_CyhkTDnE",
-  authDomain: "dls-competition.firebaseapp.com",
-  projectId: "dls-competition",
-  storageBucket: "dls-competition.firebasestorage.app",
-  messagingSenderId: "855283628558",
-  appId: "1:855283628558:web:c7c4335e13da16a8775a5f",
-  measurementId: "G-1CFJFVHBXZ"
+  apiKey: "AIzaSyAhCSFDYBlofKMSDSViO8yJzMQuhWM_L9A",
+  authDomain: "dls-competition-test.firebaseapp.com",
+  projectId: "dls-competition-test",
+  storageBucket: "dls-competition-test.firebasestorage.app",
+  messagingSenderId: "847276827680",
+  appId: "1:847276827680:web:6f76f1ac4f41ab2314c845"
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
@@ -3553,7 +3552,7 @@ function createRoundRobinPairs(
             false,
 
           round:
-            match.round
+            match.round + rounds
         };
       }
     );
@@ -5234,10 +5233,9 @@ function areLeagueFixturesComplete() {
     function(fixture) {
 
       return (
-        fixture.homeScore !== null &&
-        fixture.homeScore !== undefined &&
-        fixture.awayScore !== null &&
-        fixture.awayScore !== undefined
+        fixture.voided === true ||
+        (fixture.homeScore !== null && fixture.homeScore !== undefined &&
+         fixture.awayScore !== null && fixture.awayScore !== undefined)
       );
     }
   );
@@ -5773,6 +5771,8 @@ function calculateLeagueTable() {
 
   fixtures.forEach(function(fixture) {
 
+    if (fixture.voided === true) return;
+
     const home =
       getFixtureHomeName(fixture);
 
@@ -6080,6 +6080,8 @@ function getAdminFixtureScore(
   fixture
 ) {
 
+  if (fixture?.voided === true) return null;
+
   const home =
     fixture.homeScore;
 
@@ -6198,7 +6200,10 @@ async function saveFixtureResult(
 
     return;
   }
-
+  if (fixture.voided === true) {
+    alert("This fixture is voided and cannot receive a score.");
+    return;
+  }
 
   fixture.homeScore =
     Number(homeScore);
@@ -6353,27 +6358,12 @@ const awayName =
 
       card.innerHTML = `
         <div class="fixture-score-row">
-
-          <strong class="fixture-home-team">
-            ${escapeHTML(homeName)}
-          </strong>
-
-          <input type="number" min="0" step="1" class="fixture-home-score"
-            value="${score ? score.home : ""}" placeholder="0" aria-label="Home score">
-
-          <span class="fixture-score-separator">-</span>
-
-          <input type="number" min="0" step="1" class="fixture-away-score"
-            value="${score ? score.away : ""}" placeholder="0" aria-label="Away score">
-
-          <strong class="fixture-away-team">
-            ${escapeHTML(awayName)}
-          </strong>
-
-          <button class="save-fixture-result" data-fixture-id="${escapeHTML(fixture.id)}">
-            💾 Save
-          </button>
-
+          <strong class="fixture-home-team">${escapeHTML(homeName)}</strong>
+          <input type="number" min="0" step="1" class="fixture-home-score" value="${score ? score.home : ""}" placeholder="0" aria-label="Home score" ${fixture.voided === true ? "disabled" : ""}>
+          <span class="fixture-score-separator">${fixture.voided === true ? "VOIDED" : "-"}</span>
+          <input type="number" min="0" step="1" class="fixture-away-score" value="${score ? score.away : ""}" placeholder="0" aria-label="Away score" ${fixture.voided === true ? "disabled" : ""}>
+          <strong class="fixture-away-team">${escapeHTML(awayName)}</strong>
+          ${fixture.voided === true ? '<strong>VOIDED</strong>' : `<button class="save-fixture-result" data-fixture-id="${escapeHTML(fixture.id)}">💾 Save</button><button class="void-fixture" data-fixture-id="${escapeHTML(fixture.id)}">Void Match</button>`}
         </div>
 `;
 
@@ -6395,6 +6385,20 @@ if (adminFixtureList) {
   adminFixtureList.addEventListener(
     "click",
     async function(event) {
+
+      const voidButton = event.target.closest(".void-fixture");
+      if (voidButton) {
+        const id = voidButton.dataset.fixtureId;
+        const fixture = fixtures.find(item => String(item.id || "") === String(id || ""));
+        if (!fixture || fixture.voided === true) return;
+        if (!window.confirm("Void this fixture? It remains visible but its score will not count. Any return fixture remains unchanged.")) return;
+        fixture.voided = true; fixture.homeScore = null; fixture.awayScore = null;
+        fixture.resultEntered = false; fixture.updatedAt = Date.now();
+        if (!(await saveCompetition())) return;
+        renderTable(); renderFixtures(); updateSeasonControlState();
+        alert("Fixture marked VOIDED. Other fixtures were not changed.");
+        return;
+      }
 
       const button =
         event.target.closest(
@@ -7033,7 +7037,8 @@ function getCurrentKnockoutRound() {
 
 function renderKnockoutTie(
   tie,
-  container
+  container,
+  allowVoid = true
 ) {
 
   const wrapper =
@@ -7114,11 +7119,7 @@ function renderKnockoutTie(
 
 
       matchBox.innerHTML = `
-        <div>
-          <strong>
-            Leg ${match.matchNumber}
-          </strong>
-        </div>
+        <div><strong>Leg ${match.matchNumber}</strong> ${match.voided === true ? "<strong>— VOIDED</strong>" : ""}</div>
 
         <div
           style="
@@ -7149,6 +7150,7 @@ function renderKnockoutTie(
                 : ""
             }"
             placeholder="0"
+            ${match.voided === true ? "disabled" : ""}
             style="width:65px;"
           >
 
@@ -7178,17 +7180,8 @@ function renderKnockoutTie(
             )}
           </span>
 
-          <button
-            class="save-knockout-match"
-            data-tie-id="${escapeHTML(
-              tie.id
-            )}"
-            data-match-id="${escapeHTML(
-              match.id
-            )}"
-          >
-            💾 Save
-          </button>
+          ${match.voided === true ? "" : `<button class="save-knockout-match" data-tie-id="${escapeHTML(tie.id)}" data-match-id="${escapeHTML(match.id)}">💾 Save</button>`}
+          ${allowVoid && match.voided !== true ? `<button class="void-knockout-match" data-tie-id="${escapeHTML(tie.id)}" data-match-id="${escapeHTML(match.id)}">Void Match</button>` : ""}
 
         </div>
       `;
@@ -7328,7 +7321,8 @@ function renderKnockout() {
 
         renderKnockoutTie(
           tie,
-          adminKnockoutList
+          adminKnockoutList,
+          true
         );
       }
     );
@@ -7358,7 +7352,8 @@ function renderKnockout() {
 
         renderKnockoutTie(
           tie,
-          adminKnockoutList
+          adminKnockoutList,
+          true
         );
       }
     );
@@ -7388,7 +7383,8 @@ function renderKnockout() {
 
         renderKnockoutTie(
           tie,
-          adminKnockoutList
+          adminKnockoutList,
+          false
         );
       }
     );
@@ -7414,7 +7410,8 @@ function renderKnockout() {
 
     renderKnockoutTie(
       knockout.thirdPlace,
-      adminKnockoutList
+      adminKnockoutList,
+      true
     );
   }
 
@@ -7442,7 +7439,8 @@ function renderKnockout() {
 
         renderKnockoutTie(
           tie,
-          adminKnockoutList
+          adminKnockoutList,
+          false
         );
       }
     );
@@ -7505,6 +7503,13 @@ function findKnockoutTie(tieId) {
 }
 
 
+function isKnockoutVoidAllowed(tieId) {
+  if ((knockout.roundOf16 || []).some(tie => tie.id === tieId)) return true;
+  if ((knockout.quarterFinals || []).some(tie => tie.id === tieId)) return true;
+  return !!(knockout.thirdPlace && knockout.thirdPlace.id === tieId);
+}
+
+
 // =========================================================
 // FIND KNOCKOUT MATCH
 // =========================================================
@@ -7552,6 +7557,8 @@ function getKnockoutAggregate(
   for (
     const match of tie.matches || []
   ) {
+
+    if (match.voided === true) continue;
 
     if (
       !match.resultEntered
@@ -7850,7 +7857,10 @@ async function saveKnockoutMatchResult(
 
     return;
   }
-
+  if (match.voided === true) {
+    alert("This knockout match is voided and cannot receive a score.");
+    return;
+  }
 
   if (
     !isValidScore(homeScore) ||
@@ -7953,6 +7963,52 @@ if (adminKnockoutList) {
   adminKnockoutList.addEventListener(
     "click",
     async function(event) {
+
+      const voidButton = event.target.closest(".void-knockout-match");
+      if (voidButton) {
+        const tieId = voidButton.dataset.tieId;
+        const matchId = voidButton.dataset.matchId;
+        const tie = findKnockoutTie(tieId);
+        if (!tie || !isKnockoutVoidAllowed(tieId)) {
+          alert("Void Match is not allowed for this stage.");
+          return;
+        }
+        if (tie.completed) {
+          const isRoundOf16 = (knockout.roundOf16 || []).some(item => item.id === tieId);
+          const isQuarterFinal = (knockout.quarterFinals || []).some(item => item.id === tieId);
+          const downstreamAlreadyCreated =
+            (isRoundOf16 && (knockout.quarterFinals || []).length > 0) ||
+            (isQuarterFinal && (knockout.semiFinals || []).length > 0);
+          if (downstreamAlreadyCreated) {
+            alert("This tie is completed and the next round has already been created. Void Match is blocked to protect the existing downstream fixtures.");
+            return;
+          }
+        }
+        const match = findKnockoutMatch(tie, matchId);
+        if (!match || match.voided === true) return;
+        if (!window.confirm("Void this knockout match? It contributes no goals to the aggregate. If the tie is level afterward, manually select who advances.")) return;
+        match.voided = true; match.homeScore = null; match.awayScore = null;
+        match.resultEntered = false; match.updatedAt = Date.now();
+        tie.winner = ""; tie.loser = ""; tie.completed = false;
+
+        const recalculated = determineKnockoutWinner(tie);
+        if (recalculated.status === "winner") {
+          tie.winner = recalculated.winner;
+          tie.loser = recalculated.loser;
+          tie.completed = true;
+        }
+
+        if (!(await saveCompetition())) return;
+        renderKnockout();
+        if (recalculated.status === "winner") {
+          alert("Knockout match marked VOIDED. The remaining valid result still decides the tie: " + recalculated.winner + " advances.");
+        } else if (recalculated.status === "draw") {
+          alert("Knockout match marked VOIDED. The tie is level; manually select who advances.");
+        } else {
+          alert("Knockout match marked VOIDED. The tie remains incomplete until the remaining valid match is resolved.");
+        }
+        return;
+      }
 
       /*
        * SAVE SCORE
@@ -8160,7 +8216,8 @@ const originalRenderKnockoutTie =
 renderKnockoutTie =
   function(
     tie,
-    container
+    container,
+    allowVoid = true
   ) {
 
     const before =
@@ -8169,7 +8226,8 @@ renderKnockoutTie =
 
     originalRenderKnockoutTie(
       tie,
-      container
+      container,
+      allowVoid
     );
 
 

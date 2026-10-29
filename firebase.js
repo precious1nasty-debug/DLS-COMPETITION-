@@ -12,13 +12,12 @@ import {
 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBbknvIO-87ff0lOCSUHtJlPs_CyhkTDnE",
-  authDomain: "dls-competition.firebaseapp.com",
-  projectId: "dls-competition",
-  storageBucket: "dls-competition.firebasestorage.app",
-  messagingSenderId: "855283628558",
-  appId: "1:855283628558:web:c7c4335e13da16a8775a5f",
-  measurementId: "G-1CFJFVHBXZ"
+  apiKey: "AIzaSyAhCSFDYBlofKMSDSViO8yJzMQuhWM_L9A",
+  authDomain: "dls-competition-test.firebaseapp.com",
+  projectId: "dls-competition-test",
+  storageBucket: "dls-competition-test.firebasestorage.app",
+  messagingSenderId: "847276827680",
+  appId: "1:847276827680:web:6f76f1ac4f41ab2314c845"
 };
 
 
