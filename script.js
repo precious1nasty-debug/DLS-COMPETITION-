@@ -153,6 +153,8 @@ function getTeamName(team) {
 
 function getFixtureResult(fixture) {
 
+  if (fixture?.voided === true) return null;
+
   // -------------------------------------------------------
   // A fixture is NOT a result just because its score fields
   // exist. Newly generated fixtures store null scores.
@@ -961,9 +963,11 @@ function renderFixtures() {
 
 
                     const score =
-                      result
-                        ? `${result.home} - ${result.away}`
-                        : "vs";
+                      fixture.voided === true
+                        ? "VOIDED"
+                        : result
+                          ? `${result.home} - ${result.away}`
+                          : "vs";
 
 
                     return `
@@ -1425,6 +1429,8 @@ function renderTie(
 
       </div>
 
+
+      ${matches.some(match => match.voided === true) ? '<div class="knockout-winner">VOIDED LEG(S) — excluded from aggregate</div>' : ""}
 
       ${
         winner
