@@ -7182,7 +7182,7 @@ function renderKnockoutTie(
           </span>
 
           ${match.voided === true ? "" : `<button class="save-knockout-match" data-tie-id="${escapeHTML(tie.id)}" data-match-id="${escapeHTML(match.id)}">💾 Save</button>`}
-          ${allowVoid && match.voided !== true && !tie.completed ? `<button class="void-knockout-match" data-tie-id="${escapeHTML(tie.id)}" data-match-id="${escapeHTML(match.id)}">Void Match</button>` : ""}
+          ${allowVoid && match.voided !== true ? `<button class="void-knockout-match" data-tie-id="${escapeHTML(tie.id)}" data-match-id="${escapeHTML(match.id)}">Void Match</button>` : ""}
 
         </div>
       `;
@@ -7970,9 +7970,20 @@ if (adminKnockoutList) {
         const tieId = voidButton.dataset.tieId;
         const matchId = voidButton.dataset.matchId;
         const tie = findKnockoutTie(tieId);
-        if (!tie || tie.completed || !isKnockoutVoidAllowed(tieId)) {
-          alert("Void Match is not allowed for this stage or a completed tie.");
+        if (!tie || !isKnockoutVoidAllowed(tieId)) {
+          alert("Void Match is not allowed for this stage.");
           return;
+        }
+        if (tie.completed) {
+          const isRoundOf16 = (knockout.roundOf16 || []).some(item => item.id === tieId);
+          const isQuarterFinal = (knockout.quarterFinals || []).some(item => item.id === tieId);
+          const downstreamAlreadyCreated =
+            (isRoundOf16 && (knockout.quarterFinals || []).length > 0) ||
+            (isQuarterFinal && (knockout.semiFinals || []).length > 0);
+          if (downstreamAlreadyCreated) {
+            alert("This tie is completed and the next round has already been created. Void Match is blocked to protect the existing downstream fixtures.");
+            return;
+          }
         }
         const match = findKnockoutMatch(tie, matchId);
         if (!match || match.voided === true) return;
