@@ -1,0 +1,28 @@
+name: Deploy DLS test site to Firebase Hosting
+
+on:
+  push:
+    branches:
+      - test/void-match-preview
+    paths:
+      - "**"
+      - ".github/workflows/firebase-hosting-test.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout test branch
+        uses: actions/checkout@v4
+
+      - name: Deploy to test Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DLS_COMPETITION_TEST }}
+          projectId: dls-competition-test
+          channelId: live
