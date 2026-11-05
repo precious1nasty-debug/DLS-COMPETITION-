@@ -1250,7 +1250,7 @@ if (competitionFormat) {
 
   competitionFormat.addEventListener(
     "change",
-    function() {
+    async function() {
 
       if (
         season.started ||
@@ -1261,9 +1261,9 @@ if (competitionFormat) {
           season.format;
 
         updateFormatSettings();
+        updateSeasonControlState();
 
         if (seasonControlMessage) {
-
           seasonControlMessage.textContent =
             "🔒 Competition format is locked because the season has started.";
         }
@@ -1274,6 +1274,13 @@ if (competitionFormat) {
 
       const newFormat =
         competitionFormat.value;
+
+      const previousFormat = season.format;
+      const previousPhase = season.phase;
+      const previousFixtures = fixtures;
+      const previousKnockout = knockout;
+      const previousChampions = champions;
+      const previousQualificationCount = season.qualificationCount;
 
 
       /*
@@ -1303,12 +1310,9 @@ if (competitionFormat) {
 
 
         if (!confirmed) {
-
-          competitionFormat.value =
-            season.format;
-
+          competitionFormat.value = season.format;
           updateFormatSettings();
-
+          updateSeasonControlState();
           return;
         }
 
@@ -1319,50 +1323,59 @@ if (competitionFormat) {
          */
 
         fixtures = [];
-
-        knockout =
-          createDefaultKnockout();
-
-        champions =
-          createDefaultChampions();
-
-        season.qualificationCount =
-          0;
-
-        season.phase =
-          "registration";
+        knockout = createDefaultKnockout();
+        champions = createDefaultChampions();
+        season.qualificationCount = 0;
+        season.phase = "registration";
       }
 
 
       /*
-       * Apply the new format.
+       * Apply and immediately persist the
+       * selected format before enabling its
+       * dependent settings.
        */
 
-      season.format =
-        newFormat;
-
-
-      season.phase =
-        "registration";
-
+      season.format = newFormat;
+      season.phase = "registration";
 
       updateFormatSettings();
-
       updateMatchesPerTeamSuggestion();
-
       updateChampionsQualificationInfo();
-
+      updateSeasonControlState();
 
       if (seasonControlMessage) {
-
         seasonControlMessage.textContent =
-          "🟢 " +
-          (
-            season.format === "champions"
-              ? "Champions League"
-              : "League"
-          ) +
-          " selected. Configure the new season settings before starting.";
+          "⏳ Saving " +
+          (newFormat === "champions" ? "Champions League" : "League") +
+          " format...";
+      }
+
+      const saved = await saveCompetition();
+
+      if (!saved) {
+        season.format = previousFormat;
+        season.phase = previousPhase;
+        fixtures = previousFixtures;
+        knockout = previousKnockout;
+        champions = previousChampions;
+        season.qualificationCount = previousQualificationCount;
+        competitionFormat.value = previousFormat;
+        updateFormatSettings();
+        updateSeasonControlState();
+
+        if (seasonControlMessage) {
+          seasonControlMessage.textContent =
+            "❌ Format was not saved. Your previous competition settings have been restored.";
+        }
+        return;
+      }
+
+      if (seasonControlMessage) {
+        seasonControlMessage.textContent =
+          "✅ " +
+          (newFormat === "champions" ? "Champions League" : "League") +
+          " selected and saved. Configure the season settings before starting.";
       }
     }
   );
@@ -1582,6 +1595,8 @@ function updateChampionsSettingsFromTeams() {
   updateMatchesPerTeamSuggestion();
 
   updateChampionsQualificationInfo();
+
+  updateCalculatedLeagueEndDate();
 }
 
 
@@ -2092,6 +2107,73 @@ if (championsPrizeEnabled) {
 // READ SEASON SETTINGS
 // =========================================================
 
+function calculateSeasonEndDate(startDate, teamCount, format, leagueLegs, championsMatchesPerTeam, knockoutLegs) {
+  const count = Number(teamCount);
+  if (!startDate) return "";
+
+  let totalDays = 0;
+
+  if (format === "champions") {
+    if (count < 9 || count > 40) return "";
+
+    const matches = Number(championsMatchesPerTeam);
+    if (!Number.isInteger(matches) || matches < 1) return "";
+
+    // Odd-sized Champions League schedules need one additional
+    // matchday so the rotating byes can be scheduled.
+    const leaguePhaseDays = count % 2 === 0 ? matches : matches + 1;
+    const qualifiers = count >= 17 ? 16 : 8;
+    const knockoutRounds = qualifiers === 16 ? 4 : 3;
+    const legs = Number(knockoutLegs) === 2 ? 2 : 1;
+
+    totalDays = leaguePhaseDays + (knockoutRounds * legs);
+  } else {
+    if (count < 2) return "";
+    const roundsPerLeg = count % 2 === 0 ? count - 1 : count;
+    totalDays = roundsPerLeg * (Number(leagueLegs) === 2 ? 2 : 1);
+  }
+
+  const parts = String(startDate).split("-").map(Number);
+  if (parts.length !== 3 || parts.some(value => !Number.isFinite(value))) return "";
+  const date = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+  if (Number.isNaN(date.getTime()) ||
+      date.getUTCFullYear() !== parts[0] ||
+      date.getUTCMonth() !== parts[1] - 1 ||
+      date.getUTCDate() !== parts[2]) return "";
+
+  date.setUTCDate(date.getUTCDate() + totalDays - 1);
+  return date.toISOString().slice(0, 10);
+}
+
+function updateCalculatedLeagueEndDate() {
+  if (season.started || season.formatLocked) return;
+
+  const format = competitionFormat?.value || season.format || "league";
+  const endDate = calculateSeasonEndDate(
+    seasonStart?.value || season.startDate || "",
+    teams.length,
+    format,
+    legFormat?.value || season.legs || 1,
+    matchesPerTeam?.value || season.matchesPerTeam || 1,
+    knockoutLegFormat?.value || season.knockoutLegs || 1
+  );
+
+  season.endDate = endDate;
+  if (seasonEnd) seasonEnd.value = endDate;
+}
+
+if (seasonStart) {
+  seasonStart.addEventListener("change", updateCalculatedLeagueEndDate);
+  seasonStart.addEventListener("input", updateCalculatedLeagueEndDate);
+}
+if (legFormat) legFormat.addEventListener("change", updateCalculatedLeagueEndDate);
+if (matchesPerTeam) {
+  matchesPerTeam.addEventListener("change", updateCalculatedLeagueEndDate);
+  matchesPerTeam.addEventListener("input", updateCalculatedLeagueEndDate);
+}
+if (knockoutLegFormat) knockoutLegFormat.addEventListener("change", updateCalculatedLeagueEndDate);
+if (competitionFormat) competitionFormat.addEventListener("change", updateCalculatedLeagueEndDate);
+
 function readSeasonSettingsFromForm() {
 
   if (
@@ -2113,9 +2195,11 @@ function readSeasonSettingsFromForm() {
     "";
 
 
+  updateCalculatedLeagueEndDate();
   season.endDate =
-    seasonEnd?.value ||
-    "";
+    season.format === "league"
+      ? (seasonEnd?.value || "")
+      : (seasonEnd?.value || "");
 
 
   if (
@@ -2178,6 +2262,8 @@ function showFormatMessage(message) {
 // =========================================================
 
 loadSeasonSettingsIntoForm();
+
+updateCalculatedLeagueEndDate();
 
 updateSeasonControlState();
 
@@ -3553,7 +3639,7 @@ function createRoundRobinPairs(
             false,
 
           round:
-            match.round
+            match.round + rounds
         };
       }
     );
@@ -5234,10 +5320,9 @@ function areLeagueFixturesComplete() {
     function(fixture) {
 
       return (
-        fixture.homeScore !== null &&
-        fixture.homeScore !== undefined &&
-        fixture.awayScore !== null &&
-        fixture.awayScore !== undefined
+        fixture.voided === true ||
+        (fixture.homeScore !== null && fixture.homeScore !== undefined &&
+         fixture.awayScore !== null && fixture.awayScore !== undefined)
       );
     }
   );
@@ -5773,6 +5858,8 @@ function calculateLeagueTable() {
 
   fixtures.forEach(function(fixture) {
 
+    if (fixture.voided === true) return;
+
     const home =
       getFixtureHomeName(fixture);
 
@@ -6080,6 +6167,8 @@ function getAdminFixtureScore(
   fixture
 ) {
 
+  if (fixture?.voided === true) return null;
+
   const home =
     fixture.homeScore;
 
@@ -6198,7 +6287,10 @@ async function saveFixtureResult(
 
     return;
   }
-
+  if (fixture.voided === true) {
+    alert("This fixture is voided and cannot receive a score.");
+    return;
+  }
 
   fixture.homeScore =
     Number(homeScore);
@@ -6353,27 +6445,12 @@ const awayName =
 
       card.innerHTML = `
         <div class="fixture-score-row">
-
-          <strong class="fixture-home-team">
-            ${escapeHTML(homeName)}
-          </strong>
-
-          <input type="number" min="0" step="1" class="fixture-home-score"
-            value="${score ? score.home : ""}" placeholder="0" aria-label="Home score">
-
-          <span class="fixture-score-separator">-</span>
-
-          <input type="number" min="0" step="1" class="fixture-away-score"
-            value="${score ? score.away : ""}" placeholder="0" aria-label="Away score">
-
-          <strong class="fixture-away-team">
-            ${escapeHTML(awayName)}
-          </strong>
-
-          <button class="save-fixture-result" data-fixture-id="${escapeHTML(fixture.id)}">
-            💾 Save
-          </button>
-
+          <strong class="fixture-home-team">${escapeHTML(homeName)}</strong>
+          <input type="number" min="0" step="1" class="fixture-home-score" value="${score ? score.home : ""}" placeholder="0" aria-label="Home score" ${fixture.voided === true ? "disabled" : ""}>
+          <span class="fixture-score-separator">${fixture.voided === true ? "VOIDED" : "-"}</span>
+          <input type="number" min="0" step="1" class="fixture-away-score" value="${score ? score.away : ""}" placeholder="0" aria-label="Away score" ${fixture.voided === true ? "disabled" : ""}>
+          <strong class="fixture-away-team">${escapeHTML(awayName)}</strong>
+          ${fixture.voided === true ? '<strong>VOIDED</strong>' : `<button class="save-fixture-result" data-fixture-id="${escapeHTML(fixture.id)}">💾 Save</button><button class="void-fixture" data-fixture-id="${escapeHTML(fixture.id)}">Void Match</button>`}
         </div>
 `;
 
@@ -6395,6 +6472,20 @@ if (adminFixtureList) {
   adminFixtureList.addEventListener(
     "click",
     async function(event) {
+
+      const voidButton = event.target.closest(".void-fixture");
+      if (voidButton) {
+        const id = voidButton.dataset.fixtureId;
+        const fixture = fixtures.find(item => String(item.id || "") === String(id || ""));
+        if (!fixture || fixture.voided === true) return;
+        if (!window.confirm("Void this fixture? It remains visible but its score will not count. Any return fixture remains unchanged.")) return;
+        fixture.voided = true; fixture.homeScore = null; fixture.awayScore = null;
+        fixture.resultEntered = false; fixture.updatedAt = Date.now();
+        if (!(await saveCompetition())) return;
+        renderTable(); renderFixtures(); updateSeasonControlState();
+        alert("Fixture marked VOIDED. Other fixtures were not changed.");
+        return;
+      }
 
       const button =
         event.target.closest(
@@ -6996,6 +7087,12 @@ function getCurrentKnockoutRound() {
   }
 
 
+  if (knockout.directFinalist) {
+    const directNotice = document.createElement("p");
+    directNotice.textContent = "Direct finalist: " + knockout.directFinalist + " (paired one-leg quarter-final voided).";
+    adminKnockoutList.appendChild(directNotice);
+  }
+
   if (
     knockout.semiFinals &&
     knockout.semiFinals.length > 0
@@ -7033,7 +7130,8 @@ function getCurrentKnockoutRound() {
 
 function renderKnockoutTie(
   tie,
-  container
+  container,
+  allowVoid = true
 ) {
 
   const wrapper =
@@ -7114,11 +7212,7 @@ function renderKnockoutTie(
 
 
       matchBox.innerHTML = `
-        <div>
-          <strong>
-            Leg ${match.matchNumber}
-          </strong>
-        </div>
+        <div><strong>Leg ${match.matchNumber}</strong> ${match.voided === true ? "<strong>— VOIDED</strong>" : ""}</div>
 
         <div
           style="
@@ -7149,6 +7243,7 @@ function renderKnockoutTie(
                 : ""
             }"
             placeholder="0"
+            ${match.voided === true ? "disabled" : ""}
             style="width:65px;"
           >
 
@@ -7178,17 +7273,8 @@ function renderKnockoutTie(
             )}
           </span>
 
-          <button
-            class="save-knockout-match"
-            data-tie-id="${escapeHTML(
-              tie.id
-            )}"
-            data-match-id="${escapeHTML(
-              match.id
-            )}"
-          >
-            💾 Save
-          </button>
+          ${match.voided === true ? "" : `<button class="save-knockout-match" data-tie-id="${escapeHTML(tie.id)}" data-match-id="${escapeHTML(match.id)}">💾 Save</button>`}
+          ${allowVoid && match.voided !== true ? `<button class="void-knockout-match" data-tie-id="${escapeHTML(tie.id)}" data-match-id="${escapeHTML(match.id)}">Void Match</button>` : ""}
 
         </div>
       `;
@@ -7200,6 +7286,12 @@ function renderKnockoutTie(
     }
   );
 
+
+  if (tie.oneLegQuarterFinalVoid === true) {
+    const notice = document.createElement("p");
+    notice.textContent = "VOIDED — both teams eliminated. The paired quarter-final winner advances directly to the final.";
+    wrapper.appendChild(notice);
+  }
 
   if (tie.winner) {
 
@@ -7328,7 +7420,8 @@ function renderKnockout() {
 
         renderKnockoutTie(
           tie,
-          adminKnockoutList
+          adminKnockoutList,
+          true
         );
       }
     );
@@ -7358,7 +7451,8 @@ function renderKnockout() {
 
         renderKnockoutTie(
           tie,
-          adminKnockoutList
+          adminKnockoutList,
+          true
         );
       }
     );
@@ -7388,7 +7482,8 @@ function renderKnockout() {
 
         renderKnockoutTie(
           tie,
-          adminKnockoutList
+          adminKnockoutList,
+          false
         );
       }
     );
@@ -7414,7 +7509,8 @@ function renderKnockout() {
 
     renderKnockoutTie(
       knockout.thirdPlace,
-      adminKnockoutList
+      adminKnockoutList,
+      true
     );
   }
 
@@ -7442,7 +7538,8 @@ function renderKnockout() {
 
         renderKnockoutTie(
           tie,
-          adminKnockoutList
+          adminKnockoutList,
+          false
         );
       }
     );
@@ -7505,6 +7602,13 @@ function findKnockoutTie(tieId) {
 }
 
 
+function isKnockoutVoidAllowed(tieId) {
+  if ((knockout.roundOf16 || []).some(tie => tie.id === tieId)) return true;
+  if ((knockout.quarterFinals || []).some(tie => tie.id === tieId)) return true;
+  return !!(knockout.thirdPlace && knockout.thirdPlace.id === tieId);
+}
+
+
 // =========================================================
 // FIND KNOCKOUT MATCH
 // =========================================================
@@ -7552,6 +7656,8 @@ function getKnockoutAggregate(
   for (
     const match of tie.matches || []
   ) {
+
+    if (match.voided === true) continue;
 
     if (
       !match.resultEntered
@@ -7850,7 +7956,10 @@ async function saveKnockoutMatchResult(
 
     return;
   }
-
+  if (match.voided === true) {
+    alert("This knockout match is voided and cannot receive a score.");
+    return;
+  }
 
   if (
     !isValidScore(homeScore) ||
@@ -7953,6 +8062,76 @@ if (adminKnockoutList) {
   adminKnockoutList.addEventListener(
     "click",
     async function(event) {
+
+      const voidButton = event.target.closest(".void-knockout-match");
+      if (voidButton) {
+        const tieId = voidButton.dataset.tieId;
+        const matchId = voidButton.dataset.matchId;
+        const tie = findKnockoutTie(tieId);
+        if (!tie || !isKnockoutVoidAllowed(tieId)) {
+          alert("Void Match is not allowed for this stage.");
+          return;
+        }
+        if (tie.completed) {
+          const isRoundOf16 = (knockout.roundOf16 || []).some(item => item.id === tieId);
+          const isQuarterFinal = (knockout.quarterFinals || []).some(item => item.id === tieId);
+          const downstreamAlreadyCreated =
+            (isRoundOf16 && (knockout.quarterFinals || []).length > 0) ||
+            (isQuarterFinal && (knockout.semiFinals || []).length > 0);
+          if (downstreamAlreadyCreated) {
+            alert("This tie is completed and the next round has already been created. Void Match is blocked to protect the existing downstream fixtures.");
+            return;
+          }
+        }
+        const match = findKnockoutMatch(tie, matchId);
+        if (!match || match.voided === true) return;
+        const isQuarterFinal = (knockout.quarterFinals || []).some(item => item.id === tieId);
+        const specialVoid = isQuarterFinal && Number(season.knockoutLegs || 1) === 1 && (tie.matches || []).length === 1;
+        if (specialVoid) {
+          const alreadyVoided = (knockout.quarterFinals || []).some(item => item.id !== tieId && item.oneLegQuarterFinalVoid === true);
+          if (alreadyVoided) {
+            alert("Only one quarter-final may use this direct-final advancement rule.");
+            return;
+          }
+          const tieIndex = knockout.quarterFinals.findIndex(item => item.id === tieId);
+          const pairedTie = knockout.quarterFinals[tieIndex % 2 === 0 ? tieIndex + 1 : tieIndex - 1];
+          if (!pairedTie || !pairedTie.completed || !pairedTie.winner) {
+            alert("The paired quarter-final must already have a confirmed winner.");
+            return;
+          }
+        }
+        if (!window.confirm(specialVoid
+          ? "Void this one-leg quarter-final? Both teams here are eliminated; the winner of the paired quarter-final advances directly to the final."
+          : "Void this knockout match? It contributes no goals to the aggregate. If the tie is level afterward, manually select who advances.")) return;
+        match.voided = true; match.homeScore = null; match.awayScore = null;
+        match.resultEntered = false; match.updatedAt = Date.now();
+        tie.winner = ""; tie.loser = ""; tie.completed = false;
+        if (specialVoid) {
+          tie.oneLegQuarterFinalVoid = true;
+          tie.voided = true;
+        }
+
+        const recalculated = specialVoid ? { status: "voided-quarter-final" } : determineKnockoutWinner(tie);
+        if (recalculated.status === "winner") {
+          tie.winner = recalculated.winner;
+          tie.loser = recalculated.loser;
+          tie.completed = true;
+        }
+
+        if (!(await saveCompetition())) return;
+        if (specialVoid) await checkKnockoutProgression();
+        renderKnockout();
+        if (recalculated.status === "voided-quarter-final") {
+          alert("Quarter-final voided. Both teams eliminated; paired quarter-final winner advances directly to the final.");
+        } else if (recalculated.status === "winner") {
+          alert("Knockout match marked VOIDED. The remaining valid result still decides the tie: " + recalculated.winner + " advances.");
+        } else if (recalculated.status === "draw") {
+          alert("Knockout match marked VOIDED. The tie is level; manually select who advances.");
+        } else {
+          alert("Knockout match marked VOIDED. The tie remains incomplete until the remaining valid match is resolved.");
+        }
+        return;
+      }
 
       /*
        * SAVE SCORE
@@ -8160,7 +8339,8 @@ const originalRenderKnockoutTie =
 renderKnockoutTie =
   function(
     tie,
-    container
+    container,
+    allowVoid = true
   ) {
 
     const before =
@@ -8169,7 +8349,8 @@ renderKnockoutTie =
 
     originalRenderKnockoutTie(
       tie,
-      container
+      container,
+      allowVoid
     );
 
 
@@ -8381,52 +8562,27 @@ async function createQuarterFinals() {
 // =========================================================
 
 async function createSemiFinals() {
-
-  if (
-    !knockout.quarterFinals ||
-    knockout.quarterFinals.length === 0
-  ) {
-    return false;
-  }
-
-
-  if (
-    !areTiesComplete(
-      knockout.quarterFinals
-    )
-  ) {
-    return false;
-  }
-
-
-  if (
-    knockout.semiFinals &&
-    knockout.semiFinals.length > 0
-  ) {
+  const ties = knockout.quarterFinals || [];
+  if (ties.length !== 4 || (knockout.semiFinals || []).length > 0) return false;
+  const voidIndexes = ties.map((tie, index) => tie.oneLegQuarterFinalVoid === true ? index : -1).filter(index => index >= 0);
+  if (voidIndexes.length === 0) {
+    if (!areTiesComplete(ties)) return false;
+    const winners = getRoundWinners(ties);
+    if (winners.length !== 4) return false;
+    knockout.directFinalist = "";
+    knockout.semiFinals = createNextKnockoutRound("SF", winners);
     return true;
   }
-
-
-  const winners =
-    getRoundWinners(
-      knockout.quarterFinals
-    );
-
-
-  if (
-    winners.length !== 4
-  ) {
-    return false;
-  }
-
-
-  knockout.semiFinals =
-    createNextKnockoutRound(
-      "SF",
-      winners
-    );
-
-
+  if (Number(season.knockoutLegs || 1) !== 1 || voidIndexes.length !== 1) return false;
+  const voidIndex = voidIndexes[0];
+  const pairedIndex = voidIndex % 2 === 0 ? voidIndex + 1 : voidIndex - 1;
+  const pairedTie = ties[pairedIndex];
+  if (!pairedTie || !pairedTie.completed || !pairedTie.winner) return false;
+  const otherIndexes = voidIndex < 2 ? [2, 3] : [0, 1];
+  const otherWinners = otherIndexes.map(index => ties[index].winner);
+  if (otherWinners.some(winner => !winner)) return false;
+  knockout.directFinalist = pairedTie.winner;
+  knockout.semiFinals = createNextKnockoutRound("SF", otherWinners);
   return true;
 }
 
@@ -8436,94 +8592,22 @@ async function createSemiFinals() {
 // =========================================================
 
 async function createFinalAndThirdPlace() {
-
-  if (
-    !knockout.semiFinals ||
-    knockout.semiFinals.length !== 2
-  ) {
-    return false;
+  const directFinalist = String(knockout.directFinalist || "");
+  const expectedSemis = directFinalist ? 1 : 2;
+  if (!Array.isArray(knockout.semiFinals) || knockout.semiFinals.length !== expectedSemis) return false;
+  if (!areTiesComplete(knockout.semiFinals)) return false;
+  if (knockout.final && knockout.final.length > 0) return true;
+  const winners = getRoundWinners(knockout.semiFinals);
+  if (winners.length !== expectedSemis) return false;
+  const finalists = directFinalist ? [directFinalist, winners[0]] : winners;
+  knockout.final = [createKnockoutTie("FINAL", 1, finalists[0], finalists[1], 1)];
+  if (directFinalist) {
+    knockout.thirdPlace = null;
+  } else {
+    const losers = getRoundLosers(knockout.semiFinals);
+    if (losers.length !== 2) return false;
+    knockout.thirdPlace = createKnockoutTie("THIRD", 1, losers[0], losers[1], 1);
   }
-
-
-  if (
-    !areTiesComplete(
-      knockout.semiFinals
-    )
-  ) {
-    return false;
-  }
-
-
-  if (
-    knockout.final &&
-    knockout.final.length > 0
-  ) {
-
-    return true;
-  }
-
-
-  const winners =
-    getRoundWinners(
-      knockout.semiFinals
-    );
-
-
-  const losers =
-    getRoundLosers(
-      knockout.semiFinals
-    );
-
-
-  if (
-    winners.length !== 2 ||
-    losers.length !== 2
-  ) {
-    return false;
-  }
-
-
-  /*
-   * Final
-   */
-
-  /*
-   * The Final is always a single match.
-   * The 1/2-leg knockout setting does not apply here.
-   */
-  knockout.final = [
-    createKnockoutTie(
-      "FINAL",
-      1,
-      winners[0],
-      winners[1],
-      1
-    )
-  ];
-
-
-  /*
-   * Third-place match
-   */
-
-  /*
-   * The 3rd-place match is always a single match.
-   * The 1/2-leg knockout setting does not apply here.
-   */
-  const thirdPlaceTie =
-    createKnockoutTie(
-      "THIRD",
-      1,
-      losers[0],
-      losers[1],
-      1
-    );
-
-
-  knockout.thirdPlace =
-    thirdPlaceTie;
-
-
   return true;
 }
 
@@ -8599,7 +8683,7 @@ async function advanceKnockoutStage() {
 
   if (
     knockout.semiFinals &&
-    knockout.semiFinals.length === 2 &&
+    knockout.semiFinals.length === (knockout.directFinalist ? 1 : 2) &&
     (!knockout.final || knockout.final.length === 0)
   ) {
 
@@ -9471,13 +9555,9 @@ function hasThirdPlaceMatch() {
 // =========================================================
 
 function hasSemiFinals() {
-
-  return (
-    Array.isArray(
-      knockout.semiFinals
-    ) &&
-    knockout.semiFinals.length === 2
-  );
+  const expected = knockout.directFinalist ? 1 : 2;
+  return Array.isArray(knockout.semiFinals) &&
+    knockout.semiFinals.length === expected;
 }
 
 
@@ -9547,12 +9627,8 @@ async function runSafeKnockoutProgression() {
     )
   ) {
 
-    if (
-      areTiesComplete(
-        knockout.quarterFinals
-      )
-    ) {
-
+    const qfVoids = (knockout.quarterFinals || []).filter(tie => tie.oneLegQuarterFinalVoid === true);
+    if (qfVoids.length ? qfVoids.length === 1 : areTiesComplete(knockout.quarterFinals)) {
       await createSemiFinals();
     }
   }
